@@ -1,0 +1,16 @@
+# Netlify local state
+.netlify/
+
+# Dependencies (only if you later add any)
+node_modules/
+
+# Environment files — none needed today, but never commit one
+.env
+.env.*
+
+# OS / editor cruft
+Thumbs.db
+desktop.ini
+.DS_Store
+.vscode/
+*.swp

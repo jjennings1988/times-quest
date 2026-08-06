@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Times Quest: The Climb to Mount Twelve</title>
+<meta name="theme-color" content="#1A1538">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Times Quest">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#2D2A4A;
+  --ink-soft:#5B5680;
+  --cream:#FFF8EC;
+  --cream-dim:#F4EBD9;
+  --sky:#241E4E;
+  --sky-deep:#1A1538;
+  --gold:#FFC53D;
+  --gold-dark:#D99C0B;
+  --green:#4ADE80;
+  --green-dark:#22A85A;
+  --coral:#FF6B6B;
+  --coral-dark:#D94848;
+  --blue:#5BA8FF;
+  --purple:#9B7BFF;
+  --radius:20px;
+  --display:'Baloo 2','Trebuchet MS','Comic Sans MS',sans-serif;
+  --body:'Nunito','Trebuchet MS',sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#1A1538}
+body{
+  font-family:var(--body);color:var(--ink);
+  background:radial-gradient(1200px 600px at 50% -10%, #3A2F75 0%, var(--sky) 45%, var(--sky-deep) 100%);
+  display:flex;justify-content:center;overflow:hidden;
+}
+#app{
+  width:100%;max-width:480px;height:100dvh;padding-top:env(safe-area-inset-top);display:flex;flex-direction:column;
+  background:transparent;position:relative;overflow:hidden;
+}
+/* ---------- stars in the sky ---------- */
+.stars{position:absolute;inset:0;pointer-events:none;z-index:0}
+.stars span{position:absolute;width:3px;height:3px;border-radius:50%;background:#fff;opacity:.5;animation:twinkle 3s infinite}
+@keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.7}}
+
+/* ---------- screens ---------- */
+.screen{flex:1;overflow-y:auto;overscroll-behavior:contain;display:none;flex-direction:column;position:relative;z-index:1;scrollbar-width:thin}
+.screen.active{display:flex}
+.screen-pad{padding:16px 16px 90px}
+
+/* ---------- top bar ---------- */
+.topbar{
+  display:flex;align-items:center;gap:8px;padding:12px 16px;position:sticky;top:0;z-index:5;
+  background:linear-gradient(180deg, rgba(26,21,56,.95), rgba(26,21,56,.75) 70%, transparent);
+}
+.topbar .title{font-family:var(--display);font-weight:800;font-size:20px;color:#fff;flex:1;line-height:1.1}
+.topbar .title small{display:block;font-size:11px;font-weight:600;color:#B7AEE8}
+.chip{
+  display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.12);
+  border:1.5px solid rgba(255,255,255,.18);color:#fff;border-radius:999px;
+  padding:5px 11px;font-weight:800;font-size:13px;
+}
+.chip .em{font-size:15px}
+
+/* ---------- cards & buttons ---------- */
+.card{
+  background:var(--cream);border-radius:var(--radius);padding:16px;
+  box-shadow:0 6px 0 rgba(0,0,0,.25);margin-bottom:14px;
+}
+.card h3{font-family:var(--display);font-size:18px;margin-bottom:6px}
+.card p{font-size:14px;color:var(--ink-soft);line-height:1.45}
+.btn{
+  font-family:var(--display);font-weight:800;font-size:17px;color:#fff;
+  background:var(--green);border:none;border-radius:16px;padding:13px 20px;
+  box-shadow:0 5px 0 var(--green-dark);cursor:pointer;width:100%;
+  transition:transform .06s, box-shadow .06s;display:flex;align-items:center;justify-content:center;gap:8px;
+}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--green-dark)}
+.btn.gold{background:var(--gold);box-shadow:0 5px 0 var(--gold-dark);color:var(--ink)}
+.btn.gold:active{box-shadow:0 1px 0 var(--gold-dark)}
+.btn.coral{background:var(--coral);box-shadow:0 5px 0 var(--coral-dark)}
+.btn.coral:active{box-shadow:0 1px 0 var(--coral-dark)}
+.btn.ghost{background:rgba(255,255,255,.12);box-shadow:0 5px 0 rgba(0,0,0,.3);border:1.5px solid rgba(255,255,255,.2)}
+.btn.ghost:active{box-shadow:0 1px 0 rgba(0,0,0,.3)}
+.btn.small{font-size:14px;padding:9px 14px;border-radius:12px;width:auto}
+.btn:disabled{opacity:.45;pointer-events:none}
+.btn-row{display:flex;gap:10px}
+.btn-row .btn{flex:1}
+
+/* ---------- bottom nav ---------- */
+#nav{
+  position:absolute;bottom:0;left:0;right:0;z-index:10;display:flex;
+  background:rgba(20,16,46,.96);border-top:1.5px solid rgba(255,255,255,.12);
+  padding:6px 8px calc(8px + env(safe-area-inset-bottom));backdrop-filter:blur(8px);
+}
+#nav button{
+  flex:1;background:none;border:none;color:#8B83BD;font-family:var(--body);font-weight:800;
+  font-size:10.5px;display:flex;flex-direction:column;align-items:center;gap:2px;padding:5px 0;
+  cursor:pointer;border-radius:12px;
+}
+#nav button .em{font-size:21px;transition:transform .15s}
+#nav button.on{color:var(--gold)}
+#nav button.on .em{transform:scale(1.15)}
+
+/* ---------- mountain map ---------- */
+#map-trail{
+  position:relative;padding:30px 0 40px;display:flex;flex-direction:column-reverse;gap:26px;
+}
+#map-trail::before{
+  content:"";position:absolute;left:50%;top:20px;bottom:20px;width:0;
+  border-left:4px dashed rgba(255,255,255,.22);transform:translateX(-2px);
+}
+.realm-node{
+  display:flex;align-items:center;gap:12px;width:78%;position:relative;z-index:1;
+}
+.realm-node.left{align-self:flex-start;margin-left:4%}
+.realm-node.right{align-self:flex-end;margin-right:4%;flex-direction:row-reverse;text-align:right}
+.realm-bubble{
+  width:66px;height:66px;min-width:66px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:30px;border:4px solid #fff;box-shadow:0 5px 0 rgba(0,0,0,.3);cursor:pointer;
+  background:var(--cream);transition:transform .12s;position:relative;
+}
+.realm-bubble:active{transform:scale(.93)}
+.realm-node.locked .realm-bubble{filter:grayscale(1) brightness(.6);border-color:#777;cursor:default}
+.realm-node .meta{color:#fff;min-width:0}
+.realm-node .meta .nm{font-family:var(--display);font-weight:800;font-size:15px;line-height:1.15}
+.realm-node .meta .fam{font-size:12px;color:#B7AEE8;font-weight:700}
+.realm-node .stars-row{font-size:13px;letter-spacing:1px}
+.realm-bubble .badge{
+  position:absolute;bottom:-6px;right:-6px;width:26px;height:26px;border-radius:50%;
+  background:var(--gold);border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:13px;
+}
+.realm-node.here .realm-bubble{animation:bounce 1.6s infinite;border-color:var(--gold)}
+@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.summit-node{align-self:center;text-align:center;color:#fff;z-index:1}
+.summit-node .realm-bubble{width:84px;height:84px;font-size:40px;margin:0 auto 6px}
+
+/* ---------- realm detail ---------- */
+.realm-hero{
+  border-radius:var(--radius);padding:22px 18px;text-align:center;color:#fff;margin-bottom:14px;
+  box-shadow:0 6px 0 rgba(0,0,0,.3);position:relative;overflow:hidden;
+}
+.realm-hero .big{font-size:54px;display:block;filter:drop-shadow(0 4px 4px rgba(0,0,0,.3))}
+.realm-hero h2{font-family:var(--display);font-size:26px;font-weight:800;margin:4px 0 2px}
+.realm-hero .fam{font-weight:800;opacity:.9}
+.strategy-box{
+  background:#FFF3D6;border:2.5px dashed var(--gold-dark);border-radius:14px;
+  padding:12px;margin-top:10px;font-size:14px;color:#6B4E00;font-weight:700;text-align:left;
+}
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.mode-card{
+  background:var(--cream);border:none;border-radius:16px;padding:14px 10px;text-align:center;cursor:pointer;
+  box-shadow:0 5px 0 rgba(0,0,0,.25);font-family:var(--body);
+}
+.mode-card:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.25)}
+.mode-card .em{font-size:30px;display:block;margin-bottom:4px}
+.mode-card .nm{font-family:var(--display);font-weight:800;font-size:15px;color:var(--ink)}
+.mode-card .sub{font-size:11px;color:var(--ink-soft);font-weight:700}
+.mode-card.locked{filter:grayscale(.9);opacity:.55;pointer-events:none}
+
+/* ---------- quiz ---------- */
+#screen-quiz{background:linear-gradient(180deg,#2E2566,#1A1538)}
+.quiz-top{display:flex;align-items:center;gap:10px;padding:14px 16px 4px}
+.quiz-top .qcount{color:#B7AEE8;font-weight:800;font-size:13px;min-width:54px}
+.hp-track{flex:1;height:14px;border-radius:99px;background:rgba(255,255,255,.14);overflow:hidden}
+.hp-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green),#9BE15D);transition:width .35s}
+.quiz-quit{background:none;border:none;color:#8B83BD;font-size:20px;cursor:pointer;padding:4px}
+.boss-bar{display:none;align-items:center;gap:10px;padding:8px 16px 0}
+.boss-bar .boss-em{font-size:36px;animation:bossFloat 2.2s infinite ease-in-out}
+@keyframes bossFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.boss-bar .hp-fill{background:linear-gradient(90deg,var(--coral),#FF9A6B)}
+.hearts{color:#FF6B6B;font-size:16px;letter-spacing:2px;padding:0 16px}
+.question-zone{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:0 16px;min-height:170px}
+.streak-flame{height:22px;font-weight:800;color:var(--gold);font-size:14px;opacity:0;transition:opacity .2s}
+.streak-flame.show{opacity:1}
+.q-text{font-family:var(--display);font-weight:800;font-size:56px;color:#fff;letter-spacing:2px;text-align:center;line-height:1}
+.answer-box{
+  min-width:130px;padding:8px 18px;border-radius:16px;background:rgba(255,255,255,.1);
+  border:3px solid rgba(255,255,255,.3);font-family:var(--display);font-weight:800;font-size:40px;color:var(--gold);
+  text-align:center;min-height:64px;line-height:1.2;
+}
+.answer-box.ok{border-color:var(--green);color:var(--green);animation:pop .3s}
+.answer-box.bad{border-color:var(--coral);color:var(--coral);animation:shake .35s}
+@keyframes pop{50%{transform:scale(1.12)}}
+@keyframes shake{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+.timer-track{width:200px;height:8px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden}
+.timer-fill{height:100%;background:var(--blue);border-radius:99px}
+.hint-card{
+  display:none;background:#FFF3D6;border-radius:16px;padding:14px;margin:0 16px;color:#6B4E00;
+  font-weight:700;font-size:15px;text-align:center;box-shadow:0 4px 0 rgba(0,0,0,.25);
+}
+.hint-card .hint-title{font-family:var(--display);font-weight:800;font-size:16px;margin-bottom:4px}
+.keypad{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:9px;padding:14px 16px calc(22px + env(safe-area-inset-bottom));
+}
+.key{
+  font-family:var(--display);font-weight:800;font-size:26px;color:#fff;background:rgba(255,255,255,.12);
+  border:1.5px solid rgba(255,255,255,.18);border-radius:16px;padding:13px 0;cursor:pointer;
+  box-shadow:0 4px 0 rgba(0,0,0,.35);transition:transform .05s, box-shadow .05s;
+}
+.key:active{transform:translateY(3px);box-shadow:0 1px 0 rgba(0,0,0,.35)}
+.key.enter{background:var(--green);box-shadow:0 4px 0 var(--green-dark);font-size:20px}
+.key.back{background:rgba(255,107,107,.7);font-size:20px}
+
+/* ---------- results ---------- */
+.results-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center}
+.results-wrap .big-em{font-size:72px;animation:pop .5s}
+.results-wrap h2{font-family:var(--display);font-weight:800;font-size:30px;color:#fff;margin:8px 0 2px}
+.results-wrap .sub{color:#B7AEE8;font-weight:700;margin-bottom:14px}
+.result-stars{font-size:38px;letter-spacing:6px;margin-bottom:10px}
+.reward-row{display:flex;gap:10px;justify-content:center;margin-bottom:16px;flex-wrap:wrap}
+.reward-pill{background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);border-radius:14px;padding:9px 14px;color:#fff;font-weight:800;font-size:14px}
+.caught-list{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-bottom:16px}
+.caught-monster{background:var(--cream);border-radius:14px;padding:8px 10px;font-weight:800;font-size:13px;box-shadow:0 4px 0 rgba(0,0,0,.3)}
+.caught-monster .em{font-size:24px;display:block}
+
+/* ---------- monsters ---------- */
+.monster-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.monster-cell{
+  background:var(--cream);border-radius:14px;padding:8px 4px;text-align:center;box-shadow:0 4px 0 rgba(0,0,0,.25);
+}
+.monster-cell .em{font-size:26px;display:block}
+.monster-cell .fact{font-weight:800;font-size:12px}
+.monster-cell .st{font-size:9.5px;font-weight:800;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.4px}
+.monster-cell.undiscovered{background:rgba(255,255,255,.08);box-shadow:none;border:1.5px dashed rgba(255,255,255,.2)}
+.monster-cell.undiscovered .em{filter:brightness(0) invert(.4)}
+.monster-cell.undiscovered .fact,.monster-cell.undiscovered .st{color:#8B83BD}
+.monster-cell.sleepy .em{filter:saturate(.4);opacity:.8}
+.monster-cell.shiny{background:linear-gradient(135deg,#FFF3C9,#FFE08A);outline:2.5px solid var(--gold)}
+.seg{display:flex;background:rgba(255,255,255,.1);border-radius:12px;padding:4px;margin-bottom:12px;gap:4px}
+.seg button{flex:1;border:none;background:none;color:#B7AEE8;font-family:var(--body);font-weight:800;font-size:12.5px;padding:8px 4px;border-radius:9px;cursor:pointer}
+.seg button.on{background:var(--gold);color:var(--ink)}
+
+/* ---------- parent dashboard ---------- */
+.heat-grid{display:grid;grid-template-columns:auto repeat(13,1fr);gap:2.5px;font-size:9px}
+.heat-grid .hd{color:#B7AEE8;font-weight:800;display:flex;align-items:center;justify-content:center;min-height:16px}
+.heat-cell{aspect-ratio:1;border-radius:4px;background:rgba(255,255,255,.07)}
+.fam-chip{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:5px 11px;font-weight:800;font-size:12.5px;margin:0 5px 6px 0}
+.fam-chip.strong{background:#1E5F3C;color:#9BF0BE}
+.fam-chip.mid{background:#6B4E00;color:#FFE08A}
+.fam-chip.weak{background:#6B2430;color:#FFB3BD}
+.fam-chip.untouched{background:rgba(255,255,255,.1);color:#8B83BD}
+.weak-list{display:flex;flex-wrap:wrap;gap:7px}
+.weak-pill{background:#6B2430;color:#FFB3BD;border-radius:10px;padding:6px 11px;font-weight:800;font-size:14px}
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1.5px solid var(--cream-dim)}
+.toggle-row:last-child{border-bottom:none}
+/* ---------- base camp & shop ---------- */
+.shop-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.shop-item{background:var(--cream);border-radius:14px;padding:10px 6px;text-align:center;box-shadow:0 4px 0 rgba(0,0,0,.25);cursor:pointer;border:2.5px solid transparent;font-family:var(--body)}
+.shop-item:active{transform:translateY(2px)}
+.shop-item .em{font-size:28px;display:block}
+.shop-item .nm{font-weight:800;font-size:11.5px;display:block}
+.shop-item .pr{font-weight:800;font-size:12px;color:var(--gold-dark);display:block}
+.shop-item.owned .pr{color:var(--green-dark)}
+.shop-item.equipped{border-color:var(--gold);background:#FFF3D6}
+.shop-item.cant{opacity:.5}
+.camp-scene{position:relative;height:175px;border-radius:var(--radius);background:linear-gradient(180deg,#241E4E 0%,#553E9E 54%,#2E8B57 55%,#1E5F3C 100%);box-shadow:0 6px 0 rgba(0,0,0,.3);margin-bottom:14px;overflow:hidden}
+.camp-scene .citem{position:absolute;font-size:30px;filter:drop-shadow(0 3px 2px rgba(0,0,0,.35))}
+.camp-scene .fire{animation:flicker 1.1s infinite}
+@keyframes flicker{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+.avatar-line{font-size:36px;text-align:center;margin:2px 0 6px;letter-spacing:2px}
+.count-pick{display:flex;gap:8px;margin:8px 0}
+.count-pick button{flex:1;font-family:var(--display);font-weight:800;font-size:15px;padding:9px 0;border-radius:12px;border:2px solid var(--cream-dim);background:var(--cream-dim);color:var(--ink);cursor:pointer}
+.count-pick button.sel{background:var(--gold);border-color:var(--gold)}
+.toggle-row .lbl{font-weight:800;font-size:14.5px}
+.tg{width:52px;height:30px;border-radius:99px;background:#CFC6B3;border:none;position:relative;cursor:pointer;transition:background .15s}
+.tg::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 2px 3px rgba(0,0,0,.25)}
+.tg.on{background:var(--green)}
+.tg.on::after{left:25px}
+
+/* ---------- training hall ---------- */
+.fam-pick{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.fam-pick button{
+  font-family:var(--display);font-weight:800;font-size:17px;padding:11px 0;border-radius:13px;border:none;cursor:pointer;
+  background:rgba(255,255,255,.1);color:#B7AEE8;border:2px solid rgba(255,255,255,.15);
+}
+.fam-pick button.sel{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+.fam-pick button:disabled{opacity:.3;cursor:default}
+.sect-label{color:#B7AEE8;font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:1px;margin:14px 2px 8px}
+
+/* ---------- misc ---------- */
+.daily-quest{
+  background:linear-gradient(135deg,#3A2F75,#553E9E);border:2px solid rgba(255,255,255,.18);
+  border-radius:var(--radius);padding:13px 15px;color:#fff;margin-bottom:14px;display:flex;gap:11px;align-items:center;
+  box-shadow:0 5px 0 rgba(0,0,0,.3);
+}
+.daily-quest .em{font-size:30px}
+.daily-quest .t{font-family:var(--display);font-weight:800;font-size:15px}
+.daily-quest .s{font-size:12.5px;color:#CFC4F5;font-weight:700}
+.daily-quest.done{background:linear-gradient(135deg,#1E5F3C,#2E8B57)}
+.confetti{position:fixed;top:-12px;border-radius:3px;pointer-events:none;z-index:99;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+.toast{
+  position:absolute;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:#fff;
+  border-radius:14px;padding:10px 18px;font-weight:800;font-size:14px;z-index:50;opacity:0;transition:opacity .25s;
+  box-shadow:0 5px 16px rgba(0,0,0,.4);white-space:nowrap;
+}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="stars" id="stars"></div>
+
+  <!-- ============ MAP SCREEN ============ -->
+  <div class="screen active" id="screen-map">
+    <div class="topbar">
+      <div class="title">Times Quest<small>The Climb to Mount Twelve</small></div>
+      <div class="chip"><span class="em">💎</span><span id="gem-count">0</span></div>
+      <div class="chip"><span class="em">🔥</span><span id="streak-count">0</span></div>
+    </div>
+    <div class="screen-pad">
+      <div class="daily-quest" id="install-banner" style="display:none;cursor:pointer" onclick="doInstall()">
+        <span class="em">📲</span>
+        <div><div class="t">Install Times Quest</div><div class="s">Add to home screen — plays offline, no browser bar!</div></div>
+      </div>
+      <div class="daily-quest" id="daily-quest">
+        <span class="em">📜</span>
+        <div><div class="t" id="dq-title">Daily Quest</div><div class="s" id="dq-sub"></div></div>
+      </div>
+      <div id="chest-banner" style="display:none" class="daily-quest">
+        <span class="em">🎁</span>
+        <div><div class="t">Mystery Chest!</div><div class="s">Finish any round today to open it.</div></div>
+      </div>
+      <div id="map-trail"></div>
+    </div>
+  </div>
+
+  <!-- ============ REALM SCREEN ============ -->
+  <div class="screen" id="screen-realm">
+    <div class="topbar">
+      <button class="quiz-quit" onclick="showScreen('screen-map')">←</button>
+      <div class="title" id="realm-title-top">Realm</div>
+      <div class="chip"><span class="em">💎</span><span id="gem-count-2">0</span></div>
+    </div>
+    <div class="screen-pad" id="realm-body"></div>
+  </div>
+
+  <!-- ============ QUIZ SCREEN ============ -->
+  <div class="screen" id="screen-quiz">
+    <div class="quiz-top">
+      <button class="quiz-quit" onclick="quitQuiz()">✕</button>
+      <div class="qcount" id="q-count">1 / 12</div>
+      <div class="hp-track"><div class="hp-fill" id="progress-fill" style="width:0%"></div></div>
+    </div>
+    <div class="boss-bar" id="boss-bar">
+      <span class="boss-em" id="boss-em">🐲</span>
+      <div class="hp-track"><div class="hp-fill" id="boss-hp" style="width:100%"></div></div>
+    </div>
+    <div class="hearts" id="hearts"></div>
+    <div class="question-zone">
+      <div class="streak-flame" id="streak-flame">🔥 BOOST ×2 GEMS!</div>
+      <div class="q-text" id="q-text">7 × 8</div>
+      <div class="answer-box" id="answer-box">&nbsp;</div>
+      <div class="timer-track" id="timer-track"><div class="timer-fill" id="timer-fill"></div></div>
+    </div>
+    <div class="hint-card" id="hint-card">
+      <div class="hint-title" id="hint-title">💡 Let's build it!</div>
+      <div id="hint-body"></div>
+      <button class="btn gold small" style="margin-top:10px" onclick="dismissHint()">Got it — try again!</button>
+    </div>
+    <div class="keypad" id="keypad">
+      <button class="key" data-k="1">1</button><button class="key" data-k="2">2</button><button class="key" data-k="3">3</button>
+      <button class="key" data-k="4">4</button><button class="key" data-k="5">5</button><button class="key" data-k="6">6</button>
+      <button class="key" data-k="7">7</button><button class="key" data-k="8">8</button><button class="key" data-k="9">9</button>
+      <button class="key back" data-k="back">⌫</button><button class="key" data-k="0">0</button><button class="key enter" data-k="enter">GO!</button>
+    </div>
+  </div>
+
+  <!-- ============ RESULTS SCREEN ============ -->
+  <div class="screen" id="screen-results">
+    <div class="results-wrap" id="results-body"></div>
+  </div>
+
+  <!-- ============ TRAINING HALL ============ -->
+  <div class="screen" id="screen-hall">
+    <div class="topbar"><div class="title">Training Hall<small>Choose your workout</small></div>
+      <div class="chip"><span class="em">💎</span><span id="gem-count-3">0</span></div></div>
+    <div class="screen-pad">
+      <div class="sect-label">Pick fact families (unlocked only)</div>
+      <div class="fam-pick" id="fam-pick"></div>
+      <div class="btn-row" style="margin-bottom:10px">
+        <button class="btn" onclick="hallStart('practice')">🎯 Practice</button>
+        <button class="btn gold" onclick="hallStart('speed')">⚡ Speed Round</button>
+      </div>
+      <div class="sect-label">Smart workouts</div>
+      <button class="btn coral" style="margin-bottom:10px" onclick="startWeakWorkout()">🩹 Weak Fact Workout</button>
+      <button class="btn ghost" style="margin-bottom:10px" onclick="startMixedMayhem()">🌪️ Mixed Mayhem (all unlocked)</button>
+      <button class="btn ghost" id="division-btn" onclick="startDivision()">➗ Division & Reverse Facts</button>
+      <p style="color:#8B83BD;font-size:12px;font-weight:700;margin-top:10px" id="hall-note"></p>
+    </div>
+  </div>
+
+  <!-- ============ MONSTERS ============ -->
+  <div class="screen" id="screen-monsters">
+    <div class="topbar"><div class="title">Fact Monsters<small id="monster-count">0 caught</small></div></div>
+    <div class="screen-pad">
+      <div class="seg" id="monster-seg"></div>
+      <div class="monster-grid" id="monster-grid"></div>
+    </div>
+  </div>
+
+  <!-- ============ PARENT DASHBOARD ============ -->
+  <div class="screen" id="screen-parent">
+    <div class="topbar"><div class="title">Parent Dashboard<small>Real insight, not just minutes</small></div></div>
+    <div class="screen-pad" id="parent-body"></div>
+  </div>
+
+  <!-- ============ BASE CAMP ============ -->
+  <div class="screen" id="screen-camp">
+    <div class="topbar"><div class="title">Base Camp<small>Spend your gems!</small></div>
+      <div class="chip"><span class="em">💎</span><span id="gem-count-4">0</span></div></div>
+    <div class="screen-pad" id="camp-body"></div>
+  </div>
+
+  <!-- ============ NAV ============ -->
+  <div id="nav">
+    <button data-s="screen-map" class="on"><span class="em">🗻</span>Adventure</button>
+    <button data-s="screen-hall"><span class="em">🏋️</span>Training</button>
+    <button data-s="screen-monsters"><span class="em">🐾</span>Monsters</button>
+    <button data-s="screen-camp"><span class="em">🏕️</span>Camp</button>
+    <button data-s="screen-parent"><span class="em">👨‍👦</span>Parents</button>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+<script>
+/* =====================================================
+   TIMES QUEST — game engine
+   ===================================================== */
+
+const REALM_ORDER = [0,1,10,2,5,11,3,4,9,6,12,8,7];
+
+const REALMS = {
+  0:{name:"Zero Marsh",pet:"👻",petName:"Poof the Ghost",color:"#3E7C6B",
+     strategy:"Anything times 0 disappears! 0 × anything = 0.",
+     hint:(a,b)=>`Zero magic! ${a} × ${b} means ${b===0?a:b} groups of nothing. That's always <b>0</b>!`},
+  1:{name:"One Woods",pet:"🐰",petName:"Echo the Bunny",color:"#4C9A4C",
+     strategy:"The mirror world: 1 × any number is just that number.",
+     hint:(a,b)=>{const n=a===1?b:a;return `One copy of ${n} is just... <b>${n}</b>! The number stays the same.`}},
+  10:{name:"Ten City",pet:"🤖",petName:"Deca the Robot",color:"#4A7FBF",
+     strategy:"Stick a zero on the end! 10 × 7 = 70.",
+     hint:(a,b)=>{const n=a===10?b:a;return `Take ${n} and stick a 0 on the end: <b>${n}0</b>!`}},
+  2:{name:"Double River",pet:"🦊",petName:"Twix the Fox",color:"#E07B39",
+     strategy:"Just double it! 2 × 8 means 8 + 8.",
+     hint:(a,b)=>{const n=a===2?b:a;return `Double it! ${n} + ${n} = <b>${n*2}</b>`}},
+  5:{name:"High-Five Harbor",pet:"🐸",petName:"Slap the Frog",color:"#6BAF3C",
+     strategy:"Count by 5s: 5, 10, 15, 20... Answers always end in 0 or 5!",
+     hint:(a,b)=>{const n=a===5?b:a;return `Count by fives ${n} times: ${Array.from({length:Math.min(n,12)},(_,i)=>5*(i+1)).join(", ")}. Or: half of ${n}×10 (${n*10}) = <b>${n*5}</b>`}},
+  11:{name:"Twin Towers",pet:"🦜",petName:"Copy the Parrot",color:"#B5559E",
+     strategy:"Copy-number magic! 11 × 4 = 44. For big ones: 11 × n = 10n + n.",
+     hint:(a,b)=>{const n=a===11?b:a;return n<=9?`Write ${n} twice: <b>${n}${n}</b>!`:`${n} tens plus ${n} more: ${n*10} + ${n} = <b>${n*11}</b>`}},
+  3:{name:"Triple Jungle",pet:"🐵",petName:"Trio the Monkey",color:"#2E8B57",
+     strategy:"Double it, then add one more group. 3 × 7 = 14 + 7.",
+     hint:(a,b)=>{const n=a===3?b:a;return `Double ${n} = ${n*2}. Add one more ${n}: ${n*2} + ${n} = <b>${n*3}</b>`}},
+  4:{name:"Squarestone Valley",pet:"🐢",petName:"Boulder the Turtle",color:"#B8860B",
+     strategy:"Double-double! Double the number, then double again.",
+     hint:(a,b)=>{const n=a===4?b:a;return `Double ${n} = ${n*2}. Double again: ${n*2} + ${n*2} = <b>${n*4}</b>`}},
+  9:{name:"Nine Ninja Temple",pet:"🦉",petName:"Sensei the Owl",color:"#C0392B",
+     strategy:"Ten groups minus one group! 9 × 6 = 60 − 6. (The digits add to 9!)",
+     hint:(a,b)=>{const n=a===9?b:a;return `Ten ${n}s = ${n*10}. Take one ${n} away: ${n*10} − ${n} = <b>${n*9}</b>`}},
+  6:{name:"Six Circuit",pet:"🐝",petName:"Buzz the Bee",color:"#D4A50B",
+     strategy:"Use 5s plus one more group. 6 × 8 = 40 + 8.",
+     hint:(a,b)=>{const n=a===6?b:a;return `Five ${n}s = ${n*5}. Add one more ${n}: ${n*5} + ${n} = <b>${n*6}</b>`}},
+  12:{name:"Dozen Desert",pet:"🐉",petName:"Tock the Clock Dragon",color:"#C2703D",
+     strategy:"Ten groups plus double! 12 × 6 = 60 + 12.",
+     hint:(a,b)=>{const n=a===12?b:a;return `Ten ${n}s = ${n*10}. Plus double ${n} (${n*2}): ${n*10} + ${n*2} = <b>${n*12}</b>`}},
+  8:{name:"Eight Ice Caves",pet:"🐧",petName:"Glacier the Penguin",color:"#3D9BC2",
+     strategy:"Double, double, double! 8 × 7: 7 → 14 → 28 → 56.",
+     hint:(a,b)=>{const n=a===8?b:a;return `Triple double! ${n} → ${n*2} → ${n*4} → <b>${n*8}</b>`}},
+  7:{name:"Seven Storm Peak",pet:"🐺",petName:"Tempest the Storm Wolf",color:"#6B5CA8",
+     strategy:"Split into 5s and 2s! 7 × 8 = (5×8) + (2×8) = 40 + 16.",
+     hint:(a,b)=>{const n=a===7?b:a;return `Split it! Five ${n}s = ${n*5}, two ${n}s = ${n*2}. ${n*5} + ${n*2} = <b>${n*7}</b>`}},
+};
+
+const MON_POOL = ["🐛","🦔","🐙","🦀","🐌","🦎","🐿️","🦋","🐞","🐍","🦅","🦝","🐗","🦡","🦦","🐊","🦂","🦈","🐲","🦕","🦖","🐉","🦄","🐯","🦁","🐻","🐼","🐨","🦒","🦓","🐘","🦛","🦏","🐪","🦘","🦃","🦚","🦜","🦢","🦩"];
+
+const RATING_LABEL = ["new","wild","wild","sleepy","caught","SHINY"];
+const FAST_MS = 4000;
+
+/* ---------- state ---------- */
+let state = null;
+const defaultState = () => ({
+  gems: 0, streak: 0, lastPlayed: null, chest: false, chestFrom: null,
+  questDate: null, questDone: false,
+  settings: { timer: true, sound: true },
+  facts: {},   // key "a*b" (a<=b): {c:0,w:0,streak:0,rating:0,slow:0,last:null}
+  realms: Object.fromEntries(REALM_ORDER.map(f=>[f,{trial:false,conquered:false}])),
+  summitDone: false,
+  owned: [], equipped: {hat:null, buddy:null},
+});
+
+let memoryFallback = null;
+async function storageGet(key){
+  try{
+    if(typeof window.storage!=='undefined' && window.storage.get){
+      const r=await window.storage.get(key); return r&&r.value;
+    }
+  }catch(e){}
+  try{ return localStorage.getItem(key); }catch(e){}
+  return memoryFallback;
+}
+async function storageSet(key,val){
+  try{
+    if(typeof window.storage!=='undefined' && window.storage.set){
+      await window.storage.set(key,val); return;
+    }
+  }catch(e){}
+  try{ localStorage.setItem(key,val); return; }catch(e){}
+  memoryFallback=val;
+}
+async function loadState(){
+  try{
+    const raw = await storageGet('timesquest-save');
+    if(raw){ state = JSON.parse(raw); }
+  }catch(e){ /* no save yet */ }
+  if(!state) state = defaultState();
+  if(!state.owned) state.owned=[];
+  if(!state.equipped) state.equipped={hat:null,buddy:null};
+  REALM_ORDER.forEach(f => { if(!state.realms[f]) state.realms[f]={trial:false,conquered:false}; });
+}
+let saveTimer = null;
+function saveState(){
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{ storageSet('timesquest-save', JSON.stringify(state)); }, 400);
+}
+
+/* ---------- fact helpers ---------- */
+const fkey = (a,b) => `${Math.min(a,b)}*${Math.max(a,b)}`;
+function fact(a,b){
+  const k = fkey(a,b);
+  if(!state.facts[k]) state.facts[k] = {c:0,w:0,streak:0,rating:0,slow:0,last:null};
+  return state.facts[k];
+}
+function factRating(a,b){ const f = state.facts[fkey(a,b)]; return f ? f.rating : 0; }
+function monsterFor(a,b){
+  const lo=Math.min(a,b), hi=Math.max(a,b);
+  if(lo===hi && REALMS[lo]) return REALMS[lo].pet; // square facts earn the realm pet
+  const idx = (lo*13+hi) % MON_POOL.length;
+  return MON_POOL[idx];
+}
+
+/* ---------- unlocked families ---------- */
+function unlockedFamilies(){
+  const out=[REALM_ORDER[0]];
+  for(let i=0;i<REALM_ORDER.length-1;i++){
+    if(state.realms[REALM_ORDER[i]].conquered) out.push(REALM_ORDER[i+1]); else break;
+  }
+  return out;
+}
+function conqueredFamilies(){ return REALM_ORDER.filter(f=>state.realms[f].conquered); }
+function currentFamily(){ const u=unlockedFamilies(); return u[u.length-1]; }
+function allConquered(){ return REALM_ORDER.every(f=>state.realms[f].conquered); }
+
+/* ---------- sound ---------- */
+let audioCtx=null;
+function beep(freq, dur=0.12, type="sine", vol=0.18){
+  if(!state.settings.sound) return;
+  try{
+    audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.type=type;o.frequency.value=freq;g.gain.value=vol;
+    o.connect(g);g.connect(audioCtx.destination);
+    o.start();g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+dur);
+    o.stop(audioCtx.currentTime+dur);
+  }catch(e){}
+}
+const sfx = {
+  ok(){ beep(660,.09); setTimeout(()=>beep(880,.12),80); },
+  bad(){ beep(180,.25,"sawtooth",.1); },
+  win(){ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.18),i*120)); },
+  gem(){ beep(1200,.07,"triangle"); },
+};
+
+/* ---------- UI helpers ---------- */
+function $(id){ return document.getElementById(id); }
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  $(id).classList.add('active');
+  $('nav').style.display = (id==='screen-quiz') ? 'none' : 'flex';
+  document.querySelectorAll('#nav button').forEach(b=>b.classList.toggle('on', b.dataset.s===id));
+  if(id==='screen-map') renderMap();
+  if(id==='screen-hall') renderHall();
+  if(id==='screen-monsters') renderMonsters();
+  if(id==='screen-camp') renderCamp();
+  if(id==='screen-parent') renderParent();
+  updateChips();
+}
+function updateChips(){
+  ['gem-count','gem-count-2','gem-count-3','gem-count-4'].forEach(i=>{ if($(i)) $(i).textContent=state.gems; });
+  $('streak-count').textContent = state.streak;
+}
+function toast(msg){
+  const t=$('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2200);
+}
+function confetti(n=60){
+  const colors=['#FFC53D','#4ADE80','#FF6B6B','#5BA8FF','#9B7BFF','#FF9A6B'];
+  for(let i=0;i<n;i++){
+    const c=document.createElement('div');c.className='confetti';
+    c.style.cssText=`left:${Math.random()*100}vw;width:${6+Math.random()*7}px;height:${8+Math.random()*8}px;background:${colors[i%colors.length]};animation-duration:${1.8+Math.random()*1.6}s;animation-delay:${Math.random()*.4}s`;
+    document.body.appendChild(c); setTimeout(()=>c.remove(),4000);
+  }
+}
+
+/* ---------- daily streak / quest / chest ---------- */
+function todayStr(){ return new Date().toDateString(); }
+function checkDaily(){
+  const today=todayStr();
+  if(state.lastPlayed!==today){
+    const yest=new Date(Date.now()-864e5).toDateString();
+    if(state.lastPlayed===yest) state.streak++;
+    else if(state.lastPlayed!==null){
+      if(state.gems>=20){ state.gems-=20; toast("🏕️ Campfire protected your streak! (−20 💎)"); }
+      else state.streak=1;
+    } else state.streak=1;
+    state.lastPlayed=today;
+    state.questDate=today; state.questDone=false;
+    saveState();
+  }
+}
+function questText(){
+  const fam=currentFamily();
+  return allConquered()
+    ? {t:"Daily Quest: Summit Patrol", s:"Finish one Mixed Mayhem round today"}
+    : {t:`Daily Quest: ${REALMS[fam].name}`, s:`Rescue 10 monsters from the ${fam}s (one practice round)`};
+}
+function completeRound(correctCount, fams){
+  // daily quest
+  if(!state.questDone){
+    const fam=currentFamily();
+    if((fams.includes(fam)||allConquered()) && correctCount>=10){
+      state.questDone=true; state.gems+=25; toast("📜 Daily Quest complete! +25 💎"); sfx.gem();
+    }
+  }
+  // mystery chest
+  if(state.chest && state.chestFrom!==todayStr()){
+    state.chest=false; const bonus=15+Math.floor(Math.random()*16);
+    state.gems+=bonus; toast(`🎁 Mystery Chest opened! +${bonus} 💎`); confetti(30);
+  }
+  state.chest=true; state.chestFrom=todayStr();
+  saveState();
+}
+
+/* =====================================================
+   MAP
+   ===================================================== */
+function realmStars(fam){
+  const facts = Array.from({length:13},(_,i)=>factRating(fam,i));
+  const avg = facts.reduce((a,b)=>a+b,0)/13;
+  const caught = facts.filter(r=>r>=4).length;
+  let stars=0;
+  if(state.realms[fam].conquered) stars=1;
+  if(state.realms[fam].conquered && caught>=10) stars=2;
+  if(state.realms[fam].conquered && facts.every(r=>r>=4)) stars=3;
+  return {stars, caught, avg};
+}
+function renderMap(){
+  const trail=$('map-trail'); trail.innerHTML='';
+  const unlocked=unlockedFamilies();
+  // summit node (top = last in column-reverse)
+  const summit=document.createElement('div');
+  summit.className='summit-node';
+  const summitOpen=allConquered();
+  summit.innerHTML=`<div class="realm-bubble" style="background:${summitOpen?'linear-gradient(135deg,#FFE08A,#FFC53D)':'#555'};${summitOpen?'':'filter:grayscale(1) brightness(.6)'}">${state.summitDone?'🏆':'⛰️'}</div>
+    <div class="nm" style="font-family:var(--display);font-weight:800">The 12s Summit</div>
+    <div class="fam" style="font-size:12px;color:#B7AEE8;font-weight:700">${state.summitDone?'CONQUERED! 🎉':summitOpen?'The final challenge awaits!':'Conquer every realm to unlock'}</div>`;
+  if(summitOpen) { summit.querySelector('.realm-bubble').style.cursor='pointer'; summit.querySelector('.realm-bubble').onclick=()=>startSummit(); }
+  
+  REALM_ORDER.forEach((fam,i)=>{
+    const r=REALMS[fam];
+    const isUnlocked=unlocked.includes(fam);
+    const isHere=fam===currentFamily() && !state.realms[fam].conquered;
+    const {stars}=realmStars(fam);
+    const node=document.createElement('div');
+    node.className=`realm-node ${i%2===0?'left':'right'} ${isUnlocked?'':'locked'} ${isHere?'here':''}`;
+    node.innerHTML=`
+      <div class="realm-bubble" style="background:${r.color}">${isUnlocked?r.pet:'🔒'}
+        ${state.realms[fam].conquered?'<div class="badge">✓</div>':''}
+      </div>
+      <div class="meta">
+        <div class="nm">${r.name}</div>
+        <div class="fam">×${fam} family</div>
+        <div class="stars-row">${'⭐'.repeat(stars)}${'<span style="opacity:.25">⭐</span>'.repeat(3-stars)}</div>
+        ${isHere?`<div style="font-size:18px;margin-top:2px">${avatarStr()} <span style="font-size:11px;color:#FFC53D;font-weight:800">YOU ARE HERE</span></div>`:''}
+      </div>`;
+    if(isUnlocked) node.querySelector('.realm-bubble').onclick=()=>openRealm(fam);
+    trail.appendChild(node);
+  });
+  trail.appendChild(summit);
+  // quest banner
+  const q=questText();
+  $('dq-title').textContent=state.questDone?'Daily Quest complete! ✅':q.t;
+  $('dq-sub').textContent=state.questDone?'+25 gems earned — come back tomorrow!':q.s;
+  $('daily-quest').classList.toggle('done',state.questDone);
+  $('chest-banner').style.display = (state.chest && state.chestFrom!==todayStr()) ? 'flex':'none';
+  // scroll to current realm
+  setTimeout(()=>{
+    const here=trail.querySelector('.here');
+    if(here) here.scrollIntoView({block:'center',behavior:'smooth'});
+  },80);
+}
+
+/* =====================================================
+   REALM DETAIL
+   ===================================================== */
+let activeRealm=null;
+function openRealm(fam){
+  activeRealm=fam;
+  const r=REALMS[fam];
+  const {caught}=realmStars(fam);
+  const trialDone=state.realms[fam].trial;
+  const conquered=state.realms[fam].conquered;
+  $('realm-title-top').textContent=r.name;
+  $('realm-body').innerHTML=`
+    <div class="realm-hero" style="background:linear-gradient(160deg, ${r.color}, ${r.color}CC)">
+      <span class="big">${r.pet}</span>
+      <h2>${r.name}</h2>
+      <div class="fam">The ×${fam} family • ${r.petName}</div>
+      <div class="strategy-box">🧠 <b>Realm secret:</b> ${r.strategy}</div>
+    </div>
+    <div class="card" style="display:flex;align-items:center;gap:10px;justify-content:space-between">
+      <div><h3 style="margin:0">Monsters caught</h3><p style="margin:0">${caught} of 13 in this family</p></div>
+      <div style="font-family:var(--display);font-weight:800;font-size:26px">${caught}/13</div>
+    </div>
+    <div class="mode-grid">
+      <button class="mode-card" onclick="startLearn(${fam})"><span class="em">📖</span><span class="nm">Learn</span><span class="sub">No timer, with helpers</span></button>
+      <button class="mode-card" onclick="startPractice(${fam})"><span class="em">🎯</span><span class="nm">Practice</span><span class="sub">Warm-up + today's facts</span></button>
+      <button class="mode-card" onclick="startTrial(${fam})"><span class="em">🏅</span><span class="nm">Mastery Trial</span><span class="sub">12 facts • get 11 right</span></button>
+      <button class="mode-card ${trialDone?'':'locked'}" onclick="startBoss(${fam})"><span class="em">⚔️</span><span class="nm">Boss Battle</span><span class="sub">${trialDone?(conquered?'Rematch the boss!':'Defeat it to climb on!'):'Pass the Trial first'}</span></button>
+    </div>`;
+  showScreen('screen-realm');
+}
+
+/* =====================================================
+   QUIZ ENGINE
+   ===================================================== */
+let quiz=null, qTimerRAF=null, qStart=0;
+
+function weightedFamilyFacts(fam, count, division=false){
+  // weight toward low-rating facts
+  const pool=[];
+  for(let b=0;b<=12;b++){
+    const r=factRating(fam,b);
+    const w = r>=5?1 : r===4?2 : r===3?4 : 6;
+    for(let i=0;i<w;i++) pool.push(b);
+  }
+  const qs=[], used=new Set();
+  let guard=0;
+  while(qs.length<count && guard++<500){
+    const b=pool[Math.floor(Math.random()*pool.length)];
+    const key=`${fam}-${b}`;
+    if(used.has(key) && used.size<13) continue;
+    used.add(key);
+    qs.push(makeQ(fam,b,division));
+  }
+  return qs;
+}
+function makeQ(a,b,division=false){
+  const flip=Math.random()<0.5;
+  const x=flip?b:a, y=flip?a:b;
+  if(division && y!==0 && Math.random()<0.6){
+    // 42 ÷ 7 = ?  or  7 × ? = 42
+    if(Math.random()<0.5 && y!==0) return {a,b,text:`${x*y} ÷ ${y}`,ans:x};
+    return {a,b,text:`${y} × ? = ${x*y}`,ans:x};
+  }
+  return {a,b,text:`${x} × ${y}`,ans:x*y};
+}
+function warmupQs(excludeFam){
+  const done=conqueredFamilies().filter(f=>f!==excludeFam);
+  if(!done.length) return [];
+  const qs=[];
+  for(let i=0;i<Math.min(3,done.length+2);i++){
+    const f=done[Math.floor(Math.random()*done.length)];
+    qs.push(makeQ(f, Math.floor(Math.random()*13)));
+  }
+  return qs;
+}
+
+function startQuiz(cfg){
+  quiz={
+    mode:cfg.mode, fams:cfg.fams, queue:cfg.queue, idx:0, total:cfg.queue.length,
+    correct:0, wrong:0, gems:0, fastStreak:0, hearts:cfg.hearts||0,
+    needCorrect:cfg.needCorrect||0, timed:cfg.timed && state.settings.timer,
+    boss:cfg.boss||null, bossHP:cfg.queue.length, title:cfg.title,
+    caughtThis:[], answer:"", locked:false, learn:cfg.mode==='learn',
+    requeued:new Set(),
+  };
+  $('boss-bar').style.display = quiz.boss?'flex':'none';
+  if(quiz.boss){ $('boss-em').textContent=quiz.boss; $('boss-hp').style.width='100%'; }
+  $('hearts').textContent = quiz.hearts?'❤️'.repeat(quiz.hearts):'';
+  $('timer-track').style.visibility = quiz.timed?'visible':'hidden';
+  $('hint-card').style.display='none';
+  $('keypad').style.display='grid';
+  showScreen('screen-quiz');
+  nextQ();
+}
+function nextQ(){
+  if(quiz.idx>=quiz.queue.length){ finishQuiz(); return; }
+  quiz.locked=false; quiz.answer="";
+  const q=quiz.queue[quiz.idx];
+  $('q-text').textContent=q.text;
+  $('answer-box').innerHTML='&nbsp;';
+  $('answer-box').className='answer-box';
+  $('q-count').textContent=`${Math.min(quiz.idx+1,quiz.total)} / ${quiz.total}`;
+  $('progress-fill').style.width=`${(quiz.idx/quiz.queue.length)*100}%`;
+  // learn mode shows the strategy up front for the family
+  qStart=performance.now();
+  if(quiz.timed){
+    cancelAnimationFrame(qTimerRAF);
+    const dur=8000;
+    const tick=()=>{
+      const el=performance.now()-qStart;
+      $('timer-fill').style.width=`${Math.max(0,100-(el/dur)*100)}%`;
+      $('timer-fill').style.background = el<FAST_MS?'var(--blue)': el<dur?'var(--gold)':'var(--coral)';
+      if(!quiz.locked) qTimerRAF=requestAnimationFrame(tick);
+    };
+    tick();
+  }
+}
+function pressKey(k){
+  if(!quiz||quiz.locked) return;
+  if(k==='back'){ quiz.answer=quiz.answer.slice(0,-1); }
+  else if(k==='enter'){ if(quiz.answer!=='') checkAnswer(); return; }
+  else if(quiz.answer.length<3){ quiz.answer+=k; beep(440,.04,"square",.06); }
+  $('answer-box').textContent=quiz.answer||'\u00A0';
+}
+function checkAnswer(){
+  quiz.locked=true;
+  cancelAnimationFrame(qTimerRAF);
+  const q=quiz.queue[quiz.idx];
+  const elapsed=performance.now()-qStart;
+  const fast=elapsed<FAST_MS;
+  const f=fact(q.a,q.b);
+  const correct=parseInt(quiz.answer,10)===q.ans;
+  f.last=todayStr();
+
+  if(correct){
+    sfx.ok();
+    $('answer-box').classList.add('ok');
+    quiz.correct++; f.c++; f.streak++;
+    const before=f.rating;
+    if(fast){ f.rating=Math.min(5,f.rating+1); f.slow=Math.max(0,f.slow-1); quiz.fastStreak++; }
+    else { if(f.rating<3) f.rating++; f.slow++; quiz.fastStreak=0; }
+    const boost=quiz.fastStreak>=3;
+    $('streak-flame').classList.toggle('show',boost);
+    let g = quiz.learn?1:2; if(fast)g++; if(boost)g*=2;
+    quiz.gems+=g; state.gems+=g;
+    if(before<4 && f.rating>=4) quiz.caughtThis.push({a:q.a,b:q.b,shiny:false});
+    else if(before<5 && f.rating===5) quiz.caughtThis.push({a:q.a,b:q.b,shiny:true});
+    if(quiz.boss){
+      quiz.bossHP--; $('boss-hp').style.width=`${(quiz.bossHP/quiz.total)*100}%`;
+      $('boss-em').style.transform='scale(.85)'; setTimeout(()=>$('boss-em').style.transform='',150);
+    }
+    updateChips(); saveState();
+    setTimeout(()=>{ quiz.idx++; nextQ(); }, 550);
+  } else {
+    sfx.bad();
+    $('answer-box').classList.add('bad');
+    quiz.wrong++; f.w++; f.streak=0; f.rating=Math.max(1,f.rating-1);
+    quiz.fastStreak=0; $('streak-flame').classList.remove('show');
+    if(quiz.hearts>0){
+      quiz.hearts--;
+      $('hearts').textContent='❤️'.repeat(quiz.hearts);
+      if(quiz.hearts===0){ saveState(); setTimeout(()=>finishQuiz(true),600); return; }
+    }
+    // requeue this fact near the end (once)
+    const rk=fkey(q.a,q.b)+q.text;
+    if(!quiz.requeued.has(rk)){
+      quiz.requeued.add(rk);
+      quiz.queue.push({...q});
+      quiz.total=quiz.queue.length;
+    }
+    saveState();
+    setTimeout(()=>showHint(q), 450);
+  }
+}
+function showHint(q){
+  const lo=Math.min(q.a,q.b), hi=Math.max(q.a,q.b);
+  let fam = (lo===0||lo===1||lo===10||lo===2) ? lo : hi; // easiest rule wins
+  const r=REALMS[fam]||REALMS[hi]||REALMS[lo];
+  $('hint-title').textContent=`💡 That one's tricky — let's build it!`;
+  $('hint-body').innerHTML = r ? r.hint(q.a,q.b) : `${q.a} × ${q.b} = <b>${q.a*q.b}</b>`;
+  $('hint-card').style.display='block';
+  $('keypad').style.display='none';
+}
+function dismissHint(){
+  $('hint-card').style.display='none';
+  $('keypad').style.display='grid';
+  quiz.idx++; nextQ();
+}
+function quitQuiz(){
+  cancelAnimationFrame(qTimerRAF);
+  quiz=null;
+  showScreen(activeRealm!==null?'screen-realm':'screen-map');
+  if(activeRealm!==null) openRealm(activeRealm);
+}
+
+/* ---------- finishing ---------- */
+function finishQuiz(failed=false){
+  cancelAnimationFrame(qTimerRAF);
+  const qz=quiz; quiz=null;
+  const acc = qz.correct+qz.wrong>0 ? qz.correct/(qz.correct+qz.wrong) : 0;
+  const passed = !failed && (qz.needCorrect===0 || qz.correct>=qz.needCorrect);
+  let headline="", em="🎉", sub="";
+
+  if(qz.mode==='trial' && passed){
+    state.realms[qz.fams[0]].trial=true;
+    headline="Trial Passed!"; em="🏅"; sub="The Boss Battle is now open!";
+  } else if(qz.mode==='trial'){
+    headline="So close!"; em="💪"; sub=`You need ${qz.needCorrect} correct. Train and try again!`;
+  } else if(qz.mode==='boss' && passed){
+    const fam=qz.fams[0];
+    const first=!state.realms[fam].conquered;
+    state.realms[fam].conquered=true;
+    headline="Boss Defeated!"; em="⚔️";
+    const next=unlockedFamilies(); const newest=next[next.length-1];
+    sub = first && newest!==fam ? `${REALMS[newest].name} (the ×${newest}s) is unlocked! ⛰️` : "The realm is yours!";
+    if(first){ state.gems+=50; }
+  } else if(qz.mode==='boss'){
+    headline="The boss blocked you!"; em="🛡️"; sub="Heal up in the Training Hall, then rematch!";
+  } else if(qz.mode==='summit' && passed){
+    state.summitDone=true; headline="YOU CONQUERED MOUNT TWELVE!"; em="🏆"; sub="Every fact family mastered. Legendary!";
+  } else if(qz.mode==='summit'){
+    headline="The summit storm pushed you back!"; em="🌨️"; sub="Sharpen your weak facts and climb again!";
+  } else {
+    headline = acc>=0.9?"Amazing round!":acc>=0.7?"Great climbing!":"Good training!";
+    em = acc>=0.9?"🌟":acc>=0.7?"🎉":"💪";
+    sub = `${qz.correct} correct out of ${qz.correct+qz.wrong} answers`;
+  }
+  const stars = passed&&acc>=0.99?3 : acc>=0.85?2 : acc>=0.6?1:0;
+  if(passed && (qz.mode==='boss'||qz.mode==='summit'||stars===3)){ confetti(); sfx.win(); }
+  else if(stars>=1) sfx.win();
+
+  completeRound(qz.correct, qz.fams);
+
+  $('results-body').innerHTML=`
+    <div class="big-em">${em}</div>
+    <h2>${headline}</h2>
+    <div class="sub">${sub}</div>
+    <div class="result-stars">${'⭐'.repeat(stars)}<span style="opacity:.25">${'⭐'.repeat(3-stars)}</span></div>
+    <div class="reward-row">
+      <div class="reward-pill">💎 +${qz.gems} gems</div>
+      <div class="reward-pill">✅ ${qz.correct} correct</div>
+      ${qz.wrong?`<div class="reward-pill">🩹 ${qz.wrong} to train</div>`:''}
+    </div>
+    ${qz.caughtThis.length?`<div class="sub" style="margin-bottom:6px">Monsters ${qz.caughtThis.some(c=>c.shiny)?'caught & shined':'caught'}!</div>
+    <div class="caught-list">${qz.caughtThis.slice(0,6).map(c=>`<div class="caught-monster ${c.shiny?'shiny':''}"><span class="em">${c.shiny?'✨':''}${monsterFor(c.a,c.b)}</span>${Math.min(c.a,c.b)}×${Math.max(c.a,c.b)}</div>`).join('')}</div>`:''}
+    <div class="btn-row" style="width:100%;max-width:330px">
+      <button class="btn ghost" onclick="showScreen('screen-map')">🗻 Map</button>
+      <button class="btn gold" onclick="repeatLast()">🔁 Again</button>
+    </div>`;
+  lastConfig._repeat=true;
+  showScreen('screen-results');
+  saveState();
+}
+let lastConfig={};
+function repeatLast(){ if(lastConfig.fn) lastConfig.fn(...lastConfig.args); }
+
+/* ---------- mode launchers ---------- */
+function startLearn(fam){
+  lastConfig={fn:startLearn,args:[fam]};
+  const queue=[]; for(let b=0;b<=12;b++) queue.push({a:fam,b,text:`${fam} × ${b}`,ans:fam*b});
+  startQuiz({mode:'learn',fams:[fam],queue,timed:false,title:'Learn'});
+  toast(`🧠 ${REALMS[fam].strategy}`);
+}
+function startPractice(fam){
+  lastConfig={fn:startPractice,args:[fam]};
+  const queue=[...warmupQs(fam), ...weightedFamilyFacts(fam,12)];
+  startQuiz({mode:'practice',fams:[fam],queue,timed:true,title:'Practice'});
+}
+function startTrial(fam){
+  lastConfig={fn:startTrial,args:[fam]};
+  const queue=weightedFamilyFacts(fam,12);
+  startQuiz({mode:'trial',fams:[fam],queue,timed:true,needCorrect:11,title:'Mastery Trial'});
+  toast("🏅 Get 11 of 12 right to pass!");
+}
+function startBoss(fam){
+  lastConfig={fn:startBoss,args:[fam]};
+  // boss mixes hardest facts of this family + previously conquered hard facts
+  const queue=weightedFamilyFacts(fam,7);
+  const prior=conqueredFamilies();
+  for(let i=0;i<3;i++){
+    const f = prior.length? prior[Math.floor(Math.random()*prior.length)] : fam;
+    queue.push(makeQ(f, 4+Math.floor(Math.random()*9)));
+  }
+  startQuiz({mode:'boss',fams:[fam],queue:queue.sort(()=>Math.random()-.5),timed:true,hearts:3,needCorrect:queue.length-1,boss:bossEmoji(fam),title:'Boss Battle'});
+  toast(`⚔️ ${bossName(fam)} appears! You have 3 hearts.`);
+}
+function bossEmoji(fam){ return {0:'🌫️',1:'🪞',10:'🏗️',2:'🌊',5:'🦑',11:'🗼',3:'🦍',4:'🗿',9:'🥷',6:'⚙️',12:'🐲',8:'🧊',7:'⛈️'}[fam]||'👹'; }
+function bossName(fam){ return {0:'The Vanishing Fog',1:'The Mirror Spirit',10:'The Mega Machine',2:'The River Serpent',5:'The Harbor Kraken',11:'The Tower Twins',3:'The Jungle King',4:'The Stone Golem',9:'The Ninja Master',6:'The Circuit Breaker',12:'The Clock Dragon',8:'The Ice Titan',7:'The Storm Lord'}[fam]||'The Boss'; }
+function startSummit(){
+  lastConfig={fn:startSummit,args:[]};
+  const queue=[];
+  // hardest facts across all families
+  const hard=[[7,8],[6,7],[8,9],[7,12],[6,8],[9,12],[7,7],[8,8],[6,9],[8,12],[7,9],[6,12]];
+  hard.forEach(([a,b])=>queue.push(makeQ(a,b)));
+  for(let i=0;i<8;i++){ const f=REALM_ORDER[Math.floor(Math.random()*13)]; queue.push(makeQ(f,Math.floor(Math.random()*13))); }
+  startQuiz({mode:'summit',fams:REALM_ORDER,queue:queue.sort(()=>Math.random()-.5),timed:true,hearts:3,needCorrect:queue.length-2,boss:'🐉',title:'The 12s Summit'});
+  toast("⛰️ The final climb! The Summit Dragon guards the peak!");
+}
+
+/* =====================================================
+   TRAINING HALL
+   ===================================================== */
+let hallSel=new Set();
+function renderHall(){
+  const unlocked=unlockedFamilies();
+  const pick=$('fam-pick'); pick.innerHTML='';
+  REALM_ORDER.slice().sort((a,b)=>a-b).forEach(f=>{
+    const b=document.createElement('button');
+    b.textContent='×'+f;
+    b.disabled=!unlocked.includes(f);
+    b.classList.toggle('sel',hallSel.has(f));
+    b.onclick=()=>{ hallSel.has(f)?hallSel.delete(f):hallSel.add(f); renderHall(); };
+    pick.appendChild(b);
+  });
+  const weak=getWeakFacts();
+  $('hall-note').textContent = weak.length
+    ? `Smart tracker: ${weak.length} fact${weak.length>1?'s':''} need extra love right now (${weak.slice(0,3).map(k=>k.replace('*','×')).join(', ')}${weak.length>3?'…':''})`
+    : 'No weak facts detected — go catch some new monsters!';
+  $('division-btn').disabled = conqueredFamilies().length===0;
+}
+function hallFams(){ return hallSel.size? [...hallSel] : [currentFamily()]; }
+function hallStart(kind){
+  const fams=hallFams();
+  lastConfig={fn:hallStart,args:[kind]};
+  const queue=[];
+  const per=Math.max(4, Math.ceil(12/fams.length));
+  fams.forEach(f=>queue.push(...weightedFamilyFacts(f,per)));
+  startQuiz({mode:'practice',fams,queue:queue.sort(()=>Math.random()-.5).slice(0,15),timed:kind==='speed',title:kind==='speed'?'Speed Round':'Practice'});
+}
+function getWeakFacts(){
+  return Object.entries(state.facts)
+    .filter(([k,f])=> (f.w>0 && f.rating<4) || f.slow>=2)
+    .sort((a,b)=>a[1].rating-b[1].rating).map(([k])=>k);
+}
+function startWeakWorkout(){
+  lastConfig={fn:startWeakWorkout,args:[]};
+  const weak=getWeakFacts().slice(0,10);
+  if(!weak.length){ toast("🌟 No weak facts! Amazing!"); return; }
+  const queue=weak.map(k=>{ const [a,b]=k.split('*').map(Number); return makeQ(a,b); });
+  startQuiz({mode:'practice',fams:unlockedFamilies(),queue,timed:false,title:'Weak Fact Workout'});
+  toast("🩹 Building up your tricky facts — no timer!");
+}
+function startMixedMayhem(){
+  lastConfig={fn:startMixedMayhem,args:[]};
+  const fams=unlockedFamilies();
+  const queue=[];
+  for(let i=0;i<15;i++){ const f=fams[Math.floor(Math.random()*fams.length)]; queue.push(makeQ(f,Math.floor(Math.random()*13))); }
+  startQuiz({mode:'practice',fams,queue,timed:true,title:'Mixed Mayhem'});
+}
+function startDivision(){
+  lastConfig={fn:startDivision,args:[]};
+  const fams=conqueredFamilies();
+  if(!fams.length) return;
+  const queue=[];
+  for(let i=0;i<12;i++){
+    const f=fams[Math.floor(Math.random()*fams.length)];
+    const b=1+Math.floor(Math.random()*12);
+    queue.push(makeQ(f,b,true));
+  }
+  startQuiz({mode:'practice',fams,queue,timed:false,title:'Division & Reverse'});
+  toast("➗ Multiplication's twin power: division!");
+}
+
+/* =====================================================
+   MONSTERS
+   ===================================================== */
+let monsterFilter='all';
+function renderMonsters(){
+  const seg=$('monster-seg');
+  const filters=[['all','All'],['caught','Caught'],['shiny','✨ Shiny'],['sleepy','😴 Sleepy'],['wild','Wild']];
+  seg.innerHTML=filters.map(([k,l])=>`<button class="${monsterFilter===k?'on':''}" onclick="monsterFilter='${k}';renderMonsters()">${l}</button>`).join('');
+  const grid=$('monster-grid'); grid.innerHTML='';
+  let caughtN=0,total=0;
+  const unlocked=unlockedFamilies();
+  const seen=new Set();
+  unlocked.forEach(fam=>{
+    for(let b=0;b<=12;b++){
+      const k=fkey(fam,b);
+      if(seen.has(k)) continue; seen.add(k);
+      total++;
+      const r=factRating(fam,b);
+      if(r>=4) caughtN++;
+      const st = r===0?'undiscovered': r<=2?'wild': r===3?'sleepy': r===4?'caught':'shiny';
+      if(monsterFilter!=='all'){
+        if(monsterFilter==='caught'&&r<4) continue;
+        if(monsterFilter==='shiny'&&r<5) continue;
+        if(monsterFilter==='sleepy'&&st!=='sleepy') continue;
+        if(monsterFilter==='wild'&&(st!=='wild'&&st!=='undiscovered')) continue;
+      }
+      const [lo,hi]=k.split('*');
+      const cell=document.createElement('div');
+      cell.className=`monster-cell ${st}`;
+      cell.innerHTML=`<span class="em">${r===0?'❓':monsterFor(+lo,+hi)}</span><span class="fact">${lo}×${hi}</span><span class="st">${RATING_LABEL[r]}</span>`;
+      grid.appendChild(cell);
+    }
+  });
+  $('monster-count').textContent=`${caughtN} of ${total} caught`;
+  if(!grid.children.length) grid.innerHTML='<div style="grid-column:1/-1;color:#8B83BD;font-weight:700;text-align:center;padding:30px 10px">Nothing here yet — go practice to find monsters!</div>';
+}
+
+/* =====================================================
+   PARENT DASHBOARD
+   ===================================================== */
+function renderParent(){
+  const unlocked=unlockedFamilies();
+  // family chips
+  let chips='';
+  REALM_ORDER.forEach(f=>{
+    if(!unlocked.includes(f)){ chips+=`<span class="fam-chip untouched">×${f} 🔒</span>`; return; }
+    const ratings=Array.from({length:13},(_,i)=>factRating(f,i));
+    const avg=ratings.reduce((a,b)=>a+b,0)/13;
+    const cls=avg>=4?'strong':avg>=2.2?'mid':'weak';
+    const lbl=avg>=4?'Strong':avg>=2.2?'Improving':'Needs work';
+    chips+=`<span class="fam-chip ${cls}">×${f} ${lbl}</span>`;
+  });
+  // weak facts
+  const weak=getWeakFacts().slice(0,8);
+  // slow facts (accurate but slow)
+  const slow=Object.entries(state.facts).filter(([k,f])=>f.rating===3&&f.c>0).map(([k])=>k).slice(0,8);
+  // heatmap
+  let heat='<div class="hd"></div>';
+  for(let c=0;c<=12;c++) heat+=`<div class="hd">${c}</div>`;
+  for(let rIdx=0;rIdx<=12;rIdx++){
+    heat+=`<div class="hd">${rIdx}</div>`;
+    for(let c=0;c<=12;c++){
+      const r=factRating(rIdx,c);
+      const col=['rgba(255,255,255,.07)','#6B2430','#8a3a2a','#6B4E00','#2E8B57','#FFC53D'][r];
+      heat+=`<div class="heat-cell" style="background:${col}" title="${rIdx}×${c}: ${RATING_LABEL[r]}"></div>`;
+    }
+  }
+  // suggested plan
+  const fam=currentFamily();
+  const plan = weak.length
+    ? `5-minute plan: Weak Fact Workout (${weak.slice(0,4).map(k=>k.replace('*','×')).join(', ')}), then one ×${fam} Practice round.`
+    : `5-minute plan: one ×${fam} Practice round, then Mixed Mayhem to keep old families fresh.`;
+
+  $('parent-body').innerHTML=`
+    <div class="card"><h3>📋 Suggested next session</h3><p>${plan}</p></div>
+    <div class="card"><h3>🗂️ Family progress</h3><div style="margin-top:8px">${chips}</div></div>
+    <div class="card"><h3>🩹 Needs attention</h3>
+      ${weak.length?`<div class="weak-list">${weak.map(k=>`<span class="weak-pill">${k.replace('*','×')}</span>`).join('')}</div>`:'<p>No struggling facts right now. 🎉</p>'}
+      ${slow.length?`<p style="margin-top:10px"><b>Accurate but slow</b> (needs speed reps): ${slow.map(k=>k.replace('*','×')).join(', ')}</p>`:''}
+    </div>
+    <div class="card"><h3>🔥 Habit</h3><p>Daily streak: <b>${state.streak} day${state.streak===1?'':'s'}</b> • Gems: <b>${state.gems}</b> • Quest today: <b>${state.questDone?'done ✅':'not yet'}</b></p></div>
+    <div class="card"><h3>🧠 Fact heatmap (row × column)</h3>
+      <p style="margin-bottom:8px;font-size:12px">Gray = not seen • Red = struggling • Amber = slow • Green = caught • Gold = mastered</p>
+      <div class="heat-grid">${heat}</div></div>
+    <div class="card"><h3>🛠️ Create-a-Quiz</h3>
+      <p>Build a custom round — any families, even ones not unlocked yet in the adventure.</p>
+      <div class="fam-pick" style="margin-top:10px">${REALM_ORDER.slice().sort((a,b)=>a-b).map(f=>`<button class="${customCfg.fams.has(f)?'sel':''}" style="${customCfg.fams.has(f)?'':'background:var(--cream-dim);color:var(--ink);border-color:var(--cream-dim)'}" onclick="customFam(${f})">×${f}</button>`).join('')}</div>
+      <div class="count-pick">${[8,12,20].map(n=>`<button class="${customCfg.count===n?'sel':''}" onclick="customCount(${n})">${n} questions</button>`).join('')}</div>
+      <div class="toggle-row"><span class="lbl">⏱️ Timed</span><button class="tg ${customCfg.timer?'on':''}" onclick="customFlag('timer')"></button></div>
+      <div class="toggle-row"><span class="lbl">➗ Include division & reverse facts</span><button class="tg ${customCfg.division?'on':''}" onclick="customFlag('division')"></button></div>
+      <button class="btn gold" style="margin-top:10px" onclick="startCustomQuiz()">▶️ Start custom quiz</button>
+    </div>
+    <div class="card"><h3>⚙️ Settings</h3>
+      <div class="toggle-row"><span class="lbl">⏱️ Gentle timer (speed never fails a round)</span><button class="tg ${state.settings.timer?'on':''}" onclick="toggleSetting('timer',this)"></button></div>
+      <div class="toggle-row"><span class="lbl">🔊 Sounds</span><button class="tg ${state.settings.sound?'on':''}" onclick="toggleSetting('sound',this)"></button></div>
+      <div class="toggle-row"><span class="lbl">🗑️ Reset all progress</span><button class="btn coral small" onclick="resetAll()">Reset</button></div>
+    </div>`;
+}
+function toggleSetting(k,el){ state.settings[k]=!state.settings[k]; el.classList.toggle('on'); saveState(); }
+function resetAll(){
+  if(confirm("Erase all progress and start the climb over?")){ state=defaultState(); saveState(); showScreen('screen-map'); toast("Fresh climb started! 🗻"); }
+}
+
+/* =====================================================
+   BASE CAMP & SHOP
+   ===================================================== */
+const SHOP = [
+  {id:'cap',type:'hat',em:'🧢',name:'Trail Cap',price:25},
+  {id:'tophat',type:'hat',em:'🎩',name:'Top Hat',price:40},
+  {id:'helmet',type:'hat',em:'🪖',name:'Climb Helmet',price:50},
+  {id:'cowboy',type:'hat',em:'🤠',name:'Cowboy Hat',price:60},
+  {id:'grad',type:'hat',em:'🎓',name:'Math Master',price:80},
+  {id:'crown',type:'hat',em:'👑',name:'Summit Crown',price:150},
+  {id:'cat',type:'buddy',em:'🐱',name:'Camp Cat',price:40},
+  {id:'dog',type:'buddy',em:'🐶',name:'Trail Dog',price:40},
+  {id:'unicorn',type:'buddy',em:'🦄',name:'Unicorn',price:200},
+  {id:'flag',type:'camp',em:'🚩',name:'Flag',price:15,x:80,y:16},
+  {id:'log',type:'camp',em:'🪵',name:'Log Bench',price:20,x:22,y:66},
+  {id:'lantern',type:'camp',em:'🏮',name:'Lantern',price:25,x:60,y:50},
+  {id:'kite',type:'camp',em:'🪁',name:'Kite',price:30,x:12,y:10},
+  {id:'tent',type:'camp',em:'⛺',name:'Tent',price:35,x:68,y:62},
+  {id:'canoe',type:'camp',em:'🛶',name:'Canoe',price:45,x:36,y:78},
+  {id:'telescope',type:'camp',em:'🔭',name:'Observatory',price:90,x:86,y:44},
+  {id:'bigtent',type:'camp',em:'🎪',name:'Festival Tent',price:150,x:8,y:54},
+];
+function realmBuddies(){
+  return REALM_ORDER.map(f=>({id:'pet'+f,type:'buddy',em:REALMS[f].pet,name:REALMS[f].petName.split(' the ')[0],price:0,fam:f,locked:!state.realms[f].conquered}));
+}
+function avatarStr(){
+  const hat=SHOP.find(i=>i.id===state.equipped.hat);
+  let buddy=SHOP.find(i=>i.id===state.equipped.buddy);
+  if(!buddy && state.equipped.buddy && state.equipped.buddy.startsWith('pet')){
+    const f=+state.equipped.buddy.slice(3); if(REALMS[f]) buddy={em:REALMS[f].pet};
+  }
+  return `${hat?hat.em:''}🧗${buddy?' '+buddy.em:''}`;
+}
+function renderCamp(){
+  const owned=new Set(state.owned);
+  const buddies=[...realmBuddies(), ...SHOP.filter(i=>i.type==='buddy')];
+  const renderItem=(i)=>{
+    const isOwned = owned.has(i.id) || (i.fam!==undefined && !i.locked);
+    const equipped = state.equipped[i.type]===i.id;
+    const cant = !isOwned && (i.locked || state.gems<i.price);
+    const pr = i.locked ? '🔒 Conquer realm' : isOwned ? (i.type==='camp'?'Placed!':(equipped?'Equipped ✓':'Tap to equip')) : `💎 ${i.price}`;
+    return `<button class="shop-item ${isOwned?'owned':''} ${equipped?'equipped':''} ${cant?'cant':''}"
+      onclick="shopTap('${i.id}','${i.type}',${i.price},${!!i.locked})">
+      <span class="em">${i.em}</span><span class="nm">${i.name}</span><span class="pr">${pr}</span></button>`;
+  };
+  // camp scene
+  let scene=`<div class="citem fire" style="left:46%;top:58%">🔥</div><div class="citem" style="left:50%;top:34%;font-size:36px">${avatarStr()}</div>`;
+  SHOP.filter(i=>i.type==='camp'&&owned.has(i.id)).forEach(i=>{ scene+=`<div class="citem" style="left:${i.x}%;top:${i.y}%">${i.em}</div>`; });
+  $('camp-body').innerHTML=`
+    <div class="camp-scene">${scene}</div>
+    <div class="card" style="text-align:center"><div class="avatar-line">${avatarStr()}</div><p>Your climber! Earn gems on the mountain, then gear up here.</p></div>
+    <div class="sect-label">Hats</div>
+    <div class="shop-grid">${SHOP.filter(i=>i.type==='hat').map(renderItem).join('')}</div>
+    <div class="sect-label">Buddies (realm pets join you when you conquer their realm!)</div>
+    <div class="shop-grid">${buddies.map(renderItem).join('')}</div>
+    <div class="sect-label">Camp gear</div>
+    <div class="shop-grid">${SHOP.filter(i=>i.type==='camp').map(renderItem).join('')}</div>`;
+}
+function shopTap(id,type,price,locked){
+  if(locked){ toast("🔒 Conquer that realm to unlock this pet!"); return; }
+  const isPet=id.startsWith('pet');
+  const isOwned=state.owned.includes(id)||isPet;
+  if(!isOwned){
+    if(state.gems<price){ toast(`Need ${price-state.gems} more 💎 — go practice!`); return; }
+    state.gems-=price; state.owned.push(id); sfx.gem(); confetti(20);
+    toast(`Got it! ${SHOP.find(i=>i.id===id).em}`);
+  }
+  if(type!=='camp'){
+    state.equipped[type]= state.equipped[type]===id ? null : id;
+  }
+  saveState(); updateChips(); renderCamp();
+}
+
+/* =====================================================
+   CREATE-A-QUIZ (parent tool)
+   ===================================================== */
+let customCfg={fams:new Set([2,5]), count:12, timer:false, division:false};
+function customFam(f){ customCfg.fams.has(f)?customCfg.fams.delete(f):customCfg.fams.add(f); renderParent(); }
+function customCount(n){ customCfg.count=n; renderParent(); }
+function customFlag(k){ customCfg[k]=!customCfg[k]; renderParent(); }
+function startCustomQuiz(){
+  const fams=[...customCfg.fams];
+  if(!fams.length){ toast("Pick at least one family!"); return; }
+  lastConfig={fn:startCustomQuiz,args:[]};
+  const queue=[];
+  for(let i=0;i<customCfg.count;i++){
+    const f=fams[Math.floor(Math.random()*fams.length)];
+    queue.push(makeQ(f, Math.floor(Math.random()*13), customCfg.division));
+  }
+  startQuiz({mode:'practice',fams,queue,timed:customCfg.timer,title:'Custom Quiz'});
+}
+
+/* =====================================================
+   BOOT
+   ===================================================== */
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>showScreen(b.dataset.s));
+$('keypad').addEventListener('click',e=>{ const k=e.target.closest('.key'); if(k) pressKey(k.dataset.k); });
+document.addEventListener('keydown',e=>{
+  if(!quiz) return;
+  if(e.key>='0'&&e.key<='9') pressKey(e.key);
+  else if(e.key==='Backspace') pressKey('back');
+  else if(e.key==='Enter'){ if($('hint-card').style.display==='block') dismissHint(); else pressKey('enter'); }
+});
+// stars
+(function(){ const s=$('stars'); for(let i=0;i<40;i++){ const d=document.createElement('span'); d.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*100}%;animation-delay:${Math.random()*3}s`; s.appendChild(d);} })();
+
+(async function init(){
+  await loadState();
+  checkDaily();
+  renderMap();
+  updateChips();
+})();
+
+/* ---------- PWA: service worker + install button ---------- */
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{ navigator.serviceWorker.register('./sw.js').catch(()=>{}); });
+}
+let installPrompt=null;
+window.addEventListener('beforeinstallprompt',(e)=>{
+  e.preventDefault(); installPrompt=e;
+  const b=$('install-banner'); if(b) b.style.display='flex';
+});
+async function doInstall(){
+  if(!installPrompt) return;
+  installPrompt.prompt();
+  const {outcome}=await installPrompt.userChoice;
+  installPrompt=null;
+  $('install-banner').style.display='none';
+  if(outcome==='accepted') toast('📲 Installed! Find Times Quest on your home screen.');
+}
+window.addEventListener('appinstalled',()=>{ const b=$('install-banner'); if(b) b.style.display='none'; });
+</script>
+</body>
+</html>
