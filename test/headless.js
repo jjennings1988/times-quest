@@ -73,21 +73,37 @@ async function boot(saveObj) {
   ok('every fact record preserved',
      Object.keys(before.facts).every(k =>
        S().facts[k] && S().facts[k].c === before.facts[k].c && S().facts[k].rating === before.facts[k].rating));
-  ok('schema version stamped', S().v === 1);
+  ok('schema version stamped', S().v === 2);
   ok('bought initialised', typeof S().bought === 'object');
   ok('campSeen initialised', S().campSeen === null);
 
-  // placed[] seeded from the four owned camp items at converted grid coords
+  // placed[] seeded from old camp gear, then migrated to locked v1.1 IDs
   const placedIds = S().placed.map(p => p.t).sort();
   ok('placed seeded from owned camp gear only',
-     JSON.stringify(placedIds) === JSON.stringify(['flag','lantern','tent']),
+     JSON.stringify(placedIds) === JSON.stringify(['banner-1','light-1','shelter-2']),
      JSON.stringify(placedIds));
   const at = id => S().placed.find(p => p.t === id);
-  ok('flag  80%,16% → col 7 row 1', at('flag').x === 7 && at('flag').y === 1, JSON.stringify(at('flag')));
-  ok('lantern 60%,50% → col 5 row 3', at('lantern').x === 5 && at('lantern').y === 3, JSON.stringify(at('lantern')));
-  ok('tent  68%,62% → col 6 row 3', at('tent').x === 6 && at('tent').y === 3, JSON.stringify(at('tent')));
+  ok('flag → banner-1 at original position', at('banner-1').x === 7 && at('banner-1').y === 1, JSON.stringify(at('banner-1')));
+  ok('lantern → light-1 at original position', at('light-1').x === 5 && at('light-1').y === 3, JSON.stringify(at('light-1')));
+  ok('tent → shelter-2 at original position', at('shelter-2').x === 6 && at('shelter-2').y === 3, JSON.stringify(at('shelter-2')));
+  ok('migrated pieces are owned under their stable IDs',
+     ['banner-1','light-1','shelter-2'].every(id => S().bought[id] === 1));
   ok('no two seeded pieces share a cell',
      new Set(S().placed.map(p => p.x+','+p.y)).size === S().placed.length);
+
+  section('Migration — complete legacy ID map and duplicate preservation');
+  const richLegacy=legacySave();
+  richLegacy.owned.push('log','kite','canoe','telescope','bigtent');
+  richLegacy.bought={rp0:2};
+  const rich=await boot(richLegacy);
+  const rev=expr=>rich.win.eval(expr);
+  ok('all eight old camp IDs map to their stable v1.1 replacements',
+     ['banner-1','seating-2','light-1','activity-kite','shelter-2','legacy-canoe','lookout-3','shelter-4']
+       .every(id=>rev('state').bought[id]>=1));
+  ok('placed lower chain tiers survive as legacy decorations',
+     rev("state.placed.some(p=>p.t==='shelter-2'&&p.legacy===true)"));
+  ok('older trophy duplicates remain placeable but are not remapped twice',
+     rev("state.bought['trophy-x0']") === 2 && !rev("state.bought['rp0']"));
 
   section('Migration — fresh save and a garbage save');
   const fresh = await boot(undefined);
@@ -95,6 +111,27 @@ async function boot(saveObj) {
   ok('fresh boot has no errors', fresh.errs.length === 0, fresh.errs.join('; '));
   ok('fresh state has placed[]', Array.isArray(fev('state').placed) && fev('state').placed.length === 0);
   ok('fresh state gems 0', fev('state').gems === 0);
+
+  section('Camp v1.1 catalogue and first-visit setup');
+  ok('catalogue has 41 buyable build entries', fev('CAMP_BUILD_PIECES.length') === 41);
+  ok('catalogue has 14 unique trophies', fev('Object.keys(REALM_PIECES).length + 1') === 14);
+  ok('only stone path and wooden deck are repeatable',
+     JSON.stringify(fev('CAMP_STANDALONES.filter(p=>p.repeatable).map(p=>p.id)')) ===
+       JSON.stringify(['ground-stone-path','ground-wood-deck']));
+  ok('all chain tiers are unique upgrades', fev('CAMP_BUILD_PIECES.filter(p=>p.chain).every(p=>p.unique && !p.repeatable)'));
+  fresh.win.showScreen('screen-camp');
+  ok('first camp visit grants the free starter pair',
+     fev("state.bought['shelter-1']") === 1 && fev("state.bought['fire-1']") === 1);
+  ok('starter placement tutorial begins with the Bedroll',
+     fev('heldPiece') === 'shelter-1' && JSON.stringify(fev('state.campTutorial')) === JSON.stringify(['shelter-1','fire-1']));
+  ok('one-conquest items preview early', fresh.$('camp-body').textContent.includes('Cook Pot'));
+  ok('two-conquest items remain hidden', !fresh.$('camp-body').textContent.includes('Pack Pile'));
+  fresh.win.document.querySelector('.camp-cell[data-x="0"][data-y="0"]')
+    .dispatchEvent(new fresh.win.MouseEvent('click',{bubbles:true}));
+  ok('placing Bedroll advances tutorial to Fire Ring', fev('heldPiece') === 'fire-1');
+  fresh.win.document.querySelector('.camp-cell[data-x="3"][data-y="0"]')
+    .dispatchEvent(new fresh.win.MouseEvent('click',{bubbles:true}));
+  ok('placing Fire Ring completes the short tutorial', fev('state.campTutorial.length') === 0 && fev('heldPiece') === null);
 
   /* ---------------------------------------------------------------- */
   section('Every screen renders without throwing');
@@ -218,8 +255,8 @@ async function boot(saveObj) {
      String(win.document.querySelectorAll('.camp-cell').length));
   ok('existing pieces rendered', win.document.querySelectorAll('.citem.placed').length === n0);
 
-  win.holdPiece('rp0');                                   // ×0 conquered → owned
-  ok('piece picked up', ev('heldPiece') === 'rp0');
+  win.holdPiece('trophy-x0');                             // ×0 conquered → owned
+  ok('piece picked up', ev('heldPiece') === 'trophy-x0');
   ok('scene enters placing mode', win.document.getElementById('camp-scene').className.includes('placing'));
   ok('held bar visible', win.document.querySelector('.held-bar').className.includes('on'));
 
@@ -229,7 +266,7 @@ async function boot(saveObj) {
   ok('piece placed', placedCount() === n0 + 1, `${n0} → ${placedCount()}`);
   ok('hand is empty again', ev('heldPiece') === null);
   ok('landed on the tapped cell',
-     ev('state').placed.some(p => p.t === 'rp0' && p.x === +emptyCell.dataset.x && p.y === +emptyCell.dataset.y));
+     ev('state').placed.some(p => p.t === 'trophy-x0' && p.x === +emptyCell.dataset.x && p.y === +emptyCell.dataset.y));
 
   const someItem = win.document.querySelector('.citem.placed');
   const tId = ev('state').placed[+someItem.dataset.idx].t;
@@ -241,28 +278,110 @@ async function boot(saveObj) {
   ok('put-away piece is back in the tray as free', win.pieceFree(tId) >= 1);
 
   section('Camp — ownership and duplicates');
-  ok('conquered realm grants its piece', win.pieceOwned('rp0') >= 1);
-  ok('unconquered realm grants nothing', win.pieceOwned('rp7') === 0);
-  ok('summit trophy locked', win.pieceOwned('rpS') === 0);
+  ok('conquered realm grants its piece', win.pieceOwned('trophy-x0') >= 1);
+  ok('unconquered realm grants nothing', win.pieceOwned('trophy-x7') === 0);
+  ok('summit trophy locked', win.pieceOwned('trophy-summit') === 0);
   ev('heldPiece = null');
   const gemsPre = ev('state').gems;
   ev('state').gems = 5;
-  win.holdPiece('rp7');                                    // locked
+  win.holdPiece('trophy-x7');                              // locked
   ok('locked piece cannot be held', ev('heldPiece') === null);
   ev('state').gems = 5;
-  while (win.pieceFree('rp0') > 0) {                        // place all free copies
+  while (win.pieceFree('trophy-x0') > 0) {                 // place all free copies
     const c = [...win.document.querySelectorAll('.camp-cell')]
       .find(c => !ev('state').placed.some(p => p.x === +c.dataset.x && p.y === +c.dataset.y));
-    win.holdPiece('rp0'); c.dispatchEvent(new win.MouseEvent('click', {bubbles:true}));
+    win.holdPiece('trophy-x0'); c.dispatchEvent(new win.MouseEvent('click', {bubbles:true}));
   }
-  win.holdPiece('rp0');
-  ok('duplicate refused without enough gems', ev('heldPiece') === null && !ev('state').bought['rp0']);
+  win.holdPiece('trophy-x0');
+  ok('trophy duplicate is refused', ev('heldPiece') === null && !ev("state.bought['trophy-x0']"));
   ev('state').gems = 500;
-  win.holdPiece('rp0');
-  ok('duplicate bought with enough gems', ev('state').bought['rp0'] === 1 && ev('heldPiece') === 'rp0');
-  ok('duplicate cost 20 gems', ev('state').gems === 480, `got ${ev('state').gems}`);
+  win.holdPiece('trophy-x0');
+  ok('trophy still cannot be bought with ample gems', !ev("state.bought['trophy-x0']") && ev('heldPiece') === null);
+  ok('refused trophy purchase charges nothing', ev('state').gems === 500, `got ${ev('state').gems}`);
   win.putAway();
   ev('state').gems = gemsPre;
+
+  section('Camp — progression, footprints, and art fallback');
+  const campBefore = JSON.stringify(ev('state'));
+  ev("state.placed=[]; state.bought={}; state.campDiscovered={}; state.gems=500; state.campStarted=false; state.campTutorial=[]; heldPiece=null; pendingUpgrade=null; ensureCampStarted()");
+  win.renderCamp();
+
+  ok('starter grant costs no gems', ev('state').gems === 500);
+  ok('first shelter tier is granted', ev("state.bought['shelter-1']") === 1);
+  ok('bedroll is immediately held', ev('heldPiece') === 'shelter-1');
+  ok('bedroll footprint is 2×1',
+     ev("pieceSize('shelter-1').w") === 2 && ev("pieceSize('shelter-1').h") === 1);
+
+  win.document.querySelector('.camp-cell[data-x="0"][data-y="0"]')
+    .dispatchEvent(new win.MouseEvent('click', {bubbles:true}));
+  win.document.querySelector('.camp-cell[data-x="3"][data-y="0"]')
+    .dispatchEvent(new win.MouseEvent('click', {bubbles:true}));
+  ok('starter pieces place from their top-left cells',
+     ev("state.placed.some(p=>p.t==='shelter-1'&&p.x===0&&p.y===0) && state.placed.some(p=>p.t==='fire-1'&&p.x===3&&p.y===0)"));
+  const bedrollEl = [...win.document.querySelectorAll('.citem.placed')]
+    .find(el => ev('state').placed[+el.dataset.idx].t === 'shelter-1');
+  ok('2-cell piece spans 20% of the grid', parseFloat(bedrollEl.style.width) === 20, bedrollEl.style.width);
+
+  ev("state.bought['ground-stone-path']=1; state.placed.push({t:'ground-stone-path',x:0,y:1,k:false,legacy:false})");
+  const blockedGems = ev('state').gems;
+  win.buyCampUpgrade('shelter');
+  ok('blocked expansion enters relocate-to-upgrade mode',
+     ev("pendingUpgrade && pendingUpgrade.nextId==='shelter-2'") && ev('heldPiece') === 'shelter-2');
+  ok('relocate mode does not charge or consume before placement',
+     ev("state.bought['shelter-1']") === 1 && !ev("state.bought['shelter-2']") && ev('state').gems === blockedGems);
+  win.document.querySelector('.camp-cell[data-x="4"][data-y="0"]')
+    .dispatchEvent(new win.MouseEvent('click', {bubbles:true}));
+  ok('valid relocation consumes the old tier and grants the new one',
+     !ev("state.bought['shelter-1']") && ev("state.bought['shelter-2']") === 1);
+  ok('relocated upgrade is charged only after placement', ev('state').gems === blockedGems - 60);
+  ok('upgrade moves to the selected clear footprint',
+     ev("state.placed.some(p => p.t === 'shelter-2' && p.x === 4 && p.y === 0)"));
+  ok('upgraded tent occupies 2×2',
+     ev("pieceSize('shelter-2').w") === 2 && ev("pieceSize('shelter-2').h") === 2);
+  ok('relocation mode clears after completion', ev('pendingUpgrade') === null && ev('heldPiece') === null);
+
+  win.buyCampUpgrade('fire');
+  ok('same-footprint upgrade transforms in place',
+     ev("state.placed.some(p=>p.t==='fire-2'&&p.x===3&&p.y===0)") && ev('state').gems === blockedGems - 100);
+
+  win.holdPiece('ground-stone-path');
+  const countBeforeCollision = ev('state').placed.length;
+  win.document.querySelector('.camp-cell[data-x="4"][data-y="1"]')
+    .dispatchEvent(new win.MouseEvent('click', {bubbles:true}));
+  ok('overlapping placement is rejected',
+     ev('heldPiece') === 'ground-stone-path' && ev('state').placed.length === countBeforeCollision);
+  win.document.querySelector('.camp-cell[data-x="2"][data-y="1"]')
+    .dispatchEvent(new win.MouseEvent('click', {bubbles:true}));
+  ok('repeatable path can be bought and placed again',
+     ev("state.bought['ground-stone-path']") === 2 && ev("state.placed.some(p => p.t === 'ground-stone-path' && p.x === 2 && p.y === 1)"));
+
+  win.holdPiece('life-bird-feeder');
+  win.document.querySelector('.camp-cell[data-x="7"][data-y="0"]')
+    .dispatchEvent(new win.MouseEvent('click', {bubbles:true}));
+  const uniqueGems = ev('state').gems;
+  win.holdPiece('life-bird-feeder');
+  ok('standalone unique item cannot be bought twice',
+     ev("state.bought['life-bird-feeder']") === 1 && ev('state').gems === uniqueGems && ev('heldPiece') === null);
+
+  const tentEl = [...win.document.querySelectorAll('.citem.placed')]
+    .find(el => ev('state').placed[+el.dataset.idx].t === 'shelter-2');
+  tentEl.dispatchEvent(new win.MouseEvent('click', {bubbles:true}));
+  win.document.querySelector('.camp-cell[data-x="9"][data-y="5"]')
+    .dispatchEvent(new win.MouseEvent('click', {bubbles:true}));
+  ok('out-of-bounds placement is rejected', ev('heldPiece') === 'shelter-2');
+  win.document.querySelector('.camp-cell[data-x="4"][data-y="0"]')
+    .dispatchEvent(new win.MouseEvent('click', {bubbles:true}));
+  const tentVisual = win.pieceVisual('shelter-2');
+  ok('piece markup keeps an emoji fallback', tentVisual.includes('⛺'));
+  ok('piece markup points at the stable semantic PNG', tentVisual.includes('art/camp/camp-shelter-t2.png'));
+
+  ev("state.placed=[{t:'shelter-2',x:0,y:0,k:false},{t:'ground-stone-path',x:5,y:4,k:false},{t:'fire-2',x:1,y:2,k:false},{t:'light-1',x:0,y:4,k:false}]");
+  win.renderCamp();
+  ok('scene depth sorts by y+h, then x',
+     [...win.document.querySelectorAll('.citem.placed')].map(el=>+el.dataset.idx).join(',') === '0,2,3,1');
+
+  ev(`state=${campBefore}; heldPiece=null; pendingUpgrade=null`);
+  win.renderCamp();
 
   /* ---------------------------------------------------------------- */
   section('Boss victory reveals a build piece');
@@ -278,9 +397,12 @@ async function boot(saveObj) {
   ok('piece reveal shown on results', $('results-body').innerHTML.includes('River Bridge'),
      $('results-body').innerHTML.slice(0,160));
   ok('reveal has a place-it button', $('results-body').innerHTML.includes('goPlace('));
-  win.goPlace('rp2');
+  ok('first boss defeat reveals newly unlocked blueprints',
+     $('results-body').textContent.includes('New camp blueprints') && $('results-body').textContent.includes('Canvas Tent'));
+  ok('first boss defeat includes the 50-gem bonus', $('results-body').textContent.includes('+50 boss bonus'));
+  win.goPlace('trophy-x2');
   ok('goPlace routes to camp holding the piece',
-     ev('heldPiece') === 'rp2' && $('screen-camp').classList.contains('active'));
+     ev('heldPiece') === 'trophy-x2' && $('screen-camp').classList.contains('active'));
   win.putAway();
 
   /* ---------------------------------------------------------------- */
