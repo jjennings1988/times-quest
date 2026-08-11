@@ -137,6 +137,15 @@ async function boot(saveObj) {
     'camp-banner-t1-strip3.png':[576,192], 'camp-banner-t2-strip3.png':[576,192],
     'camp-banner-t3-strip3.png':[1152,192],
   };
+  const batch3={
+    'camp-seating-t2.png':[384,192], 'camp-seating-t3.png':[384,384],
+    'camp-kitchen-t1.png':[192,192], 'camp-kitchen-t2.png':[384,192],
+    'camp-kitchen-t3.png':[384,384],
+    'camp-water-t1.png':[192,192], 'camp-water-t2.png':[384,384],
+    'camp-water-t3-strip3.png':[1152,384],
+    'camp-garden-t2.png':[192,192], 'camp-garden-t3.png':[384,384],
+    'camp-garden-t4.png':[384,384],
+  };
   const pngInfo=name=>{
     const buf=fs.readFileSync(require('path').join(PUBLIC,'art','camp',name));
     return {w:buf.readUInt32BE(16),h:buf.readUInt32BE(20),colorType:buf[25]};
@@ -157,9 +166,18 @@ async function boot(saveObj) {
      }));
   ok('all twelve Batch 2 hero sprites are RGBA PNGs',
      Object.keys(batch2).every(n=>pngInfo(n).colorType===6));
+  ok('all Batch 3 breadth art files exist at exact locked dimensions',
+     Object.entries(batch3).every(([name,size])=>{
+       const p=require('path').join(PUBLIC,'art','camp',name);
+       if(!fs.existsSync(p)) return false;
+       const info=pngInfo(name); return info.w===size[0] && info.h===size[1];
+     }));
+  ok('all eleven Batch 3 breadth sprites are RGBA PNGs',
+     Object.keys(batch3).every(n=>pngInfo(n).colorType===6));
   const swSource=fs.readFileSync(require('path').join(PUBLIC,'sw.js'),'utf8');
   ok('offline shell pre-caches every Batch 1 asset', Object.keys(batch1).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('offline shell pre-caches every Batch 2 asset', Object.keys(batch2).every(n=>swSource.includes(`./art/camp/${n}`)));
+  ok('offline shell pre-caches every Batch 3 asset', Object.keys(batch3).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('runtime cache never stores missing future-batch art', swSource.includes('if (res.ok)'));
   fresh.win.showScreen('screen-camp');
   ok('first camp visit grants the free starter pair',
