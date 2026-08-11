@@ -327,7 +327,9 @@ body{
 .camp-notice{margin:0 0 10px;padding:9px 12px;border-radius:12px;background:#E8F6E9;border:2px solid #7CB982;color:#245A31;font-size:12px;font-weight:800;line-height:1.35}
 .camp-notice.relocate{background:#FFF3D6;border-color:var(--gold-dark);color:#6B4E00}
 @keyframes flicker{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
-@keyframes sprite3{from{background-position:0 0}to{background-position:-300% 0}}
+/* With a 300%-wide strip, 0/50/100% select frames 1/2/3. The 150%
+   endpoint plus steps(3) holds exactly those three positions. */
+@keyframes sprite3{from{background-position:0 0}to{background-position:150% 0}}
 @keyframes campSway{from{transform:skewX(-.8deg)}to{transform:skewX(.8deg)}}
 @keyframes campSwing{from{transform:rotate(-2deg)}to{transform:rotate(2deg)}}
 @keyframes campBreathe{from{transform:scaleY(1)}to{transform:scaleY(1.015)}}

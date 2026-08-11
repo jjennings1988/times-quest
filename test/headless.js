@@ -6,6 +6,7 @@ const fs = require('fs');
 const { JSDOM } = require('jsdom');
 
 const HTML = require('path').join(__dirname,'..','public','index.html');
+const PUBLIC = require('path').join(__dirname,'..','public');
 let pass = 0, fail = 0;
 const ok = (name, cond, extra='') => {
   if (cond) { pass++; console.log(`  ok   ${name}`); }
@@ -119,6 +120,29 @@ async function boot(saveObj) {
      JSON.stringify(fev('CAMP_STANDALONES.filter(p=>p.repeatable).map(p=>p.id)')) ===
        JSON.stringify(['ground-stone-path','ground-wood-deck']));
   ok('all chain tiers are unique upgrades', fev('CAMP_BUILD_PIECES.filter(p=>p.chain).every(p=>p.unique && !p.repeatable)'));
+  const batch1={
+    'bg-camp-dusk.png':[1180,640],
+    'camp-shelter-t1.png':[384,192], 'camp-shelter-t2.png':[384,384],
+    'camp-fire-t1.png':[192,192], 'camp-fire-t2-strip3.png':[576,192],
+    'camp-light-t1.png':[192,192], 'camp-seating-t1.png':[192,192],
+    'camp-garden-t1.png':[192,192], 'camp-lookout-t1.png':[192,192],
+    'camp-ground-stone-path.png':[192,192], 'camp-trophy-x0.png':[192,192],
+  };
+  const pngInfo=name=>{
+    const buf=fs.readFileSync(require('path').join(PUBLIC,'art','camp',name));
+    return {w:buf.readUInt32BE(16),h:buf.readUInt32BE(20),colorType:buf[25]};
+  };
+  ok('all Batch 1 art files exist at exact locked dimensions',
+     Object.entries(batch1).every(([name,size])=>{
+       const p=require('path').join(PUBLIC,'art','camp',name);
+       if(!fs.existsSync(p)) return false;
+       const info=pngInfo(name); return info.w===size[0] && info.h===size[1];
+     }));
+  ok('all ten Batch 1 sprites are RGBA PNGs',
+     Object.keys(batch1).filter(n=>n!=='bg-camp-dusk.png').every(n=>pngInfo(n).colorType===6));
+  const swSource=fs.readFileSync(require('path').join(PUBLIC,'sw.js'),'utf8');
+  ok('offline shell pre-caches every Batch 1 asset', Object.keys(batch1).every(n=>swSource.includes(`./art/camp/${n}`)));
+  ok('runtime cache never stores missing future-batch art', swSource.includes('if (res.ok)'));
   fresh.win.showScreen('screen-camp');
   ok('first camp visit grants the free starter pair',
      fev("state.bought['shelter-1']") === 1 && fev("state.bought['fire-1']") === 1);
