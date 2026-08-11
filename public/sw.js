@@ -1,5 +1,5 @@
 /* Times Quest service worker — offline-first app shell */
-const CACHE = 'times-quest-v10';
+const CACHE = 'times-quest-v11';
 const SHELL = [
   './',
   './index.html',
@@ -11,12 +11,24 @@ const SHELL = [
   './art/camp/bg-camp-dusk.png',
   './art/camp/camp-shelter-t1.png',
   './art/camp/camp-shelter-t2.png',
+  './art/camp/camp-shelter-t3.png',
+  './art/camp/camp-shelter-t4.png',
+  './art/camp/camp-shelter-t5.png',
   './art/camp/camp-fire-t1.png',
   './art/camp/camp-fire-t2-strip3.png',
+  './art/camp/camp-fire-t3-strip3.png',
+  './art/camp/camp-fire-t4-strip3.png',
   './art/camp/camp-light-t1.png',
+  './art/camp/camp-light-t2.png',
+  './art/camp/camp-light-t3-strip3.png',
   './art/camp/camp-seating-t1.png',
   './art/camp/camp-garden-t1.png',
   './art/camp/camp-lookout-t1.png',
+  './art/camp/camp-lookout-t2.png',
+  './art/camp/camp-lookout-t3.png',
+  './art/camp/camp-banner-t1-strip3.png',
+  './art/camp/camp-banner-t2-strip3.png',
+  './art/camp/camp-banner-t3-strip3.png',
   './art/camp/camp-ground-stone-path.png',
   './art/camp/camp-trophy-x0.png',
 ];

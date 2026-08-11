@@ -128,6 +128,15 @@ async function boot(saveObj) {
     'camp-garden-t1.png':[192,192], 'camp-lookout-t1.png':[192,192],
     'camp-ground-stone-path.png':[192,192], 'camp-trophy-x0.png':[192,192],
   };
+  const batch2={
+    'camp-shelter-t3.png':[384,384], 'camp-shelter-t4.png':[384,384],
+    'camp-shelter-t5.png':[576,384],
+    'camp-fire-t3-strip3.png':[1152,384], 'camp-fire-t4-strip3.png':[1728,384],
+    'camp-light-t2.png':[192,192], 'camp-light-t3-strip3.png':[1152,192],
+    'camp-lookout-t2.png':[384,384], 'camp-lookout-t3.png':[576,384],
+    'camp-banner-t1-strip3.png':[576,192], 'camp-banner-t2-strip3.png':[576,192],
+    'camp-banner-t3-strip3.png':[1152,192],
+  };
   const pngInfo=name=>{
     const buf=fs.readFileSync(require('path').join(PUBLIC,'art','camp',name));
     return {w:buf.readUInt32BE(16),h:buf.readUInt32BE(20),colorType:buf[25]};
@@ -140,8 +149,17 @@ async function boot(saveObj) {
      }));
   ok('all ten Batch 1 sprites are RGBA PNGs',
      Object.keys(batch1).filter(n=>n!=='bg-camp-dusk.png').every(n=>pngInfo(n).colorType===6));
+  ok('all Batch 2 hero art files exist at exact locked dimensions',
+     Object.entries(batch2).every(([name,size])=>{
+       const p=require('path').join(PUBLIC,'art','camp',name);
+       if(!fs.existsSync(p)) return false;
+       const info=pngInfo(name); return info.w===size[0] && info.h===size[1];
+     }));
+  ok('all twelve Batch 2 hero sprites are RGBA PNGs',
+     Object.keys(batch2).every(n=>pngInfo(n).colorType===6));
   const swSource=fs.readFileSync(require('path').join(PUBLIC,'sw.js'),'utf8');
   ok('offline shell pre-caches every Batch 1 asset', Object.keys(batch1).every(n=>swSource.includes(`./art/camp/${n}`)));
+  ok('offline shell pre-caches every Batch 2 asset', Object.keys(batch2).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('runtime cache never stores missing future-batch art', swSource.includes('if (res.ok)'));
   fresh.win.showScreen('screen-camp');
   ok('first camp visit grants the free starter pair',
