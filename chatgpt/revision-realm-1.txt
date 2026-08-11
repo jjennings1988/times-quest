@@ -1,0 +1,30 @@
+Edit the image you just generated. Keep it as close to identical as possible —
+same four characters, same positions and scale, same flat magenta background,
+same painting style, brush texture, outline weight, colour palette and light
+direction. Do not restyle anything. Do not move anyone. Only make the three
+specific fixes below.
+
+FIX 1 — the robot's indicator lights.
+The vertical row of round gold indicator lights on the robot's forearm must be
+EXACTLY TEN lights. Count them as you draw: ten, no more and no fewer, evenly
+spaced in a single straight line, each one clearly separated from its
+neighbours so they can be counted at a glance. Keep the large numeral 10 on his
+chest plate exactly as it is now — it is correct and must not change.
+
+FIX 2 — the hare's mirror-double.
+The ghostly duplicate hare behind the real one is currently too solid, so it
+reads as a second animal. Make it much fainter — a soft translucent after-image
+at roughly 25% opacity, more like a reflection or an echo of light than a
+second creature. It should be clearly secondary at a glance. The solid hare in
+front, its pose and the cream blaze down its forehead all stay exactly as they
+are.
+
+FIX 3 — the hooded spectre.
+Keep the tattered cloak, the ragged trailing edges, the swirling energy and the
+clean circular hole through its chest exactly as they are — those are all
+correct. Two changes only: open the hood so a calm, pale, ghostly face is
+visible inside instead of dark shadow, and replace the skeletal bony hands with
+soft tapering wisps of mist. He should still look powerful and mysterious, just
+not frightening.
+
+The fox is perfect. Do not change the fox in any way.

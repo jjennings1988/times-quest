@@ -1,0 +1,65 @@
+CHARACTER ADDENDUM
+
+These are heroes and creatures with attitude — the kind an older kid would put
+on a poster. Confident, capable, slightly dangerous. They belong in a good
+adventure game, never in a nursery.
+
+Proportions: roughly 1:5 head-to-body. Real shoulders, real stance, visible
+weight and muscle. No oversized heads. No chibi. No baby proportions.
+
+Eyes: sharp, narrow, focused, with a defined brow. Small to medium — never
+huge and round. The eyes carry intent, not innocence.
+
+Expression: determined, sly, or coolly amused. A smirk beats a grin. Mouth
+usually closed. Never a wide beaming open-mouthed smile.
+
+Pose: dynamic and confident — weight shifted onto one leg, arms folded,
+mid-motion, or turning to look back over a shoulder. Never standing square to
+the viewer with arms hanging at its sides.
+
+Gear and wear: every character carries or wears something with texture and
+history — straps, buckles, wrapped cloth, a worn pack, plated armour, scuffed
+metal, small scars or chips in the surface. Detail reads as serious.
+
+Energy: a hint of elemental power — arcing light, drifting embers, frost,
+static, mist — integrated into the body, not sprinkled around it.
+
+NUMBER SIGNATURE — mandatory, and the most important instruction here.
+
+Each character carries its times-table number as a visible, countable feature.
+Render the specified count EXACTLY — no more and no fewer — and keep the
+elements clearly separated and easy to count at a glance. Do not stylise them
+into an ambiguous cluster. Where a literal numeral is specified, render it
+large, clean and correct.
+
+---
+
+A single wide image divided into exactly 4 equal panels side by side, each
+containing one character, centred, full body, feet near the bottom of its
+panel. Identical painting style, palette, camera angle and lighting across
+all four panels. No dividing lines, no labels, no captions.
+
+Aspect ratio 3:1.
+
+PANEL 1 — POOF (x0): a tall, tattered spectre of pale mist and cream #FFF8EC,
+its lower half fraying away into nothing. Straight through its chest is a
+clean circular hole you can see clear through — a perfect void where a heart
+would be. Narrow, sharp, cold-glowing eyes under a hooded brow. Ragged
+trailing edges. Silent and unsettlingly calm.
+
+PANEL 2 — ECHO (x1): a lean, alert hare built like a runner — long powerful
+hind legs, tight muscle, ears swept back. One bold vertical blaze marking runs
+down the centre of its forehead. Wrapped cloth bracers on the forelegs. A
+perfect mirror-double stands directly behind it, slightly translucent,
+matching its stance exactly. Sharp watchful eyes.
+
+PANEL 3 — DECA (x10): a rugged salvage-built robot in scuffed sky blue
+#5BA8FF and cream, panel seams and exposed cabling, one glowing gold optic
+under a heavy brow plate. The numeral 10 is stamped large and clean on its
+chest plate. A row of exactly ten small indicator lights runs along one
+forearm. Two hands, five fingers each. Weight on one leg, arms loose and ready.
+
+PANEL 4 — TWIX (x2): a lean fox caught mid-stride, body low and fast, with
+exactly two tails streaming out behind it. Sharply split two-tone coat, burnt
+orange over cream, divided down the middle. A worn leather harness across the
+chest. Narrow amber eyes and a sly sideways look.

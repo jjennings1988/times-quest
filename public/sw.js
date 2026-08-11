@@ -1,5 +1,5 @@
 /* Times Quest service worker — offline-first app shell */
-const CACHE = 'times-quest-v7';
+const CACHE = 'times-quest-v10';
 const SHELL = [
   './',
   './index.html',
@@ -8,6 +8,17 @@ const SHELL = [
   './icons/icon-512.png',
   './icons/icon-maskable-512.png',
   './icons/apple-touch-icon.png',
+  './art/camp/bg-camp-dusk.png',
+  './art/camp/camp-shelter-t1.png',
+  './art/camp/camp-shelter-t2.png',
+  './art/camp/camp-fire-t1.png',
+  './art/camp/camp-fire-t2-strip3.png',
+  './art/camp/camp-light-t1.png',
+  './art/camp/camp-seating-t1.png',
+  './art/camp/camp-garden-t1.png',
+  './art/camp/camp-lookout-t1.png',
+  './art/camp/camp-ground-stone-path.png',
+  './art/camp/camp-trophy-x0.png',
 ];
 
 self.addEventListener('install', (e) => {
@@ -32,8 +43,12 @@ self.addEventListener('fetch', (e) => {
       caches.match(e.request).then((hit) =>
         hit ||
         fetch(e.request).then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(e.request, copy));
+          // Do not poison the offline cache with expected 404s for art batches
+          // that have not shipped yet. A later batch must be able to appear.
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE).then((c) => c.put(e.request, copy));
+          }
           return res;
         }).catch(() => (e.request.mode === 'navigate' ? caches.match('./index.html') : undefined))
       )
