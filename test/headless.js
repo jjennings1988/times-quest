@@ -74,7 +74,7 @@ async function boot(saveObj) {
   ok('every fact record preserved',
      Object.keys(before.facts).every(k =>
        S().facts[k] && S().facts[k].c === before.facts[k].c && S().facts[k].rating === before.facts[k].rating));
-  ok('schema version stamped', S().v === 4);
+  ok('schema version stamped', S().v === 5);
   ok('existing stars are marked claimed without changing the saved gem balance',
      ev('REALM_ORDER').every(f=>S().realmRewardStars[f]===ev(`realmStars(${f}).stars`)) && S().gems===137,
      JSON.stringify(S().realmRewardStars));
@@ -87,15 +87,17 @@ async function boot(saveObj) {
      JSON.stringify(placedIds) === JSON.stringify(['banner-1','camp-climber','light-1','shelter-2']),
      JSON.stringify(placedIds));
   const at = id => S().placed.find(p => p.t === id);
-  ok('flag → banner-1 projected onto the clearing', at('banner-1').x === 9 && at('banner-1').y === 1, JSON.stringify(at('banner-1')));
-  ok('lantern → light-1 projected onto the clearing', at('light-1').x === 6 && at('light-1').y === 4, JSON.stringify(at('light-1')));
-  ok('tent → shelter-2 projected onto the clearing', at('shelter-2').x === 7 && at('shelter-2').y === 4, JSON.stringify(at('shelter-2')));
+  ok('flag → banner-1 projected into the panoramic clearing', at('banner-1').x === 15 && at('banner-1').y === 1, JSON.stringify(at('banner-1')));
+  ok('lantern → light-1 projected into the panoramic clearing', at('light-1').x === 12 && at('light-1').y === 4, JSON.stringify(at('light-1')));
+  ok('tent → shelter-2 projected into the panoramic clearing', at('shelter-2').x === 13 && at('shelter-2').y === 4, JSON.stringify(at('shelter-2')));
   ok('migrated pieces are owned under their stable IDs',
      ['banner-1','light-1','shelter-2'].every(id => S().bought[id] === 1));
   ok('no two seeded pieces share a cell',
      new Set(S().placed.map(p => p.x+','+p.y)).size === S().placed.length);
   ok('every migrated footprint is buildable and collision-free',
      S().placed.every((p,i)=>win.canPlaceAt(p.t,p.x,p.y,i)));
+  ok('v4 camps shift into the middle of the 24-column panorama without changing depth',
+     at('banner-1').x===15 && at('banner-1').y===1 && at('light-1').x===12 && at('light-1').y===4);
 
   section('Migration — complete legacy ID map and duplicate preservation');
   const richLegacy=legacySave();
@@ -356,17 +358,22 @@ async function boot(saveObj) {
   fresh.win.showScreen('screen-camp');
   ok('camp opens as a scene-first experience with collapsed menus',
      !!fresh.$('camp-experience') && !fresh.win.document.querySelector('.camp-sheet'));
-  ok('camp dock exposes build, treasure, and climber tools',
-     fresh.win.document.querySelectorAll('.camp-dock button').length === 3);
+  ok('camp dock exposes five focused decorating tools',
+     fresh.win.document.querySelectorAll('.camp-dock button').length === 5);
+  ok('scene-first camp uses a 24 × 8 placement plane', fev('CAMP_COLS')===24 && fev('CAMP_ROWS')===8);
   fresh.win.setCampPanel('build');
   ok('build catalog opens as a collapsible sheet',
      fresh.win.document.querySelector('.camp-sheet') && fresh.$('camp-body').textContent.includes('Build your camp'));
-  fresh.win.setCampPanel('avatar');
-  ok('climber panel offers four compatible camp environments',
+  fresh.win.setCampPanel('scenery');
+  ok('scenery tray offers four compatible camp environments',
      fresh.win.document.querySelectorAll('.camp-background-option').length===4);
   fresh.win.setCampBackground('autumn');
   ok('camp environment choice persists without changing the placement plane',
      fev("state.campBackground==='autumn' && CAMP_BACKGROUNDS.length===4 && CAMP_PLANE.top===.405"));
+  fresh.win.setCampPanel('paths');
+  ok('paths tray separates groundwork, camp life, and activities',
+     ['Paths','Camp life','Activities'].every(label=>fresh.$('camp-body').textContent.includes(label)));
+  fresh.win.setCampPanel('paths');
   fresh.win.setCampPanel(null);
   ok('first camp visit grants the free starter pair',
      fev("state.bought['shelter-1']") === 1 && fev("state.bought['fire-1']") === 1);
@@ -374,7 +381,7 @@ async function boot(saveObj) {
      fev('heldPiece') === 'shelter-1' && JSON.stringify(fev('state.campTutorial')) === JSON.stringify(['shelter-1','fire-1']));
   fresh.win.setCampPanel('build');
   ok('one-conquest items preview early', fresh.$('camp-body').textContent.includes('Cook Pot'));
-  ok('two-conquest items remain hidden', !fresh.$('camp-body').textContent.includes('Pack Pile'));
+  ok('future upgrade chains remain visible as locked previews', fresh.$('camp-body').textContent.includes('Pack Pile'));
   fresh.win.document.querySelector('.camp-cell[data-x="0"][data-y="0"]')
     .dispatchEvent(new fresh.win.MouseEvent('click',{bubbles:true}));
   ok('placing Bedroll advances tutorial to Fire Ring', fev('heldPiece') === 'fire-1');
@@ -550,7 +557,7 @@ async function boot(saveObj) {
   win.showScreen('screen-camp');
   const placedCount = () => ev('state').placed.length;
   const n0 = placedCount();
-  ok('90 buildable clearing locations rendered', win.document.querySelectorAll('.camp-cell').length === 90,
+  ok('186 buildable panoramic clearing locations rendered', win.document.querySelectorAll('.camp-cell').length === 186,
      String(win.document.querySelectorAll('.camp-cell').length));
   ok('placement plane starts below the sky',
      [...win.document.querySelectorAll('.camp-cell')].every(c=>parseFloat(c.style.top)>=40));
@@ -558,23 +565,27 @@ async function boot(saveObj) {
      parseFloat(win.document.querySelector('.camp-cell[data-x="5"][data-y="7"]').style.width) >
      parseFloat(win.document.querySelector('.camp-cell[data-x="5"][data-y="0"]').style.width));
   ok('rocky foreground corners are not placement targets',
-     !win.document.querySelector('.camp-cell[data-x="0"][data-y="7"]') && !ev('campCellBuildable(0,7)'));
+     !win.document.querySelector('.camp-cell[data-x="0"][data-y="7"]') && !ev('campCellBuildable(0,7)') && !ev('campCellBuildable(23,7)'));
   ok('climber is a movable camp piece, not scene decoration',
      ev("state.placed.some(p=>p.t==='camp-climber')") && ev("pieceVisual('camp-climber')").includes('art/climber.png'));
   ok('existing pieces rendered', win.document.querySelectorAll('.citem.placed').length === n0);
-  win.toggleCampImmersive(true);
-  ok('full-screen camp mode is available and hides app chrome',
-     $('camp-experience').classList.contains('immersive') && win.document.body.classList.contains('camp-immersive-open'));
-  ok('full-screen camp includes recenter and exit controls',
-     !!win.document.querySelector('.camp-recenter') && !!win.document.querySelector('[aria-label="Close full-screen camp"]'));
-  win.toggleCampImmersive(false);
-  ok('full-screen camp returns to the embedded view',
-     !$('camp-experience').classList.contains('immersive') && !win.document.body.classList.contains('camp-immersive-open'));
+  ok('camp is scene-first by default and hides global app chrome',
+     win.document.body.classList.contains('camp-world-open'));
+  ok('scene-first camp includes recenter, undo, and Adventure exit controls',
+     !!win.document.querySelector('.camp-recenter') && !!win.document.querySelector('[aria-label="Undo last camp move"]') && !!win.document.querySelector('[aria-label="Back to Adventure"]'));
+  ok('new camp camera storage starts per environment', typeof ev('state').campCameras === 'object');
 
   win.holdPiece('trophy-x0');                             // ×0 conquered → owned
   ok('piece picked up', ev('heldPiece') === 'trophy-x0');
   ok('scene enters placing mode', win.document.getElementById('camp-scene').className.includes('placing'));
   ok('held bar visible', win.document.querySelector('.held-bar').className.includes('on'));
+  await new Promise(r=>setTimeout(r,30));
+  ok('placement mode shows a correctly scaled live ghost',
+     !!win.document.querySelector('.camp-placement-preview') && ev('campPreviewCell')!==null);
+  ok('placement mode exposes edge and compact-bar camera controls',
+     win.document.querySelectorAll('.camp-edge-pan').length===2 && win.document.querySelectorAll('.held-pan button').length===2);
+  ok('placement guidance highlights only a local cluster',
+     win.document.querySelectorAll('.camp-cell.nearby').length>0 && win.document.querySelectorAll('.camp-cell.nearby').length<90);
 
   const emptyCell = [...win.document.querySelectorAll('.camp-cell')]
     .find(c => !ev('state').placed.some(p => p.x === +c.dataset.x && p.y === +c.dataset.y));
@@ -583,6 +594,9 @@ async function boot(saveObj) {
   ok('hand is empty again', ev('heldPiece') === null);
   ok('landed on the tapped cell',
      ev('state').placed.some(p => p.t === 'trophy-x0' && p.x === +emptyCell.dataset.x && p.y === +emptyCell.dataset.y));
+  win.undoCampAction();
+  ok('one-step undo restores the pre-placement camp', placedCount() === n0 && ev('heldPiece') === 'trophy-x0');
+  emptyCell.dispatchEvent(new win.MouseEvent('click', {bubbles:true}));
 
   const someItem = win.document.querySelector('.citem.placed');
   const tId = ev('state').placed[+someItem.dataset.idx].t;
@@ -637,7 +651,7 @@ async function boot(saveObj) {
      ev("pieceSize('shelter-4').w") === 3 && ev("pieceSize('shelter-4').h") === 2 &&
      ev("pieceSize('shelter-5').w") === 3 && ev("pieceSize('shelter-5').h") === 3);
   ok('a lodge cannot fit where its full 3×3 footprint crosses the clearing edge',
-     !win.canPlaceAt('shelter-5',10,5));
+     !win.canPlaceAt('shelter-5',22,5));
 
   win.document.querySelector('.camp-cell[data-x="0"][data-y="0"]')
     .dispatchEvent(new win.MouseEvent('click', {bubbles:true}));
@@ -710,7 +724,7 @@ async function boot(saveObj) {
   const tentEl = [...win.document.querySelectorAll('.citem.placed')]
     .find(el => ev('state').placed[+el.dataset.idx].t === 'shelter-2');
   tentEl.dispatchEvent(new win.MouseEvent('click', {bubbles:true}));
-  win.document.querySelector('.camp-cell[data-x="10"][data-y="5"]')
+  win.document.querySelector('.camp-cell[data-x="22"][data-y="5"]')
     .dispatchEvent(new win.MouseEvent('click', {bubbles:true}));
   ok('footprints crossing a blocked clearing edge are rejected', ev('heldPiece') === 'shelter-2');
   win.document.querySelector('.camp-cell[data-x="4"][data-y="0"]')

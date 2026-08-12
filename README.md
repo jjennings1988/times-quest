@@ -84,6 +84,12 @@ turns that profile into an isolated QA save with all 39 stars, every realm and
 camp blueprint unlocked, 99,999 gems, and extra repeatable path/deck inventory.
 Deleting or resetting that profile does not affect the other child profiles.
 
-The **Climber** panel in Base Camp also includes four compatible environment
-choices: Mountain Dusk, Alpine Morning, Autumn Ridge, and Moonlit Meadow. They
-all share the same placement plane, so changing scenery never moves camp items.
+Base Camp opens as a scene-first panoramic world on phones and tablets. Swipe
+left or right to explore, use the target button to return to the climber, and use
+the five-action bottom dock for Build, Paths, Treasures, Climber, and Scenery.
+Decorating tools rise over the world as compact trays instead of shrinking it.
+
+The **Scenery** tray includes four compatible environments: Mountain Dusk,
+Alpine Morning, Autumn Ridge, and Moonlit Meadow. They all share the same 24 × 8
+placement plane, so changing scenery never moves camp items. Existing 12 × 8
+camps migrate into the center of the wider clearing automatically.
