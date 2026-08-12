@@ -163,6 +163,7 @@ async function boot(saveObj) {
     'camp-trophy-x8.png':[192,192], 'camp-trophy-x7.png':[384,384],
     'camp-trophy-summit.png':[192,192],
   };
+  const realmCharacters=Object.fromEntries(Array.from({length:13},(_,f)=>[`pet-${f}.png`,[512,512]]));
   const pngInfo=name=>{
     const buf=fs.readFileSync(require('path').join(PUBLIC,'art','camp',name));
     return {w:buf.readUInt32BE(16),h:buf.readUInt32BE(20),colorType:buf[25]};
@@ -207,12 +208,25 @@ async function boot(saveObj) {
      }));
   ok('all thirteen Batch 5 trophy sprites are RGBA PNGs',
      Object.keys(batch5).every(n=>pngInfo(n).colorType===6));
+  const realmPngInfo=name=>{
+    const buf=fs.readFileSync(require('path').join(PUBLIC,'art','realm',name));
+    return {w:buf.readUInt32BE(16),h:buf.readUInt32BE(20),colorType:buf[25]};
+  };
+  ok('all thirteen realm character files exist at the locked 512px square size',
+     Object.entries(realmCharacters).every(([name,size])=>{
+       const p=require('path').join(PUBLIC,'art','realm',name);
+       if(!fs.existsSync(p)) return false;
+       const info=realmPngInfo(name); return info.w===size[0] && info.h===size[1];
+     }));
+  ok('all thirteen realm characters are transparent RGBA PNGs',
+     Object.keys(realmCharacters).every(n=>realmPngInfo(n).colorType===6));
   const swSource=fs.readFileSync(require('path').join(PUBLIC,'sw.js'),'utf8');
   ok('offline shell pre-caches every Batch 1 asset', Object.keys(batch1).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('offline shell pre-caches every Batch 2 asset', Object.keys(batch2).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('offline shell pre-caches every Batch 3 asset', Object.keys(batch3).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('offline shell pre-caches every Batch 4 asset', Object.keys(batch4).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('offline shell pre-caches every Batch 5 asset', Object.keys(batch5).every(n=>swSource.includes(`./art/camp/${n}`)));
+  ok('offline shell pre-caches every realm character', Object.keys(realmCharacters).every(n=>swSource.includes(`./art/realm/${n}`)));
   ok('runtime cache never stores missing future-batch art', swSource.includes('if (res.ok)'));
   fresh.win.showScreen('screen-camp');
   ok('first camp visit grants the free starter pair',
@@ -469,6 +483,11 @@ async function boot(saveObj) {
   const tentVisual = win.pieceVisual('shelter-2');
   ok('piece markup keeps an emoji fallback', tentVisual.includes('⛺'));
   ok('piece markup points at the stable semantic PNG', tentVisual.includes('art/camp/camp-shelter-t2.png'));
+  const poofVisual = ev('realmCharacter(0)');
+  ok('realm character markup keeps an emoji fallback', poofVisual.includes('👻'));
+  ok('realm character markup points at the stable semantic PNG', poofVisual.includes('art/realm/pet-0.png'));
+  ev("state.equipped.buddy='pet1'");
+  ok('equipped realm buddy uses its PNG-backed character markup', ev('avatarStr()').includes('art/realm/pet-1.png'));
 
   ev("state.placed=[{t:'shelter-2',x:0,y:0,k:false},{t:'ground-stone-path',x:5,y:4,k:false},{t:'fire-2',x:1,y:2,k:false},{t:'light-1',x:0,y:4,k:false}]");
   win.renderCamp();

@@ -148,6 +148,16 @@ body{
   box-shadow:0 6px 0 rgba(0,0,0,.3);position:relative;overflow:hidden;
 }
 .realm-hero .big{font-size:54px;display:block;filter:drop-shadow(0 4px 4px rgba(0,0,0,.3))}
+.realm-character{display:inline-flex;align-items:center;justify-content:center;position:relative;isolation:isolate;vertical-align:middle}
+.realm-character-emoji{position:absolute;inset:0;z-index:0;display:flex;align-items:center;justify-content:center;line-height:1}
+.realm-character-image{position:absolute;inset:0;z-index:1;opacity:0;background-image:var(--realm-character-art);background-repeat:no-repeat;background-position:center;background-size:contain;transition:opacity .12s}
+.realm-character.art-ready .realm-character-image{opacity:1}
+.realm-character.art-ready .realm-character-emoji{visibility:hidden}
+.realm-character-probe{display:none}
+.realm-bubble .realm-character{width:72px;height:72px;font-size:30px}
+.realm-hero .realm-character.big{width:132px;height:132px;margin:0 auto;display:flex;font-size:54px}
+.shop-item .em .realm-character{width:54px;height:54px;font-size:28px}
+.avatar-line .realm-character,.citem.deco .realm-character{width:44px;height:44px;font-size:28px}
 .realm-hero h2{font-family:var(--display);font-size:26px;font-weight:800;margin:4px 0 2px}
 .realm-hero .fam{font-weight:800;opacity:.9}
 .strategy-box{
@@ -564,6 +574,14 @@ const REALMS = {
      hint:(a,b)=>{const n=a===7?b:a;return `Split it! Five ${n}s = ${n*5}, two ${n}s = ${n*2}. ${n*5} + ${n*2} = <b>${n*7}</b>`}},
 };
 
+/* Keep the emoji underneath until the transparent PNG has loaded successfully. */
+function realmCharacter(fam, cls=''){
+  const r=REALMS[fam];
+  if(!r) return '<span class="realm-character"><span class="realm-character-emoji">❓</span></span>';
+  const art=`art/realm/pet-${fam}.png`;
+  return `<span class="realm-character ${cls}" role="img" aria-label="${r.petName}" style="--realm-character-art:url('${art}')"><span class="realm-character-emoji" aria-hidden="true">${r.pet}</span><span class="realm-character-image" aria-hidden="true"></span><img class="realm-character-probe" src="${art}" alt="" onload="this.parentElement.classList.add('art-ready')" onerror="this.remove()"></span>`;
+}
+
 /* ---------- camp build grid ---------- */
 const CAMP_COLS = 10, CAMP_ROWS = 6;
 const DUPE_PRICE = 20;
@@ -959,7 +977,7 @@ function renderMap(){
     const node=document.createElement('div');
     node.className=`realm-node ${i%2===0?'left':'right'} ${isUnlocked?'':'locked'} ${isHere?'here':''}`;
     node.innerHTML=`
-      <div class="realm-bubble" style="background:${r.color}">${isUnlocked?r.pet:'🔒'}
+      <div class="realm-bubble" style="background:${r.color}">${isUnlocked?realmCharacter(fam):'🔒'}
         ${state.realms[fam].conquered?'<div class="badge">✓</div>':''}
       </div>
       <div class="meta">
@@ -998,7 +1016,7 @@ function openRealm(fam){
   $('realm-title-top').textContent=r.name;
   $('realm-body').innerHTML=`
     <div class="realm-hero" style="background:linear-gradient(160deg, ${r.color}, ${r.color}CC)">
-      <span class="big">${r.pet}</span>
+      ${realmCharacter(fam,'big')}
       <h2>${r.name}</h2>
       <div class="fam">The ×${fam} family • ${r.petName}</div>
       <div class="strategy-box">🧠 <b>Realm secret:</b> ${r.strategy}</div>
@@ -1610,15 +1628,16 @@ const SHOP = [
   {id:'bigtent',type:'camp',em:'🎪',name:'Festival Tent',price:150,x:8,y:54},
 ];
 function realmBuddies(){
-  return REALM_ORDER.map(f=>({id:'pet'+f,type:'buddy',em:REALMS[f].pet,name:REALMS[f].petName.split(' the ')[0],price:0,fam:f,locked:!state.realms[f].conquered}));
+  return REALM_ORDER.map(f=>({id:'pet'+f,type:'buddy',em:REALMS[f].pet,art:`art/realm/pet-${f}.png`,name:REALMS[f].petName.split(' the ')[0],price:0,fam:f,locked:!state.realms[f].conquered}));
 }
 function avatarStr(){
   const hat=SHOP.find(i=>i.id===state.equipped.hat);
   let buddy=SHOP.find(i=>i.id===state.equipped.buddy);
   if(!buddy && state.equipped.buddy && state.equipped.buddy.startsWith('pet')){
-    const f=+state.equipped.buddy.slice(3); if(REALMS[f]) buddy={em:REALMS[f].pet};
+    const f=+state.equipped.buddy.slice(3); if(REALMS[f]) buddy={em:REALMS[f].pet,fam:f};
   }
-  return `${hat?hat.em:''}🧗${buddy?' '+buddy.em:''}`;
+  const buddyVisual=buddy?(buddy.fam!==undefined?realmCharacter(buddy.fam):buddy.em):'';
+  return `${hat?hat.em:''}🧗${buddyVisual?' '+buddyVisual:''}`;
 }
 /* ---------- placeable pieces ---------- */
 function allPieces(){
@@ -1859,7 +1878,7 @@ function renderCamp(){
     const pr = i.locked ? '🔒 Conquer realm' : isOwned ? (equipped?'Equipped ✓':'Tap to equip') : `💎 ${i.price}`;
     return `<button class="shop-item ${isOwned?'owned':''} ${equipped?'equipped':''} ${cant?'cant':''}"
       onclick="shopTap('${i.id}','${i.type}',${i.price},${!!i.locked})">
-      <span class="em">${i.em}</span><span class="nm">${i.name}</span><span class="pr">${pr}</span></button>`;
+      <span class="em">${i.fam!==undefined?realmCharacter(i.fam):i.em}</span><span class="nm">${i.name}</span><span class="pr">${pr}</span></button>`;
   };
   const renderPiece=(p)=>{
     const free=pieceFree(p.id), out=piecePlaced(p.id);
