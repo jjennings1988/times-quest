@@ -1,5 +1,5 @@
 /* Times Quest service worker — offline-first app shell */
-const CACHE = 'times-quest-v20';
+const CACHE = 'times-quest-v23';
 const SHELL = [
   './',
   './index.html',

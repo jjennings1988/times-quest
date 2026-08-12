@@ -74,7 +74,10 @@ async function boot(saveObj) {
   ok('every fact record preserved',
      Object.keys(before.facts).every(k =>
        S().facts[k] && S().facts[k].c === before.facts[k].c && S().facts[k].rating === before.facts[k].rating));
-  ok('schema version stamped', S().v === 3);
+  ok('schema version stamped', S().v === 4);
+  ok('existing stars are marked claimed without changing the saved gem balance',
+     ev('REALM_ORDER').every(f=>S().realmRewardStars[f]===ev(`realmStars(${f}).stars`)) && S().gems===137,
+     JSON.stringify(S().realmRewardStars));
   ok('bought initialised', typeof S().bought === 'object');
   ok('campSeen initialised', S().campSeen === null);
 
@@ -103,6 +106,8 @@ async function boot(saveObj) {
   ok('all eight old camp IDs map to their stable v1.1 replacements',
      ['banner-1','seating-2','light-1','activity-kite','shelter-2','legacy-canoe','lookout-3','shelter-4']
        .every(id=>rev('state').bought[id]>=1));
+  ok('star gates never re-lock a late upgrade an existing save already owns',
+     rev("pieceUnlocked(pieceById('lookout-3'))"));
   ok('placed lower chain tiers survive as legacy decorations',
      rev("state.placed.some(p=>p.t==='shelter-2'&&p.legacy===true)"));
   ok('older trophy duplicates remain placeable but are not remapped twice',
@@ -124,6 +129,18 @@ async function boot(saveObj) {
      JSON.stringify(fev('CAMP_STANDALONES.filter(p=>p.repeatable).map(p=>p.id)')) ===
        JSON.stringify(['ground-stone-path','ground-wood-deck']));
   ok('all chain tiers are unique upgrades', fev('CAMP_BUILD_PIECES.filter(p=>p.chain).every(p=>p.unique && !p.repeatable)'));
+  ok('realm mastery rewards total 2639 gems across all 39 stars',
+     fev('Object.values(REALM_GEM_REWARDS).flat().reduce((sum,n)=>sum+n,0)') === 2639);
+  ok('the final lodge requires every realm to reach three stars',
+     fev("pieceById('shelter-5').unlockAfterStars") === 39);
+  const economyBefore=fev('JSON.stringify(state)');
+  fev("state.realms[0].conquered=true; for(let b=0;b<=12;b++) fact(0,b).rating=4");
+  const firstStarClaim=fev('claimRealmStarRewards(0)');
+  const repeatedStarClaim=fev('claimRealmStarRewards(0)');
+  ok('a three-star realm pays its three incremental rewards once',
+     firstStarClaim.gems===125 && JSON.stringify(firstStarClaim.stars)===JSON.stringify([1,2,3]));
+  ok('realm star rewards cannot be farmed repeatedly', repeatedStarClaim.gems===0);
+  fev(`state=${economyBefore}`);
   const batch1={
     'bg-camp-dusk.png':[1180,640],
     'camp-shelter-t1.png':[384,192], 'camp-shelter-t2.png':[384,384],
@@ -309,6 +326,11 @@ async function boot(saveObj) {
      win.document.querySelectorAll('#map-trail .realm-node').length === 13 && !!win.document.querySelector('#map-trail .summit-node'));
   ok('adventure route has one curved segment between every destination',
      win.document.querySelectorAll('#map-trail .map-route-segment').length === 13);
+  const landmarkStops = ev('MAP_POSITIONS').slice(5,10);
+  ok('middle adventure realms align with their illustrated landmarks',
+     JSON.stringify(landmarkStops) === JSON.stringify([
+       {x:25,y:48.9}, {x:74,y:41.8}, {x:50,y:34.7}, {x:22,y:29.8}, {x:69,y:27.7},
+     ]), JSON.stringify(landmarkStops));
   ok('current map destination carries the climber marker',
      !!win.document.querySelector('#map-trail .realm-node.here .map-you'));
   win.toggleMapNotices(true);
@@ -320,6 +342,38 @@ async function boot(saveObj) {
   win.openRealm(2);
   ok('realm opens', $('realm-title-top').textContent === 'Double River');
   ok('boss card locked before trial', $('realm-body').innerHTML.includes('Pass the Trial first'));
+  ok('all 13 guardians have introductions and signature abilities',
+     ev('REALM_ORDER.every(f => REALM_LORE[f] && REALM_LORE[f].intro && REALM_LORE[f].ability && REALM_LORE[f].example)'));
+  ok('realm introduces its guardian before the activity choices',
+     $('realm-body').textContent.includes('Meet Twix the Fox') && $('realm-body').textContent.includes('View guardian Quest Card'));
+  ok('realm mode cards keep titles and supporting text separate',
+     win.document.querySelectorAll('#realm-body .mode-card .nm').length === 4 &&
+     win.document.querySelectorAll('#realm-body .mode-card .sub').length === 4);
+  win.openGuardianCard(2);
+  ok('guardian Quest Card opens with lore, ability, and live stats',
+     $('card-modal').classList.contains('on') && $('card-modal-body').textContent.includes('River Double') &&
+     $('card-modal-body').textContent.includes('Map stars') && $('card-modal-body').textContent.includes('Caught'));
+  win.closeQuestCard();
+
+  section('Training and collectible field guide');
+  win.showScreen('screen-hall');
+  ok('training leads with one recommended workout',
+     $('hall-body').textContent.includes('Recommended workout') && !!win.document.querySelector('#hall-body .training-hero'));
+  ok('training library offers five distinct workout paths',
+     win.document.querySelectorAll('#hall-body .training-workout').length === 5);
+  win.showScreen('screen-monsters');
+  ok('monster guide groups facts beneath realm guardians',
+     win.document.querySelectorAll('#monster-grid .monster-realm-section').length === ev('unlockedFamilies().length'));
+  ok('each unlocked realm exposes all 13 collectible fact cards',
+     Array.from(win.document.querySelectorAll('#monster-grid .monster-realm-section .monster-grid')).every(g => g.querySelectorAll('.monster-cell').length === 13));
+  const firstMonsterCard = win.document.querySelector('#monster-grid .monster-cell');
+  firstMonsterCard.click();
+  ok('fact monster card opens with fact, strategy, and performance stats',
+     $('card-modal').classList.contains('on') && $('card-modal-body').textContent.includes('Accuracy') &&
+     $('card-modal-body').textContent.includes('Best time') && $('card-modal-body').textContent.includes('Status'));
+  win.closeQuestCard();
+  ok('main navigation uses the shared five-icon system',
+     win.document.querySelectorAll('#nav button .ui-icon').length === 5);
 
   /* ---------------------------------------------------------------- */
   section('Quiz — fast correct answer');
@@ -338,7 +392,7 @@ async function boot(saveObj) {
   ok('fast correct raises rating', ev('state').facts[k].rating > ratingBefore || ratingBefore === 5,
      `${ratingBefore} → ${ev('state').facts[k].rating}`);
   ok('fast correct records a best time', typeof ev('state').facts[k].bt === 'number', String(ev('state').facts[k].bt));
-  ok('gems awarded', ev('state').gems > gemsBefore);
+  ok('a normal fast correct answer awards one gem', ev('state').gems === gemsBefore+1);
   ok('counted as first-try correct', ev('quiz').correct === 1);
   await new Promise(r => setTimeout(r, 700));
 
@@ -609,7 +663,8 @@ async function boot(saveObj) {
   ok('reveal has a place-it button', $('results-body').innerHTML.includes('goPlace('));
   ok('first boss defeat reveals newly unlocked blueprints',
      $('results-body').textContent.includes('New camp blueprints') && $('results-body').textContent.includes('Canvas Tent'));
-  ok('first boss defeat includes the 50-gem bonus', $('results-body').textContent.includes('+50 boss bonus'));
+  ok('first boss defeat pays an incremental realm-star reward instead of a flat 50-gem bonus',
+     $('results-body').textContent.includes('realm mastery gems') && !$('results-body').textContent.includes('+50 boss bonus'));
   win.goPlace('trophy-x2');
   ok('goPlace routes to camp holding the piece',
      ev('heldPiece') === 'trophy-x2' && $('screen-camp').classList.contains('active'));
