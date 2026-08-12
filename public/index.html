@@ -55,6 +55,24 @@ body{
 .screen.active{display:flex}
 .screen-pad{padding:16px 16px 90px}
 
+/* ---------- welcome & child profiles ---------- */
+#profile-gate{position:fixed;inset:0;z-index:1000;display:none;overflow-y:auto;padding:calc(22px + env(safe-area-inset-top)) 16px calc(26px + env(safe-area-inset-bottom));background:radial-gradient(circle at 50% 6%,#5443A0,#241E4E 46%,#14102D);color:#fff}
+#profile-gate.on{display:block}
+.profile-shell{width:min(680px,100%);margin:0 auto}
+.profile-brand{text-align:center;margin-bottom:18px}.profile-brand .mountain{font-size:42px}.profile-brand h1{font-family:var(--display);font-size:34px;line-height:1}.profile-brand p{color:#D9D3F5;font-size:13px;font-weight:800;margin-top:7px}
+.profile-card{background:rgba(255,248,236,.97);color:var(--ink);border-radius:24px;padding:18px;box-shadow:0 9px 0 rgba(0,0,0,.28);margin-bottom:14px}
+.profile-card h2{font-family:var(--display);font-size:24px}.profile-card>p{color:var(--ink-soft);font-size:13px;font-weight:700;line-height:1.4}
+.profile-list{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:14px}
+.profile-choice{border:2px solid #E4D9C5;border-radius:17px;background:#FFF;padding:9px;display:flex;align-items:center;gap:8px;text-align:left;color:var(--ink);font-family:var(--body);cursor:pointer}
+.profile-choice img{width:62px;height:72px;object-fit:contain;object-position:center bottom}.profile-choice strong{font-family:var(--display);font-size:17px;display:block}.profile-choice span{font-size:10px;font-weight:800;color:var(--ink-soft)}
+.profile-add{border-style:dashed;justify-content:center;min-height:92px;color:#66558C;font-weight:900}
+.profile-form{display:none}.profile-form.on{display:block}.profile-name{width:100%;padding:12px 14px;border:2px solid #D8CBB6;border-radius:14px;font:800 17px var(--body);color:var(--ink);margin:12px 0}
+.avatar-pick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 16px}.avatar-pick button{border:2px solid transparent;border-radius:15px;background:#EDE7FA;padding:4px;cursor:pointer}.avatar-pick button.on{border-color:var(--gold);background:#FFF3D6;box-shadow:0 3px 0 var(--gold-dark)}.avatar-pick img{width:100%;aspect-ratio:1;object-fit:contain;object-position:center bottom}
+.quest-intro{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:14px 0}.quest-intro div{background:#EEE8FA;border-radius:14px;padding:10px 7px;text-align:center;font-size:10px;font-weight:800;line-height:1.3}.quest-intro strong{display:block;font-family:var(--display);font-size:19px;color:#554382;margin-bottom:3px}
+.profile-actions{display:flex;gap:9px}.profile-actions .btn{flex:1}
+.profile-switch{width:36px;height:36px;border:1.5px solid rgba(255,255,255,.18);border-radius:12px;background:rgba(255,255,255,.1);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer}.profile-switch .profile-mini{width:29px;height:32px;object-fit:contain;object-position:center bottom}
+@media(max-width:420px){.profile-brand h1{font-size:29px}.profile-card{padding:15px}.profile-choice img{width:52px;height:62px}.quest-intro{gap:6px}.quest-intro div{padding:8px 4px}}
+
 /* ---------- top bar ---------- */
 .topbar{
   display:flex;align-items:center;gap:8px;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;position:sticky;top:0;z-index:40;min-height:64px;
@@ -409,14 +427,14 @@ body{
   background:#151132;box-shadow:0 8px 0 rgba(0,0,0,.32),0 18px 38px rgba(0,0,0,.26);isolation:isolate;
 }
 .camp-viewport{
-  position:absolute;inset:0 0 72px;overflow:hidden;background:#151132;
+  position:absolute;inset:0 0 72px;overflow:auto;background:#151132;display:flex;align-items:center;
   overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;touch-action:pan-x pan-y;
 }
 .camp-viewport::-webkit-scrollbar{display:none}
 .camp-scene{
-  position:relative;width:100%;height:100%;overflow:hidden;touch-action:pan-x pan-y;
+  position:relative;flex:0 0 auto;width:max(135%,520px);height:auto;aspect-ratio:1.84375;overflow:hidden;touch-action:pan-x pan-y;
   background-image:url('art/camp/bg-camp-dusk.png'),linear-gradient(180deg,#241E4E 0%,#553E9E 40%,#2E8B57 41%,#1E5F3C 100%);
-  background-size:cover;background-position:center;transform:translateZ(0);
+  background-size:100% 100%;background-position:0 0;transform:translateZ(0);
 }
 .camp-scene::before{
   content:"";position:absolute;inset:0;pointer-events:none;z-index:0;
@@ -436,6 +454,7 @@ body{
 .camp-scene.placing .camp-cell.cant-place{background:rgba(255,107,107,.08)}
 .camp-scene.placing .camp-cell:active{background:rgba(255,197,61,.4)}
 .citem.placed{cursor:pointer;z-index:2;padding:2px;display:flex;align-items:center;justify-content:center;transform:scale(var(--depth-scale,1));transform-origin:50% 100%;transition:filter .12s}
+.citem.placed:not(.ground-piece)::after{content:"";position:absolute;left:50%;top:50%;width:max(100%,34px);height:max(100%,34px);transform:translate(-50%,-50%);border-radius:12px}
 .citem.placed:active{filter:drop-shadow(0 3px 2px rgba(0,0,0,.35)) brightness(1.15)}
 .citem.knocked{transform:scale(var(--depth-scale,1)) rotate(72deg);filter:grayscale(.85) brightness(.8)}
 .citem.placed.ground-piece{padding:0;transform:none;transform-origin:center}
@@ -455,14 +474,13 @@ body{
 .avatar-render{display:inline-flex;align-items:flex-end;justify-content:center;vertical-align:middle}
 .avatar-composite{position:relative;display:inline-flex;align-items:flex-end;justify-content:center;vertical-align:middle;min-width:48px;min-height:48px}
 .avatar-composite>.piece-visual{width:48px;height:48px}
-.avatar-hat{position:absolute;z-index:3;top:2px;left:50%;width:12px;height:12px;transform:translateX(-50%);pointer-events:none}
-.avatar-hat .shop-art{width:100%;height:100%}
+.profile-avatar-art{width:48px;height:48px;object-fit:contain;object-position:center bottom;display:block}
 .avatar-buddy{display:inline-flex;align-items:flex-end;margin-left:3px}
 .avatar-buddy .shop-art{width:48px;height:48px}
 .citem.placed .avatar-render{position:relative;width:100%;height:100%}
 .citem.placed .avatar-composite{width:74%;height:100%;min-width:0;min-height:0}
 .citem.placed .avatar-composite>.piece-visual{width:100%;height:100%}
-.citem.placed .avatar-hat{top:2%;width:22%;height:22%}
+.citem.placed .profile-avatar-art{width:100%;height:100%}
 .citem.placed .avatar-buddy{position:absolute;right:-10%;bottom:0;width:48%;height:62%;margin:0}
 .citem.placed .avatar-buddy .shop-art,.citem.placed .avatar-buddy .realm-character{width:100%;height:100%}
 .camp-chain-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
@@ -539,7 +557,7 @@ body{
 .camp-climber-card .btn{font-size:12px;padding:7px 9px;border-radius:10px;box-shadow:0 3px 0 #CFC6B3}
 .camp-experience.immersive{position:fixed;inset:0;width:100vw;height:100dvh;min-height:0;border-radius:0;z-index:300;box-shadow:none;background:#151132}
 .camp-experience.immersive .camp-viewport{inset:0;overflow:auto}
-.camp-experience.immersive .camp-scene{width:calc(max(720px,112dvh) * 1.84375);height:max(720px,112dvh);max-width:none;flex:none;background-size:100% 100%;background-position:0 0}
+.camp-experience.immersive .camp-scene{width:max(560px,130vw);height:auto;max-width:none;flex:none;background-size:100% 100%;background-position:0 0}
 .camp-experience.immersive .camp-topbar{top:max(10px,env(safe-area-inset-top));left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right))}
 .camp-experience.immersive .camp-place-name{display:block}
 .camp-experience.immersive .camp-topbar>.chip{display:inline-flex}
@@ -574,7 +592,7 @@ body.camp-immersive-open .toast{position:fixed;z-index:400;bottom:calc(max(8px,e
   .camp-sheet{left:50%;right:auto;width:560px;transform:translateX(-50%)}
 }
 @media(orientation:landscape) and (max-height:520px){
-  .camp-experience.immersive .camp-scene{width:calc(max(600px,122dvh) * 1.84375);height:max(600px,122dvh)}
+  .camp-experience.immersive .camp-scene{width:max(100vw,700px);height:auto}
   .camp-experience.immersive .camp-sheet{max-height:60dvh}
   .camp-experience.immersive .camp-dock{height:52px}
   .camp-experience.immersive .camp-dock button{height:42px;flex-direction:row;gap:5px}
@@ -642,6 +660,7 @@ body.calm .stars{display:none}
   <!-- ============ MAP SCREEN ============ -->
   <div class="screen active" id="screen-map">
     <div class="topbar map-topbar">
+      <button class="profile-switch" onclick="openProfileChooser()" aria-label="Switch player" title="Switch player"><img class="profile-mini" id="map-profile-avatar" alt=""></button>
       <div class="title">Times Quest<small>The Climb to Mount Twelve</small></div>
       <div class="chip"><span class="em">💎</span><span id="gem-count">0</span></div>
       <div class="chip"><span class="em">🔥</span><span id="streak-count">0</span></div>
@@ -758,12 +777,61 @@ body.calm .stars{display:none}
   </div>
   <div class="toast" id="toast"></div>
 </div>
+<div id="profile-gate" aria-modal="true" role="dialog"><div class="profile-shell" id="profile-gate-body"></div></div>
 <script>
 /* =====================================================
    TIMES QUEST — game engine
    ===================================================== */
 
 const REALM_ORDER = [0,1,10,2,5,11,3,4,9,6,12,8,7];
+const PROFILE_KEY='timesquest-profiles';
+const LEGACY_SAVE_KEY='timesquest-save';
+const PROFILE_AVATARS=Array.from({length:12},(_,i)=>`art/avatar/profile-${i+1}.png`);
+let profileBook={v:1,active:null,profiles:[]},activeProfileId=null,profileDraftAvatar=0;
+
+function profileSaveKey(id){ return `timesquest-save-${id}`; }
+function profileById(id=activeProfileId){ return profileBook.profiles.find(p=>p.id===id); }
+function safeProfileName(name){ return String(name||'').trim().replace(/[<>]/g,'').slice(0,18); }
+function profileAvatar(profile=profileById()){ return PROFILE_AVATARS[(profile&&profile.avatar)||0]; }
+function chooseProfileAvatar(i,button){ profileDraftAvatar=i; document.querySelectorAll('.avatar-pick button').forEach((b,n)=>b.classList.toggle('on',n===i)); }
+async function loadProfileBook(){
+  try{ const raw=await storageGet(PROFILE_KEY); if(raw) profileBook=JSON.parse(raw); }catch(e){}
+  if(!profileBook||!Array.isArray(profileBook.profiles)) profileBook={v:1,active:null,profiles:[]};
+  activeProfileId=profileBook.active||null;
+}
+async function persistProfileBook(){ profileBook.active=activeProfileId; await storageSet(PROFILE_KEY,JSON.stringify(profileBook)); }
+function profileProgress(p){
+  const save=p&&p.snapshot; if(!save) return 'New climber';
+  const conquered=REALM_ORDER.filter(f=>save.realms&&save.realms[f]&&save.realms[f].conquered).length;
+  return `${conquered} of 13 realms conquered`;
+}
+function renderProfileGate(mode='choose'){
+  const gate=$('profile-gate'),body=$('profile-gate-body'); gate.classList.add('on');
+  if(mode==='create'){
+    body.innerHTML=`<div class="profile-brand"><div class="mountain">⛰️</div><h1>Create a climber</h1><p>Every child gets a completely separate quest.</p></div><div class="profile-card profile-form on"><h2>Who is climbing?</h2><input class="profile-name" id="profile-name" maxlength="18" autocomplete="off" placeholder="Climber name" aria-label="Climber name"><p>Choose the explorer who will appear on the map and at Base Camp.</p><div class="avatar-pick">${PROFILE_AVATARS.map((src,i)=>`<button class="${i===profileDraftAvatar?'on':''}" onclick="chooseProfileAvatar(${i},this)" aria-label="Choose explorer ${i+1}"><img src="${src}" alt="Explorer ${i+1}"></button>`).join('')}</div><div class="profile-actions"><button class="btn ghost" style="color:var(--ink);background:#E5DDF4" onclick="renderProfileGate('choose')">Back</button><button class="btn gold" onclick="createProfile()">Begin quest</button></div></div>`;
+    setTimeout(()=>{ const input=$('profile-name'); if(input) input.focus(); },0); return;
+  }
+  const cards=profileBook.profiles.map(p=>`<button class="profile-choice" onclick="switchProfile('${p.id}')"><img src="${profileAvatar(p)}" alt=""><div><strong>${p.name}</strong><span>${profileProgress(p)}</span></div></button>`).join('');
+  body.innerHTML=`<div class="profile-brand"><div class="mountain">⛰️</div><h1>Times Quest</h1><p>The Climb to Mount Twelve</p></div><div class="profile-card"><h2>${profileBook.profiles.length?'Who is playing?':'Welcome, climber!'}</h2><p>${profileBook.profiles.length?'Choose a profile or make a new one.':'Build multiplication mastery, catch Fact Monsters, and create a mountain camp of your own.'}</p>${profileBook.profiles.length?`<div class="profile-list">${cards}<button class="profile-choice profile-add" onclick="profileDraftAvatar=0;renderProfileGate('create')">＋ New climber</button></div>`:`<div class="quest-intro"><div><strong>1★</strong>Conquer the realm boss</div><div><strong>2★</strong>Catch 10 fact monsters</div><div><strong>3★</strong>Catch all 13 facts</div></div><p>Fast, correct answers raise monsters from wild to caught. Earn all 39 map stars to unlock the final Base Camp Lodge.</p><button class="btn gold" style="margin-top:14px" onclick="profileDraftAvatar=0;renderProfileGate('create')">Create first climber</button>`}</div>`;
+}
+async function createProfile(){
+  const name=safeProfileName($('profile-name')&&$('profile-name').value);
+  if(!name){ toast('Add a climber name first'); return; }
+  const id=`p${Date.now().toString(36)}${Math.random().toString(36).slice(2,5)}`;
+  const p={id,name,avatar:profileDraftAvatar,created:Date.now(),snapshot:defaultState()};
+  profileBook.profiles.push(p); activeProfileId=id; state=p.snapshot; migrateState();
+  await storageSet(profileSaveKey(id),JSON.stringify(state)); await persistProfileBook();
+  $('profile-gate').classList.remove('on'); applyCalm(); showScreen('screen-map');
+}
+async function switchProfile(id){
+  if(activeProfileId&&state){ await storageSet(profileSaveKey(activeProfileId),JSON.stringify(state)); const old=profileById(); if(old) old.snapshot=state; }
+  const p=profileBook.profiles.find(x=>x.id===id); if(!p) return;
+  activeProfileId=id; let raw=await storageGet(profileSaveKey(id));
+  try{ state=raw?JSON.parse(raw):p.snapshot||defaultState(); }catch(e){ state=p.snapshot||defaultState(); }
+  migrateState(); p.snapshot=state; await persistProfileBook(); $('profile-gate').classList.remove('on');
+  applyCalm(); checkDaily(); showScreen('screen-map');
+}
+function openProfileChooser(){ renderProfileGate('choose'); }
 
 const UI_ICONS={
   map:'<path d="M3 6.5 8.5 4 15 6.5 21 4v13.5L15 20l-6.5-2.5L3 20z"/><path d="M8.5 4v13.5M15 6.5V20"/>',
@@ -896,7 +964,9 @@ function openMonsterCard(a,b){
    follow the background perspective. */
 const CAMP_COLS = 12, CAMP_ROWS = 8;
 const LEGACY_CAMP_COLS = 10, LEGACY_CAMP_ROWS = 6;
-const CAMP_PLANE = { top:.405, bottom:.96, leftTop:.24, rightTop:.76, leftBottom:.13, rightBottom:.87 };
+/* The build plane follows the full painted clearing. Rows use a power curve so
+   distant cells compress toward the horizon and foreground cells open up. */
+const CAMP_PLANE = { top:.405, bottom:.965, leftTop:.205, rightTop:.795, leftBottom:.055, rightBottom:.945, depthCurve:1.72 };
 const CAMP_BLOCKED = new Set(['0,6','11,6','0,7','1,7','10,7','11,7']);
 const DUPE_PRICE = 20;
 /* Camp purchases still reveal as the player climbs, while these mastery gates
@@ -916,8 +986,8 @@ const CAMP_BUILD_PIECES = [
   campPiece('shelter-1','Bedroll','hero','shelter',1,0,2,1,0,null,true,false,'camp-shelter-t1.png','🛏️','','4s',true),
   campPiece('shelter-2','Pup Tent','hero','shelter',2,60,2,2,2,'shelter-1',true,false,'camp-shelter-t2.png','⛺','breathe','4s'),
   campPiece('shelter-3','Canvas Tent','hero','shelter',3,140,2,2,4,'shelter-2',true,false,'camp-shelter-t3.png','⛺','breathe','4.4s'),
-  campPiece('shelter-4','Cabin Tent','hero','shelter',4,280,2,2,8,'shelter-3',true,false,'camp-shelter-t4.png','🏕️','breathe','4.8s'),
-  campPiece('shelter-5','Base Camp Lodge','hero','shelter',5,500,3,2,13,'shelter-4',true,false,'camp-shelter-t5.png','🏠'),
+  campPiece('shelter-4','Cabin Tent','hero','shelter',4,280,3,2,8,'shelter-3',true,false,'camp-shelter-t4.png','🏕️','breathe','4.8s'),
+  campPiece('shelter-5','Base Camp Lodge','hero','shelter',5,500,3,3,13,'shelter-4',true,false,'camp-shelter-t5.png','🏠'),
   campPiece('fire-1','Fire Ring','hero','fire',1,0,1,1,0,null,true,false,'camp-fire-t1.png','🪨','','4s',true),
   campPiece('fire-2','Campfire','hero','fire',2,40,1,1,1,'fire-1',true,false,'camp-fire-t2-strip3.png','🔥','sprite3','.75s'),
   campPiece('fire-3','Stone Hearth','hero','fire',3,110,2,2,6,'fire-2',true,false,'camp-fire-t3-strip3.png','🔥','sprite3','.9s'),
@@ -1054,12 +1124,22 @@ async function storageSet(key,val){
   memoryFallback=val;
 }
 async function loadState(){
+  await loadProfileBook();
   try{
-    const raw = await storageGet('timesquest-save');
-    if(raw){ state = JSON.parse(raw); }
+    if(activeProfileId){
+      const p=profileById(),raw=await storageGet(profileSaveKey(activeProfileId));
+      state=raw?JSON.parse(raw):(p&&p.snapshot)||null;
+    } else {
+      const legacy=await storageGet(LEGACY_SAVE_KEY);
+      if(legacy){
+        state=JSON.parse(legacy); migrateState();
+        const p={id:'legacy',name:'Climber',avatar:0,created:Date.now(),snapshot:state};
+        profileBook.profiles=[p]; activeProfileId=p.id;
+        await storageSet(profileSaveKey(p.id),JSON.stringify(state)); await persistProfileBook();
+      }
+    }
   }catch(e){ /* no save yet */ }
-  if(!state) state = defaultState();
-  migrateState();
+  if(state) migrateState();
 }
 /* Backfills any field a save predates. Additive only — never renames or removes,
    so an old save keeps every bit of progress it had. Also used on import. */
@@ -1153,8 +1233,14 @@ function ensureCampClimber(){
 }
 let saveTimer = null;
 function saveState(){
+  if(!state||!activeProfileId) return;
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(()=>{ storageSet('timesquest-save', JSON.stringify(state)); }, 400);
+  saveTimer = setTimeout(()=>{
+    const p=profileById(); if(p) p.snapshot=state;
+    storageSet(profileSaveKey(activeProfileId),JSON.stringify(state));
+    storageSet(LEGACY_SAVE_KEY,JSON.stringify(state));
+    persistProfileBook();
+  }, 400);
 }
 
 /* ---------- fact helpers ---------- */
@@ -1231,6 +1317,8 @@ function showScreen(id){
 function updateChips(){
   ['gem-count','gem-count-2','gem-count-3','gem-count-4'].forEach(i=>{ if($(i)) $(i).textContent=state.gems; });
   $('streak-count').textContent = state.streak;
+  const avatar=$('map-profile-avatar'),p=profileById();
+  if(avatar&&p){ avatar.src=profileAvatar(p); avatar.alt=`${p.name} profile`; }
 }
 function toast(msg){
   const t=$('toast'); t.textContent=msg; t.classList.add('show');
@@ -1967,6 +2055,7 @@ function renderParent(){
     : `5-minute plan: one ×${fam} Practice round, then Mixed Mayhem to keep old families fresh.`;
 
   $('parent-body').innerHTML=`
+    <div class="card"><h3>👤 Current player</h3><p><b>${profileById()?profileById().name:'Climber'}</b> has a separate map, camp, cards, gems, and settings.</p><button class="btn secondary small" style="margin-top:9px" onclick="openProfileChooser()">Switch or add player</button></div>
     <div class="card"><h3>📋 Suggested next session</h3><p>${plan}</p></div>
     <div class="card"><h3>🗂️ Family progress</h3><div style="margin-top:8px">${chips}</div></div>
     <div class="card"><h3>🩹 Needs attention</h3>
@@ -2075,12 +2164,6 @@ function importSave(){
    BASE CAMP & SHOP
    ===================================================== */
 const SHOP = [
-  {id:'cap',type:'hat',em:'🧢',art:'art/hat/cap.png',name:'Trail Cap',price:25},
-  {id:'tophat',type:'hat',em:'🎩',art:'art/hat/tophat.png',name:'Top Hat',price:40},
-  {id:'helmet',type:'hat',em:'🪖',art:'art/hat/helmet.png',name:'Climb Helmet',price:50},
-  {id:'cowboy',type:'hat',em:'🤠',art:'art/hat/cowboy.png',name:'Cowboy Hat',price:60},
-  {id:'grad',type:'hat',em:'🎓',art:'art/hat/grad.png',name:'Math Master',price:80},
-  {id:'crown',type:'hat',em:'👑',art:'art/hat/crown.png',name:'Summit Crown',price:150},
   {id:'cat',type:'buddy',em:'🐱',art:'art/buddy/cat.png',name:'Camp Cat',price:40},
   {id:'dog',type:'buddy',em:'🐶',art:'art/buddy/dog.png',name:'Trail Dog',price:40},
   {id:'unicorn',type:'buddy',em:'🦄',art:'art/buddy/unicorn.png',name:'Unicorn',price:200},
@@ -2103,13 +2186,13 @@ function shopArt(item){
   return `<span class="shop-art" role="img" aria-label="${item.name}" style="--shop-art:url('${item.art}')"><span class="shop-art-emoji" aria-hidden="true">${item.em}</span><span class="shop-art-image" aria-hidden="true"></span><img class="shop-art-probe" src="${item.art}" alt="" onload="this.parentElement.classList.add('art-ready')" onerror="this.remove()"></span>`;
 }
 function avatarStr(){
-  const hat=SHOP.find(i=>i.id===state.equipped.hat);
   let buddy=SHOP.find(i=>i.id===state.equipped.buddy);
   if(!buddy && state.equipped.buddy && state.equipped.buddy.startsWith('pet')){
     const f=+state.equipped.buddy.slice(3); if(REALMS[f]) buddy={em:REALMS[f].pet,fam:f};
   }
   const buddyVisual=buddy?shopArt(buddy):'';
-  return `<span class="avatar-render"><span class="avatar-composite">${hat?`<span class="avatar-hat">${shopArt(hat)}</span>`:''}${pieceVisual(CAMP_CLIMBER_PIECE.id)}</span>${buddyVisual?`<span class="avatar-buddy">${buddyVisual}</span>`:''}</span>`;
+  const explorer=profileById()?`<img class="profile-avatar-art" src="${profileAvatar()}" alt="${profileById().name}">`:pieceVisual(CAMP_CLIMBER_PIECE.id);
+  return `<span class="avatar-render"><span class="avatar-composite">${explorer}</span>${buddyVisual?`<span class="avatar-buddy">${buddyVisual}</span>`:''}</span>`;
 }
 /* ---------- placeable pieces ---------- */
 function allPieces(){
@@ -2134,6 +2217,28 @@ function piecePlaced(id){ return state.placed.filter(p=>p.t===id).length; }
 function pieceFree(id){ return pieceOwned(id)-piecePlaced(id); }
 function pieceEm(id){ const p=pieceById(id); return p?p.em:'❓'; }
 function pieceSize(id){ const p=pieceById(id); return {w:p&&p.w||1,h:p&&p.h||1}; }
+/* Collision footprints stay grid-based. Visual scale is deliberately separate:
+   a lantern and a tent can both occupy build cells without appearing equally
+   large in the painted scene. Values are relative physical-world sizes. */
+const CAMP_VISUAL_SCALE={
+  'shelter-1':.62,'shelter-2':1.08,'shelter-3':1.18,'shelter-4':1.32,'shelter-5':1.48,
+  'fire-1':.50,'fire-2':.60,'fire-3':.86,'fire-4':1.05,
+  'light-1':.32,'light-2':.36,'light-3':.82,
+  'seating-1':.48,'seating-2':.78,'seating-3':.94,
+  'kitchen-1':.43,'kitchen-2':.70,'kitchen-3':1.02,
+  'water-1':.38,'water-2':.90,'water-3':1.10,
+  'garden-1':.42,'garden-2':.56,'garden-3':.82,'garden-4':1.18,
+  'storage-1':.46,'storage-2':.76,'storage-3':1.00,
+  'lookout-1':.48,'lookout-2':1.02,'lookout-3':1.20,
+  'banner-1':.44,'banner-2':.52,'banner-3':.78,
+  'ground-stone-path':1,'ground-wood-deck':1,
+  'life-bird-feeder':.38,'life-beehive':.44,'activity-kite':.62,'activity-rope-swing':.88,'activity-zipline':.75,
+  'camp-climber':.48,'legacy-canoe':.78,
+  'trophy-x0':.46,'trophy-x1':.72,'trophy-x10':.72,'trophy-x2':.86,'trophy-x5':.44,'trophy-x11':.78,
+  'trophy-x3':.68,'trophy-x4':.54,'trophy-x9':.82,'trophy-x6':.48,'trophy-x12':.95,'trophy-x8':.48,
+  'trophy-x7':.96,'trophy-summit':.46,
+};
+function pieceVisualScale(id){ return CAMP_VISUAL_SCALE[id]||.72; }
 function conquestCount(){ return REALM_ORDER.filter(f=>state.realms[f].conquered).length; }
 function pieceUnlockReason(p){
   if(!p || p.kind!=='build') return '';
@@ -2150,7 +2255,8 @@ function campCellBuildable(x,y){
   return Number.isInteger(x) && Number.isInteger(y) && x>=0 && y>=0 && x<CAMP_COLS && y<CAMP_ROWS && !CAMP_BLOCKED.has(`${x},${y}`);
 }
 function campGridPoint(x,y){
-  const t=Math.max(0,Math.min(1,y/CAMP_ROWS));
+  const linear=Math.max(0,Math.min(1,y/CAMP_ROWS));
+  const t=Math.pow(linear,CAMP_PLANE.depthCurve);
   const left=CAMP_PLANE.leftTop+(CAMP_PLANE.leftBottom-CAMP_PLANE.leftTop)*t;
   const right=CAMP_PLANE.rightTop+(CAMP_PLANE.rightBottom-CAMP_PLANE.rightTop)*t;
   return {x:(left+(right-left)*(x/CAMP_COLS))*100,y:(CAMP_PLANE.top+(CAMP_PLANE.bottom-CAMP_PLANE.top)*t)*100};
@@ -2172,11 +2278,14 @@ function campItemPresentation(p){
   const g=campQuadGeometry(p.x,p.y,w,h);
   if(ground) return {ground:true,style:`left:${g.left}%;top:${g.top}%;width:${g.width}%;height:${g.height}%;clip-path:${g.shape};--depth-scale:1`};
   const baseLeft=campGridPoint(p.x,p.y+h), baseRight=campGridPoint(p.x+w,p.y+h);
-  const depth=Math.max(0,Math.min(1,(p.y+h)/CAMP_ROWS));
-  const width=(baseRight.x-baseLeft.x)*(info&&info.kind==='climber'?1.7:1.4);
+  const depth=Math.max(0,Math.min(1,(p.y+h*.86)/CAMP_ROWS));
+  const physical=pieceVisualScale(p.t);
+  const footprintWidth=baseRight.x-baseLeft.x;
+  const width=footprintWidth*(.82+physical*.9);
   const left=(baseLeft.x+baseRight.x-width)/2;
-  const scale=.82+.28*depth;
-  return {ground:false,style:`left:${left.toFixed(3)}%;bottom:${(100-baseLeft.y).toFixed(3)}%;width:${width.toFixed(3)}%;aspect-ratio:${w}/${h};--depth-scale:${scale.toFixed(3)}`};
+  const cameraScale=.42+1.12*Math.pow(depth,1.45);
+  const artRatio=w/Math.max(1,h);
+  return {ground:false,style:`left:${left.toFixed(3)}%;bottom:${(100-baseLeft.y).toFixed(3)}%;width:${width.toFixed(3)}%;aspect-ratio:${artRatio};--depth-scale:${cameraScale.toFixed(3)};--physical-scale:${physical}`};
 }
 function canPlaceAt(id,x,y,ignoreIndex=-1){
   const {w,h}=pieceSize(id);
@@ -2312,9 +2421,13 @@ function captureCampCamera(){
   if(viewport && campImmersive) campCamera={left:viewport.scrollLeft,top:viewport.scrollTop};
 }
 function restoreCampCamera(center=false){
-  if(!campImmersive) return;
   const go=()=>{
     const viewport=$('camp-viewport'); if(!viewport) return;
+    if(!campImmersive){
+      viewport.scrollLeft=Math.max(0,(viewport.scrollWidth-viewport.clientWidth)/2);
+      viewport.scrollTop=Math.max(0,(viewport.scrollHeight-viewport.clientHeight)/2);
+      return;
+    }
     if(center || campCamera.left===null){ centerCampCamera(); return; }
     viewport.scrollLeft=campCamera.left;
     viewport.scrollTop=campCamera.top;
@@ -2524,11 +2637,9 @@ function renderCamp(preserveCamera=true){
     panelTitle='Realm treasures'; panelSub='Conquer realms to fill your collection';
     panelBody=`<div class="shop-grid">${pieces.filter(p=>p.kind==='trophy').map(renderPiece).join('')}</div>`;
   } else if(campPanel==='avatar'){
-    panelTitle='Your climber'; panelSub='Choose a hat and a camp buddy';
+    panelTitle='Your climber'; panelSub='Move your explorer or choose a camp buddy';
     panelBody=`
       <div class="camp-climber-card"><div class="avatar-line">${avatarStr()}</div><div class="camp-climber-copy"><strong>At Base Camp</strong><span>Your climber and equipped buddy live in the scene.</span><button class="btn secondary" onclick="${climberPlaced?'pickUpCampPiece':'holdPiece'}('${CAMP_CLIMBER_PIECE.id}')">${climberPlaced?'Move your climber':'Place your climber'}</button></div></div>
-      <div class="sect-label">Hats</div>
-      <div class="shop-grid">${SHOP.filter(i=>i.type==='hat').map(renderItem).join('')}</div>
       <div class="sect-label">Buddies</div>
       <div class="shop-grid">${buddies.map(renderItem).join('')}</div>`;
   }
@@ -2622,6 +2733,7 @@ document.addEventListener('keydown',e=>{
 
 (async function init(){
   await loadState();
+  if(!state){ renderProfileGate('choose'); return; }
   applyCalm();
   checkDaily();
   renderMap();

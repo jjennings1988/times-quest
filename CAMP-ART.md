@@ -6,6 +6,11 @@ copy-pasteable generation prompts.
 
 Style: **painterly stylised game art** — see §3. Motion: **fire, water and fabric only.**
 
+> **Avatar note (August 2026):** wearable hats are retired from the live camp
+> because a single overlay did not align reliably across the inclusive explorer
+> silhouettes. Their source PNGs remain preserved in
+> `public/art/archive/hat-upgrades/` for a possible future fitted-wardrobe pass.
+
 ---
 
 ## 1. The world it lives in
@@ -213,8 +218,8 @@ they're earned. These chains are the gem sink.
 | 1 | Bedroll | 20 | 2×1 | a rolled mat and a folded blanket on the grass |
 | 2 | Pup Tent | 60 | 2×2 | small canvas A-frame, one pole, slightly saggy |
 | 3 | Canvas Tent | 140 | 2×2 | proper ridge tent, guy-lines, rolled-back door |
-| 4 | Cabin Tent | 280 | 2×2 | tall walls, a window with warm light inside |
-| 5 | Base Camp Lodge | 500 | 3×2 | timber-framed, stone chimney, lantern by the door |
+| 4 | Cabin Tent | 280 | 3×2 | tall walls, a window with warm light inside |
+| 5 | Base Camp Lodge | 500 | 3×3 | timber-framed, stone chimney, lantern by the door |
 
 ### Fire — the heart of the camp
 
