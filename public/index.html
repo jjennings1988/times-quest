@@ -42,7 +42,7 @@ body{
   display:flex;justify-content:center;overflow:hidden;
 }
 #app{
-  width:100%;max-width:620px;height:100dvh;padding-top:env(safe-area-inset-top);display:flex;flex-direction:column;
+  width:100%;max-width:620px;height:100dvh;display:flex;flex-direction:column;
   background:transparent;position:relative;overflow:hidden;
 }
 /* ---------- stars in the sky ---------- */
@@ -57,8 +57,8 @@ body{
 
 /* ---------- top bar ---------- */
 .topbar{
-  display:flex;align-items:center;gap:8px;padding:12px 16px;position:sticky;top:0;z-index:5;
-  background:linear-gradient(180deg, rgba(26,21,56,.95), rgba(26,21,56,.75) 70%, transparent);
+  display:flex;align-items:center;gap:8px;padding:calc(12px + env(safe-area-inset-top)) 16px 12px;position:sticky;top:0;z-index:40;min-height:64px;
+  background:linear-gradient(180deg,rgba(26,21,56,.98),rgba(26,21,56,.9));backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.08);
 }
 .topbar .title{font-family:var(--display);font-weight:800;font-size:20px;color:#fff;flex:1;line-height:1.1}
 .topbar .title small{display:block;font-size:11px;font-weight:600;color:#B7AEE8}
@@ -108,6 +108,9 @@ body{
 #nav button .em{font-size:21px;transition:transform .15s}
 #nav button.on{color:var(--gold)}
 #nav button.on .em{transform:scale(1.15)}
+.ui-icon{width:1.35em;height:1.35em;display:inline-block;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.2em}
+#nav button .ui-icon{width:23px;height:23px;transition:transform .15s}
+#nav button.on .ui-icon{transform:translateY(-1px) scale(1.08)}
 
 /* ---------- mountain map ---------- */
 #screen-map{position:fixed;inset:0;width:100vw;height:100dvh;z-index:2;overflow-y:auto;background:#2A1C16;scrollbar-width:none}
@@ -185,6 +188,10 @@ body{
   box-shadow:0 6px 0 rgba(0,0,0,.3);position:relative;overflow:hidden;
 }
 .realm-hero .big{font-size:54px;display:block;filter:drop-shadow(0 4px 4px rgba(0,0,0,.3))}
+.realm-gem-trail{display:flex;gap:7px;margin-top:10px}
+.realm-gem-step{flex:1;text-align:center;padding:7px 4px;border-radius:11px;background:#F2EAFB;color:#5A4372;font-size:11px;font-weight:900;border:1.5px solid #D9C9ED}
+.realm-gem-step.earned{background:#FFF0B8;color:#6B4E00;border-color:#E4B733}
+.realm-gem-step strong{display:block;font-family:var(--display);font-size:14px;color:inherit}
 .realm-character{display:inline-flex;align-items:center;justify-content:center;position:relative;isolation:isolate;vertical-align:middle}
 .realm-character-emoji{position:absolute;inset:0;z-index:0;display:flex;align-items:center;justify-content:center;line-height:1}
 .realm-character-image{position:absolute;inset:0;z-index:1;opacity:0;background-image:var(--realm-character-art);background-repeat:no-repeat;background-position:center;background-size:contain;transition:opacity .12s}
@@ -203,6 +210,15 @@ body{
 .shop-art-probe{display:none}
 .realm-hero h2{font-family:var(--display);font-size:26px;font-weight:800;margin:4px 0 2px}
 .realm-hero .fam{font-weight:800;opacity:.9}
+.realm-guide{display:grid;grid-template-columns:92px 1fr;gap:12px;align-items:center;margin-top:12px;padding:12px;border-radius:17px;background:rgba(255,248,236,.96);color:var(--ink);text-align:left;border:2px solid rgba(255,255,255,.55);box-shadow:0 5px 0 rgba(0,0,0,.2)}
+.realm-guide .realm-character{width:88px;height:88px;font-size:55px}
+.realm-guide .hello{font-family:var(--display);font-weight:800;font-size:17px;line-height:1.08;margin-bottom:3px}
+.realm-guide p{font-size:12px;line-height:1.35;color:var(--ink-soft);font-weight:700}
+.guardian-card-button{width:100%;margin-top:9px;border:0;border-radius:12px;padding:8px 10px;background:#EAE3FF;color:#49366A;font-family:var(--display);font-weight:800;font-size:12px;cursor:pointer}
+.realm-next-card{margin-bottom:14px;padding:12px;border-radius:17px;background:linear-gradient(135deg,#FFF1B7,#FFD76A);box-shadow:0 5px 0 #A66C09;color:var(--ink)}
+.realm-next-card .eyebrow{font-size:10px;text-transform:uppercase;letter-spacing:.7px;font-weight:900;color:#765411}
+.realm-next-card .next-title{font-family:var(--display);font-size:18px;font-weight:800;margin:1px 0 6px}
+.realm-next-card .btn{box-shadow:0 4px 0 var(--green-dark)}
 .strategy-box{
   background:#FFF3D6;border:2.5px dashed var(--gold-dark);border-radius:14px;
   padding:12px;margin-top:10px;font-size:14px;color:#6B4E00;font-weight:700;text-align:left;
@@ -214,13 +230,35 @@ body{
 }
 .mode-card:active{transform:translateY(3px);box-shadow:0 2px 0 rgba(0,0,0,.25)}
 .mode-card .em{font-size:30px;display:block;margin-bottom:4px}
+.mode-card .ui-icon{width:31px;height:31px;display:block;margin:0 auto 6px;color:#59487A}
 .mode-card .nm{font-family:var(--display);font-weight:800;font-size:15px;color:var(--ink)}
-.mode-card .sub{font-size:11px;color:var(--ink-soft);font-weight:700}
+.mode-card .sub{font-size:11px;color:var(--ink-soft);font-weight:700;display:block;line-height:1.25;margin-top:2px}
 .mode-card.locked{filter:grayscale(.9);opacity:.55;pointer-events:none}
+
+/* ---------- collectible quest cards ---------- */
+.card-modal{display:none;position:fixed;inset:0;z-index:500;background:rgba(12,9,31,.78);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:calc(18px + env(safe-area-inset-top)) 16px calc(18px + env(safe-area-inset-bottom))}
+.card-modal.on{display:flex}
+.card-modal-close{position:absolute;right:max(18px,env(safe-area-inset-right));top:max(18px,env(safe-area-inset-top));width:42px;height:42px;border-radius:50%;border:1.5px solid rgba(255,255,255,.35);background:rgba(27,21,61,.88);color:#fff;font-size:24px;z-index:2;cursor:pointer}
+.quest-card{--card-color:#5B5680;width:min(350px,94vw);max-height:calc(100dvh - 42px);overflow-y:auto;padding:10px;border-radius:25px;background:linear-gradient(145deg,#FFF4B8,#D9A928 42%,#765514);box-shadow:0 24px 65px rgba(0,0,0,.55),inset 0 0 0 2px rgba(255,255,255,.65);color:var(--ink)}
+.quest-card-inner{border-radius:18px;padding:12px;background:linear-gradient(180deg,#FFF8EC,#EFE3CB);border:2px solid rgba(88,54,20,.42)}
+.quest-card-head{display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:800}
+.quest-card-head .type{margin-left:auto;border-radius:999px;padding:3px 8px;background:var(--card-color);color:#fff;font:800 10px var(--body);text-transform:uppercase;letter-spacing:.5px}
+.quest-card-head .number{font-size:14px;color:#796037}
+.quest-card-title{font-size:23px;line-height:1}
+.quest-card-art{height:190px;margin:9px 0;border-radius:14px;background:radial-gradient(circle at 50% 34%,rgba(255,255,255,.5),transparent 28%),linear-gradient(155deg,var(--card-color),#21183F);border:4px solid #E1BA54;display:flex;align-items:center;justify-content:center;overflow:hidden;box-shadow:inset 0 0 28px rgba(0,0,0,.28)}
+.quest-card-art .realm-character{width:178px;height:178px;font-size:90px;filter:drop-shadow(0 8px 7px rgba(0,0,0,.35))}
+.quest-card-art .monster-big{font-size:104px;filter:drop-shadow(0 8px 6px rgba(0,0,0,.3))}
+.quest-card-lore{font-size:12.5px;line-height:1.38;font-weight:700;color:#554968;margin-bottom:9px}
+.quest-card-ability{border-top:2px solid #C9A85E;border-bottom:2px solid #C9A85E;padding:8px 2px;margin-bottom:9px}
+.quest-card-ability strong{font-family:var(--display);font-size:16px;display:block;color:#49366A}
+.quest-card-ability span{font-size:12px;line-height:1.35;color:#5B5680;font-weight:700}
+.quest-card-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.quest-card-stat{text-align:center;border-radius:10px;padding:7px 3px;background:#E8DCC5;color:#6C5835;font-size:9.5px;font-weight:900;text-transform:uppercase}
+.quest-card-stat strong{display:block;color:var(--ink);font-family:var(--display);font-size:16px;text-transform:none}
 
 /* ---------- quiz ---------- */
 #screen-quiz{background:linear-gradient(180deg,#2E2566,#1A1538)}
-.quiz-top{display:flex;align-items:center;gap:10px;padding:14px 16px 4px}
+.quiz-top{display:flex;align-items:center;gap:10px;padding:calc(14px + env(safe-area-inset-top)) 16px 8px;position:sticky;top:0;z-index:20;background:linear-gradient(180deg,rgba(46,37,102,.98),rgba(46,37,102,.9),rgba(46,37,102,0));backdrop-filter:blur(12px)}
 .quiz-top .qcount{color:#B7AEE8;font-weight:800;font-size:13px;min-width:54px}
 .hp-track{flex:1;height:14px;border-radius:99px;background:rgba(255,255,255,.14);overflow:hidden}
 .hp-fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--green),#9BE15D);transition:width .35s}
@@ -283,7 +321,7 @@ body{
 .key.back{background:rgba(255,107,107,.7);font-size:20px}
 
 /* ---------- results ---------- */
-.results-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center}
+.results-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(20px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom));text-align:center}
 .results-wrap .big-em{font-size:72px;animation:pop .5s}
 .results-wrap .boss-visual.result{width:116px;height:116px;font-size:72px}
 .results-wrap h2{font-family:var(--display);font-weight:800;font-size:30px;color:#fff;margin:8px 0 2px}
@@ -303,9 +341,20 @@ body{
 .caught-monster .em{font-size:24px;display:block}
 
 /* ---------- monsters ---------- */
-.monster-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.monster-book-intro,.training-hero{background:linear-gradient(135deg,#FFF3C9,#E7D7AC);border:2px solid rgba(255,255,255,.5);border-radius:20px;padding:13px;margin-bottom:13px;box-shadow:0 6px 0 rgba(0,0,0,.25);color:var(--ink)}
+.monster-book-intro{display:flex;align-items:center;gap:12px}
+.monster-book-intro .ui-icon,.training-hero .ui-icon{width:38px;height:38px;color:#6B4E00;flex:0 0 auto}
+.monster-book-intro strong,.training-hero strong{font-family:var(--display);font-size:18px;display:block}
+.monster-book-intro span,.training-hero p{font-size:11.5px;line-height:1.35;color:var(--ink-soft);font-weight:700}
+.monster-realm-section{margin-bottom:18px}
+.monster-realm-head{display:flex;align-items:center;gap:8px;color:#fff;margin:0 2px 8px}
+.monster-realm-head .realm-character{width:38px;height:38px;font-size:25px}
+.monster-realm-head strong{font-family:var(--display);font-size:16px}
+.monster-realm-head span{margin-left:auto;color:#B7AEE8;font-size:11px;font-weight:800}
+.monster-grid{display:block}
+.monster-realm-section .monster-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
 .monster-cell{
-  background:var(--cream);border-radius:14px;padding:8px 4px;text-align:center;box-shadow:0 4px 0 rgba(0,0,0,.25);
+  background:var(--cream);border-radius:14px;padding:8px 4px;text-align:center;box-shadow:0 4px 0 rgba(0,0,0,.25);border:0;font-family:var(--body);cursor:pointer;color:var(--ink)
 }
 .monster-cell .em{font-size:26px;display:block}
 .monster-cell .fact{font-weight:800;font-size:12px}
@@ -318,6 +367,19 @@ body{
 .seg{display:flex;background:rgba(255,255,255,.1);border-radius:12px;padding:4px;margin-bottom:12px;gap:4px}
 .seg button{flex:1;border:none;background:none;color:#B7AEE8;font-family:var(--body);font-weight:800;font-size:12.5px;padding:8px 4px;border-radius:9px;cursor:pointer}
 .seg button.on{background:var(--gold);color:var(--ink)}
+
+/* ---------- training destination ---------- */
+.training-hero{display:flex;align-items:center;gap:12px}
+.training-hero .copy{flex:1}
+.training-hero .btn{margin-top:7px;font-size:14px;padding:9px 12px}
+.training-family-panel{background:rgba(255,255,255,.07);border:1.5px solid rgba(255,255,255,.12);border-radius:18px;padding:12px;margin-bottom:12px}
+.training-family-panel .sect-label{margin-top:0}
+.training-workout-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.training-workout{border:1.5px solid rgba(255,255,255,.16);background:rgba(255,255,255,.09);color:#fff;border-radius:16px;padding:12px;text-align:left;font-family:var(--body);cursor:pointer}
+.training-workout .ui-icon{width:28px;height:28px;color:var(--gold);display:block;margin-bottom:7px}
+.training-workout strong{font-family:var(--display);font-size:15px;display:block}
+.training-workout span{font-size:10.5px;color:#B7AEE8;font-weight:700;line-height:1.25;display:block;margin-top:2px}
+.training-workout:disabled{opacity:.35;cursor:default}
 
 /* ---------- parent dashboard ---------- */
 .heat-grid{display:grid;grid-template-columns:auto repeat(13,1fr);gap:2.5px;font-size:9px}
@@ -425,6 +487,7 @@ body{
   box-shadow:0 4px 12px rgba(0,0,0,.28);backdrop-filter:blur(10px);font-family:var(--body);font-weight:900;font-size:21px;cursor:pointer;pointer-events:auto;
 }
 .camp-hud-btn:active{transform:scale(.94)}
+.camp-hud-btn .ui-icon{width:21px;height:21px;margin:auto}
 .camp-recenter{display:none;font-size:18px}
 .camp-pan-hint{
   position:absolute;z-index:20;top:58px;left:50%;transform:translateX(-50%);pointer-events:none;white-space:nowrap;
@@ -451,6 +514,7 @@ body{
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;
 }
 .camp-dock button .em{font-size:20px;line-height:1}
+.camp-dock button>.ui-icon{width:21px;height:21px}
 .camp-dock button.on{background:rgba(255,197,61,.17);color:var(--gold);box-shadow:inset 0 0 0 1.5px rgba(255,197,61,.32)}
 .camp-dock button:disabled{opacity:.32;pointer-events:none}
 .camp-dock button:active{transform:scale(.96)}
@@ -497,6 +561,7 @@ body.camp-immersive-open .toast{position:fixed;z-index:400;bottom:calc(max(8px,e
 @keyframes campSheetIn{from{opacity:0}to{opacity:1}}
 @keyframes campHintAway{0%,65%{opacity:1}to{opacity:0;visibility:hidden}}
 @media(max-width:420px){
+  .realm-guide{grid-template-columns:78px 1fr}.realm-guide .realm-character{width:76px;height:76px}.realm-guide p{font-size:11.5px}
   .camp-chain-grid{grid-template-columns:1fr}
   .camp-experience{height:min(61dvh,460px);min-height:382px}
   .camp-sheet-scroll{padding-left:9px;padding-right:9px}
@@ -626,7 +691,7 @@ body.calm .stars{display:none}
     </div>
     <div class="hearts" id="hearts"></div>
     <div class="question-zone">
-      <div class="streak-flame" id="streak-flame">🔥 BOOST ×2 GEMS!</div>
+      <div class="streak-flame" id="streak-flame">FAST STREAK · BONUS GEM</div>
       <div class="q-text" id="q-text">7 × 8</div>
       <div class="answer-box" id="answer-box">&nbsp;</div>
       <div class="timer-row" id="timer-track"><span class="timer-bolt" id="timer-bolt">⚡</span><div class="timer-track"><div class="timer-fill" id="timer-fill"></div></div></div>
@@ -653,19 +718,7 @@ body.calm .stars{display:none}
   <div class="screen" id="screen-hall">
     <div class="topbar"><div class="title">Training Hall<small>Choose your workout</small></div>
       <div class="chip"><span class="em">💎</span><span id="gem-count-3">0</span></div></div>
-    <div class="screen-pad">
-      <div class="sect-label">Pick fact families (unlocked only)</div>
-      <div class="fam-pick" id="fam-pick"></div>
-      <div class="btn-row" style="margin-bottom:10px">
-        <button class="btn" onclick="hallStart('practice')">🎯 Practice</button>
-        <button class="btn gold" onclick="hallStart('speed')">⚡ Speed Round</button>
-      </div>
-      <div class="sect-label">Smart workouts</div>
-      <button class="btn coral" style="margin-bottom:10px" onclick="startWeakWorkout()">🩹 Weak Fact Workout</button>
-      <button class="btn ghost" style="margin-bottom:10px" onclick="startMixedMayhem()">🌪️ Mixed Mayhem (all unlocked)</button>
-      <button class="btn ghost" id="division-btn" onclick="startDivision()">➗ Division & Reverse Facts</button>
-      <p style="color:#8B83BD;font-size:12px;font-weight:700;margin-top:10px" id="hall-note"></p>
-    </div>
+    <div class="screen-pad" id="hall-body"></div>
   </div>
 
   <!-- ============ MONSTERS ============ -->
@@ -685,20 +738,24 @@ body.calm .stars{display:none}
 
   <!-- ============ BASE CAMP ============ -->
   <div class="screen" id="screen-camp">
-    <div class="topbar"><div class="title">Base Camp<small>Spend your gems!</small></div>
+    <div class="topbar"><div class="title">Base Camp<small>Build your mountain home</small></div>
       <div class="chip"><span class="em">💎</span><span id="gem-count-4">0</span></div></div>
     <div class="screen-pad" id="camp-body"></div>
   </div>
 
   <!-- ============ NAV ============ -->
   <div id="nav">
-    <button data-s="screen-map" class="on"><span class="em">🗻</span>Adventure</button>
-    <button data-s="screen-hall"><span class="em">🏋️</span>Training</button>
-    <button data-s="screen-monsters"><span class="em">🐾</span>Monsters</button>
-    <button data-s="screen-camp"><span class="em">🏕️</span>Camp</button>
-    <button data-s="screen-parent"><span class="em">👨‍👦</span>Parents</button>
+    <button data-s="screen-map" class="on"><span class="em" data-icon="map"></span>Adventure</button>
+    <button data-s="screen-hall"><span class="em" data-icon="training"></span>Training</button>
+    <button data-s="screen-monsters"><span class="em" data-icon="cards"></span>Monsters</button>
+    <button data-s="screen-camp"><span class="em" data-icon="camp"></span>Camp</button>
+    <button data-s="screen-parent"><span class="em" data-icon="parent"></span>Parents</button>
   </div>
 
+  <div class="card-modal" id="card-modal" onclick="if(event.target===this) closeQuestCard()" aria-hidden="true">
+    <button class="card-modal-close" onclick="closeQuestCard()" aria-label="Close card">×</button>
+    <div id="card-modal-body"></div>
+  </div>
   <div class="toast" id="toast"></div>
 </div>
 <script>
@@ -707,6 +764,49 @@ body.calm .stars{display:none}
    ===================================================== */
 
 const REALM_ORDER = [0,1,10,2,5,11,3,4,9,6,12,8,7];
+
+const UI_ICONS={
+  map:'<path d="M3 6.5 8.5 4 15 6.5 21 4v13.5L15 20l-6.5-2.5L3 20z"/><path d="M8.5 4v13.5M15 6.5V20"/>',
+  training:'<path d="M6 7v10M18 7v10M3.5 9v6M20.5 9v6M6 12h12"/>',
+  cards:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="m9 13 2-2 2 2 3-3M9 8h6"/>',
+  camp:'<path d="M3 19 12 5l9 14zM7.5 19 12 12l4.5 7M12 5v-2M4 21h16"/>',
+  parent:'<circle cx="9" cy="8" r="3"/><circle cx="17" cy="10" r="2.5"/><path d="M3.5 20c.4-4.1 2.2-6 5.5-6s5.1 1.9 5.5 6M14 15.5c3.8-.7 6 1 6.5 4.5"/>',
+  learn:'<path d="M4 5.5c3.2-.8 5.8-.2 8 1.7v12c-2.2-1.9-4.8-2.5-8-1.7zM20 5.5c-3.2-.8-5.8-.2-8 1.7v12c2.2-1.9 4.8-2.5 8-1.7z"/>',
+  target:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><path d="m14.8 9.2 5-5M17 4h3v3"/>',
+  trial:'<circle cx="12" cy="9" r="5"/><path d="m9 14-2 7 5-3 5 3-2-7M10 9l1.3 1.3L14 7.7"/>',
+  boss:'<path d="m4 20 6-6M14 10l6-6M15 4h5v5M3 4l17 17M4 4h5v5"/>',
+  spark:'<path d="m13 2-7 11h6l-1 9 7-12h-6z"/>',
+  heal:'<path d="M12 21S4 16.5 4 9.5A4.5 4.5 0 0 1 12 6a4.5 4.5 0 0 1 8 3.5C20 16.5 12 21 12 21z"/><path d="M12 8v6M9 11h6"/>',
+  mix:'<path d="M4 7h3c4 0 4 10 8 10h5M17 14l3 3-3 3M4 17h3c1.7 0 2.6-1.8 3.5-4M15 7h5M17 4l3 3-3 3"/>',
+  divide:'<path d="M5 12h14"/><circle cx="12" cy="6" r="1"/><circle cx="12" cy="18" r="1"/>',
+  summit:'<path d="m3 20 6.5-10 3 4.5L16 8l5 12z"/><path d="m7.5 13 2-3 1.4 2M16 8l1.5 3 1.1-1.1"/>',
+  hammer:'<path d="m14 5 5 5M15.5 3.5l5 5-2 2-5-5zM14.5 9.5 5 19a2.1 2.1 0 0 1-3-3l9.5-9.5"/>',
+  treasure:'<path d="M5 9h14v11H5zM4 9c0-3 2.4-5 5.3-5h5.4C17.6 4 20 6 20 9M12 9v11M9.5 13h5"/>',
+  climber:'<circle cx="12" cy="5" r="2.5"/><path d="m8 12 4-3 4 3M12 9v6M12 15l-4 6M12 15l5 6M8 12l-3 4M16 12l3-4"/>',
+  repeat:'<path d="M20 7v5h-5M4 17v-5h5"/><path d="M18.5 12A7 7 0 0 0 6.3 7.3L4 9M5.5 12a7 7 0 0 0 12.2 4.7L20 15"/>',
+  locate:'<circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>',
+  expand:'<path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/>',
+  collapse:'<path d="M8 8H3V3M16 8h5V3M8 16H3v5M16 16h5v5"/>',
+  backpack:'<path d="M8 8V6a4 4 0 0 1 8 0v2M5 9h14v12H5zM9 13h6M8 17h8"/>',
+};
+function icon(name,cls=''){ return `<svg class="ui-icon ${cls}" viewBox="0 0 24 24" aria-hidden="true">${UI_ICONS[name]||''}</svg>`; }
+function hydrateIcons(root=document){ root.querySelectorAll('[data-icon]').forEach(el=>{ el.innerHTML=icon(el.dataset.icon); }); }
+
+const REALM_LORE={
+  0:{intro:"Poof watches over the misty ×0 paths. He can make whole groups disappear, because any number of groups with nothing in them still makes zero.",ability:"Vanishing Zero",example:"7 × 0 = 0"},
+  1:{intro:"Echo is the quick-footed guardian of the ×1 woods. She sends every number back exactly as it arrived: one group of a number is simply that number.",ability:"Mirror Copy",example:"1 × 8 = 8"},
+  10:{intro:"Deca keeps Ten City running on tidy bundles of ten. He shifts every number one place to the left and clicks a zero onto the end.",ability:"Zero Shift",example:"10 × 7 = 70"},
+  2:{intro:"Twix darts along Double River in perfectly matched pairs. Whenever he sees a number, he makes an identical copy and adds the two together.",ability:"River Double",example:"2 × 8 = 8 + 8"},
+  5:{intro:"Slap greets every ship with a high five at the harbor. His answers march by fives and always finish with a friendly 0 or 5.",ability:"High-Five Count",example:"5, 10, 15, 20…"},
+  11:{intro:"Copy repeats what he sees from the Twin Towers. For one-digit numbers he writes the digit twice; for larger numbers he combines ten groups with one more.",ability:"Twin Echo",example:"11 × 4 = 44"},
+  3:{intro:"Trio swings through the jungle with three matching vines. He doubles a number first, then adds one more group to complete the trio.",ability:"Triple Swing",example:"3 × 7 = 14 + 7"},
+  4:{intro:"Boulder carved Squarestone Valley by doubling everything twice. One double makes two groups, and the second double makes four.",ability:"Double-Double",example:"4 × 6: 6 → 12 → 24"},
+  9:{intro:"Sensei studies the ×9 patterns in the temple. He begins with ten groups, silently removes one group, and checks that the answer's digits add to nine.",ability:"Shadow Subtract",example:"9 × 6 = 60 − 6"},
+  6:{intro:"Buzz powers Six Circuit with five bright cells and one spare. He finds five groups first, then adds one more group to complete the circuit.",ability:"Five Plus One",example:"6 × 8 = 40 + 8"},
+  12:{intro:"Tock measures the desert in dozens. He combines ten groups with a quick double, building twelve without counting every group.",ability:"Dozen Time",example:"12 × 6 = 60 + 12"},
+  8:{intro:"Glacier explores the caves by doubling three times. Each icy echo grows the number from two groups, to four, and finally to eight.",ability:"Triple Double",example:"8 × 7: 7 → 14 → 28 → 56"},
+  7:{intro:"Tempest climbs where the arithmetic is wildest. He breaks seven groups into an easy five and an easy two, then brings the answers back together.",ability:"Storm Split",example:"7 × 8 = 40 + 16"},
+};
 
 const REALMS = {
   0:{name:"Zero Marsh",pet:"👻",petName:"Poof the Ghost",color:"#3E7C6B",
@@ -757,6 +857,38 @@ function realmCharacter(fam, cls=''){
   const art=`art/realm/pet-${fam}.png`;
   return `<span class="realm-character ${cls}" role="img" aria-label="${r.petName}" style="--realm-character-art:url('${art}')"><span class="realm-character-emoji" aria-hidden="true">${r.pet}</span><span class="realm-character-image" aria-hidden="true"></span><img class="realm-character-probe" src="${art}" alt="" onload="this.parentElement.classList.add('art-ready')" onerror="this.remove()"></span>`;
 }
+function openQuestCard(html){
+  $('card-modal-body').innerHTML=html;
+  $('card-modal').classList.add('on');
+  $('card-modal').setAttribute('aria-hidden','false');
+}
+function closeQuestCard(){ $('card-modal').classList.remove('on'); $('card-modal').setAttribute('aria-hidden','true'); }
+function openGuardianCard(fam){
+  const r=REALMS[fam],l=REALM_LORE[fam],progress=realmStars(fam),rewards=REALM_GEM_REWARDS[fam];
+  const facts=Array.from({length:13},(_,b)=>fact(fam,b));
+  const correct=facts.reduce((sum,f)=>sum+(f.c||0),0), wrong=facts.reduce((sum,f)=>sum+(f.w||0),0);
+  openQuestCard(`<article class="quest-card" style="--card-color:${r.color}"><div class="quest-card-inner">
+    <div class="quest-card-head"><span class="number">REALM GUARDIAN · ×${fam}</span><span class="type">${r.name}</span></div>
+    <div class="quest-card-title">${r.petName}</div>
+    <div class="quest-card-art">${realmCharacter(fam)}</div>
+    <p class="quest-card-lore">${l.intro}</p>
+    <div class="quest-card-ability"><strong>${l.ability}</strong><span>${r.strategy} Example: ${l.example}.</span></div>
+    <div class="quest-card-stats"><div class="quest-card-stat"><strong>${progress.stars}/3</strong>Map stars</div><div class="quest-card-stat"><strong>${progress.caught}/13</strong>Caught</div><div class="quest-card-stat"><strong>${correct}/${correct+wrong||0}</strong>Correct</div></div>
+    <div class="realm-gem-trail">${rewards.map((g,i)=>`<div class="realm-gem-step ${progress.stars>i?'earned':''}"><strong>⭐ ${i+1}</strong>💎 ${g}</div>`).join('')}</div>
+  </div></article>`);
+}
+function openMonsterCard(a,b){
+  const f=fact(a,b),rating=factRating(a,b),fam=REALMS[a]?a:b,r=REALMS[fam],monster=rating?monsterFor(a,b):'✦';
+  const accuracy=(f.c||0)+(f.w||0)?Math.round((f.c||0)/((f.c||0)+(f.w||0))*100):0;
+  openQuestCard(`<article class="quest-card" style="--card-color:${r.color}"><div class="quest-card-inner">
+    <div class="quest-card-head"><span class="number">FACT MONSTER · ${RATING_LABEL[rating]}</span><span class="type">×${fam} realm</span></div>
+    <div class="quest-card-title">${a} × ${b} = ${a*b}</div>
+    <div class="quest-card-art"><span class="monster-big">${monster}</span></div>
+    <p class="quest-card-lore">${rating?`This creature has been discovered in ${r.name}. Keep answering its fact quickly to raise it from ${RATING_LABEL[rating]} toward shiny mastery.`:`A hidden creature from ${r.name}. Answer ${a} × ${b} during training to reveal it.`}</p>
+    <div class="quest-card-ability"><strong>${REALM_LORE[fam].ability}</strong><span>${r.hint(a,b)}</span></div>
+    <div class="quest-card-stats"><div class="quest-card-stat"><strong>${accuracy}%</strong>Accuracy</div><div class="quest-card-stat"><strong>${f.bt?`${(f.bt/1000).toFixed(1)}s`:'—'}</strong>Best time</div><div class="quest-card-stat"><strong>${RATING_LABEL[rating]}</strong>Status</div></div>
+  </div></article>`);
+}
 
 /* ---------- camp build grid ---------- */
 /* The build grid is projected onto the painted clearing, not the full image.
@@ -767,9 +899,17 @@ const LEGACY_CAMP_COLS = 10, LEGACY_CAMP_ROWS = 6;
 const CAMP_PLANE = { top:.405, bottom:.96, leftTop:.24, rightTop:.76, leftBottom:.13, rightBottom:.87 };
 const CAMP_BLOCKED = new Set(['0,6','11,6','0,7','1,7','10,7','11,7']);
 const DUPE_PRICE = 20;
+/* Camp purchases still reveal as the player climbs, while these mastery gates
+   reserve the most impressive upgrades for stars earned across the whole map. */
+const CAMP_STAR_GATES = {
+  'shelter-3':9, 'shelter-4':24, 'shelter-5':39,
+  'fire-3':18, 'fire-4':33, 'light-3':27, 'seating-3':21,
+  'kitchen-3':24, 'water-3':27, 'garden-4':27, 'storage-3':24,
+  'lookout-3':36, 'banner-3':36, 'activity-zipline':30,
+};
 /* Locked TQ-CAMP-1.1 catalogue. IDs and filenames are save/API contracts. */
 const campPiece=(id,name,category,chain,tier,price,w,h,unlock,replaces,unique,repeatable,asset,em,motion='',duration='4s',starterGrant=false)=>({
-  id,name,category,chain,tier,price,w,h,unlockAfterConquests:unlock,replaces,unique,repeatable,
+  id,name,category,chain,tier,price,w,h,unlockAfterConquests:unlock,unlockAfterStars:CAMP_STAR_GATES[id]||0,replaces,unique,repeatable,
   art:`art/camp/${asset}`,em,motion,duration,starterGrant,kind:'build'
 });
 const CAMP_BUILD_PIECES = [
@@ -867,15 +1007,22 @@ const fastMs   = () => state.settings.window;
 const roundLen = () => state.settings.roundLen;
 const heartCt  = () => state.settings.hearts;
 
+/* A realm pays more as the climb gets harder. These are one-time map-star
+   rewards; repeatable rounds intentionally pay much less than they did before. */
+const REALM_GEM_REWARDS = Object.fromEntries(REALM_ORDER.map((fam,index)=>[
+  fam,[25+index*3,40+index*4,60+index*6]
+]));
+
 /* ---------- state ---------- */
 let state = null;
 const defaultState = () => ({
-  v: 3,
+  v: 4,
   gems: 0, streak: 0, lastPlayed: null, chest: false, chestFrom: null,
   questDate: null, questDone: false,
   settings: { ...PREF_DEFAULTS },
   facts: {},   // key "a*b" (a<=b): {c:0,w:0,streak:0,rating:0,slow:0,last:null,bt:null}
   realms: Object.fromEntries(REALM_ORDER.map(f=>[f,{trial:false,conquered:false}])),
+  realmRewardStars: Object.fromEntries(REALM_ORDER.map(f=>[f,0])),
   summitDone: false,
   owned: [], equipped: {hat:null, buddy:null},
   placed: [],      // [{t:'lantern', x:6, y:3, k:false}] — camp arrangement
@@ -930,6 +1077,13 @@ function migrateState(){
   if(!state.owned) state.owned=[];
   if(!state.equipped) state.equipped={hat:null,buddy:null};
   REALM_ORDER.forEach(f => { if(!state.realms[f]) state.realms[f]={trial:false,conquered:false}; });
+  // Existing players keep their current balance. Stars they already earned are
+  // marked claimed so this economy pass never grants a surprise retroactive pile.
+  if(!state.realmRewardStars){
+    state.realmRewardStars=Object.fromEntries(REALM_ORDER.map(f=>[f,realmStars(f).stars]));
+  } else {
+    REALM_ORDER.forEach(f=>{ state.realmRewardStars[f]=Math.max(0,Math.min(3,Number(state.realmRewardStars[f])||0)); });
+  }
   if(!state.bought) state.bought={};
   if(!state.campDiscovered) state.campDiscovered={};
   if(state.campStarted===undefined) state.campStarted=false;
@@ -949,7 +1103,7 @@ function migrateState(){
   if((Number(state.v)||0)<2) migrateLegacyCampV2();
   if((Number(state.v)||0)<3) migratePerspectiveCampV3();
   ensureCampClimber();
-  state.v=3;
+  state.v=4;
 }
 function migrateLegacyCampV2(){
   const own=(id,count=1)=>{ state.bought[id]=Math.max(Number(state.bought[id])||0,count); state.campDiscovered[id]=true; };
@@ -1119,12 +1273,12 @@ function completeRound(correctCount, fams){
   if(!state.questDone){
     const fam=currentFamily();
     if((fams.includes(fam)||allConquered()) && correctCount>=10){
-      state.questDone=true; state.gems+=25; toast("📜 Daily Quest complete! +25 💎"); sfx.gem();
+      state.questDone=true; state.gems+=10; toast("📜 Daily Quest complete! +10 💎"); sfx.gem();
     }
   }
   // mystery chest
   if(state.chest && state.chestFrom!==todayStr()){
-    state.chest=false; const bonus=15+Math.floor(Math.random()*16);
+    state.chest=false; const bonus=5+Math.floor(Math.random()*6);
     state.gems+=bonus; toast(`🎁 Mystery Chest opened! +${bonus} 💎`); confetti(30);
   }
   state.chest=true; state.chestFrom=todayStr();
@@ -1144,22 +1298,35 @@ function realmStars(fam){
   if(state.realms[fam].conquered && facts.every(r=>r>=4)) stars=3;
   return {stars, caught, avg};
 }
+function mapStarCount(){ return REALM_ORDER.reduce((sum,f)=>sum+realmStars(f).stars,0); }
+function claimRealmStarRewards(fam){
+  const earned=realmStars(fam).stars;
+  const claimed=Math.max(0,Math.min(3,Number(state.realmRewardStars[fam])||0));
+  if(earned<=claimed) return {gems:0,stars:[]};
+  const rewards=REALM_GEM_REWARDS[fam];
+  const stars=[];
+  let gems=0;
+  for(let star=claimed+1;star<=earned;star++){ gems+=rewards[star-1]; stars.push(star); }
+  state.realmRewardStars[fam]=earned;
+  state.gems+=gems;
+  return {gems,stars};
+}
 /* One button that picks the right next thing, so opening the app to a menu of
    four modes he has no basis for choosing between is optional, not mandatory. */
 function nextAction(){
   if(allConquered()){
-    if(!state.summitDone) return {label:'⛰️ Climb to the Summit', sub:'The final challenge', fn:startSummit, args:[]};
+    if(!state.summitDone) return {icon:'summit', label:'Climb to the Summit', sub:'The final challenge', fn:startSummit, args:[]};
     return getWeakFacts().length
-      ? {label:'🩹 Weak Fact Workout', sub:'Shore up the tricky ones', fn:startWeakWorkout, args:[]}
-      : {label:'🌪️ Mixed Mayhem', sub:'Keep every family sharp', fn:startMixedMayhem, args:[]};
+      ? {icon:'heal', label:'Weak Fact Workout', sub:'Shore up the tricky ones', fn:startWeakWorkout, args:[]}
+      : {icon:'mix', label:'Mixed Mayhem', sub:'Keep every family sharp', fn:startMixedMayhem, args:[]};
   }
   const fam=currentFamily(), r=REALMS[fam], st=state.realms[fam];
   const seen=Array.from({length:13},(_,i)=>factRating(fam,i)).some(v=>v>0);
   const {caught}=realmStars(fam);
-  if(!seen)      return {label:`📖 Learn the ×${fam}s`,       sub:`${r.name} — no timer, with helpers`, fn:startLearn,    args:[fam]};
-  if(caught<10)  return {label:`🎯 Practice in ${r.name}`,     sub:`${caught} of 13 monsters caught`,    fn:startPractice, args:[fam]};
-  if(!st.trial)  return {label:`🏅 Mastery Trial: ×${fam}`,    sub:`Get ${trialNeeds()} of ${roundLen()} to open the Boss`, fn:startTrial, args:[fam]};
-  return           {label:`⚔️ Fight ${bossName(fam)}`,         sub:`${r.name} — ${heartCt()} hearts`,    fn:startBoss,     args:[fam]};
+  if(!seen)      return {icon:'learn', label:`Learn the ×${fam}s`,       sub:`${r.name} — no timer, with helpers`, fn:startLearn,    args:[fam]};
+  if(caught<10)  return {icon:'target', label:`Practice in ${r.name}`,     sub:`${caught} of 13 monsters caught`,    fn:startPractice, args:[fam]};
+  if(!st.trial)  return {icon:'trial', label:`Mastery Trial: ×${fam}`,    sub:`Get ${trialNeeds()} of ${roundLen()} to open the Boss`, fn:startTrial, args:[fam]};
+  return           {icon:'boss', label:`Fight ${bossName(fam)}`,         sub:`${r.name} — ${heartCt()} hearts`,    fn:startBoss,     args:[fam]};
 }
 function doContinue(){
   const a=nextAction();
@@ -1174,8 +1341,20 @@ function toggleMapNotices(force){
   if(button) button.setAttribute('aria-expanded',String(mapNoticesOpen));
 }
 const MAP_POSITIONS=[
-  {x:31,y:91.5},{x:70,y:84.3},{x:28,y:77.2},{x:69,y:70.1},{x:34,y:63.1},{x:72,y:56.0},{x:30,y:48.9},
-  {x:70,y:41.8},{x:31,y:34.7},{x:69,y:27.7},{x:34,y:21.0},{x:70,y:15.0},{x:38,y:9.3},{x:57,y:3.8},
+  {x:31,y:91.5}, // ×0  marsh
+  {x:70,y:84.3}, // ×1  woods
+  {x:28,y:77.2}, // ×10 city
+  {x:69,y:70.1}, // ×2  river
+  {x:34,y:63.1}, // ×5  harbor
+  {x:25,y:48.9}, // ×11 twin towers
+  {x:74,y:41.8}, // ×3  jungle
+  {x:50,y:34.7}, // ×4  stone valley
+  {x:22,y:29.8}, // ×9  temple
+  {x:69,y:27.7}, // ×6  circuit
+  {x:34,y:21.0}, // ×12 desert
+  {x:70,y:15.0}, // ×8  ice caves
+  {x:38,y:9.3},  // ×7  storm peak
+  {x:57,y:3.8},  // summit
 ];
 function mapRouteSvg(completedCount){
   const width=1000,height=2000;
@@ -1192,7 +1371,7 @@ function mapRouteSvg(completedCount){
 function renderMap(){
   const trail=$('map-trail');
   const act=nextAction();
-  $('continue-btn').innerHTML=`<span>${act.label}<small>${act.sub}</small></span>`;
+  $('continue-btn').innerHTML=`${icon(act.icon)}<span>${act.label}<small>${act.sub}</small></span>`;
   const unlocked=unlockedFamilies();
   const completedCount=conquestCount();
   trail.innerHTML=`<div class="map-art" aria-hidden="true"></div>${mapRouteSvg(completedCount)}`;
@@ -1231,7 +1410,7 @@ function renderMap(){
   // quest banner
   const q=questText();
   $('dq-title').textContent=state.questDone?'Daily Quest complete! ✅':q.t;
-  $('dq-sub').textContent=state.questDone?'+25 gems earned — come back tomorrow!':q.s;
+  $('dq-sub').textContent=state.questDone?'+10 gems earned — come back tomorrow!':q.s;
   $('daily-quest').classList.toggle('done',state.questDone);
   $('chest-banner').style.display = (state.chest && state.chestFrom!==todayStr()) ? 'flex':'none';
   $('map-quest-toggle').classList.toggle('has-reward',!state.questDone || $('chest-banner').style.display==='flex');
@@ -1249,26 +1428,45 @@ let activeRealm=null;
 function openRealm(fam){
   activeRealm=fam;
   const r=REALMS[fam];
-  const {caught}=realmStars(fam);
+  const {caught,stars}=realmStars(fam);
+  const gemRewards=REALM_GEM_REWARDS[fam];
   const trialDone=state.realms[fam].trial;
   const conquered=state.realms[fam].conquered;
+  const lore=REALM_LORE[fam];
+  const seen=Array.from({length:13},(_,i)=>factRating(fam,i)).some(v=>v>0);
+  const recommended=!seen
+    ? {label:`Meet the ×${fam}s`,sub:'Start with a calm, guided tour.',fn:`startLearn(${fam})`,icon:'learn'}
+    : caught<10
+      ? {label:'Find more fact monsters',sub:`${caught} of 13 caught in this realm.`,fn:`startPractice(${fam})`,icon:'target'}
+      : !trialDone
+        ? {label:'Take the Mastery Trial',sub:`Get ${trialNeeds()} of ${roundLen()} right to open the boss.`,fn:`startTrial(${fam})`,icon:'trial'}
+        : {label:conquered?'Rematch the realm boss':'Face the realm boss',sub:conquered?'Train against the guardian again.':'Win to unlock the next destination.',fn:`startBoss(${fam})`,icon:'boss'};
   $('realm-title-top').textContent=r.name;
   $('realm-body').innerHTML=`
     <div class="realm-hero" style="background:linear-gradient(160deg, ${r.color}, ${r.color}CC)">
       ${realmCharacter(fam,'big')}
       <h2>${r.name}</h2>
       <div class="fam">The ×${fam} family • ${r.petName}</div>
-      <div class="strategy-box">🧠 <b>Realm secret:</b> ${r.strategy}</div>
+      <div class="realm-guide">
+        ${realmCharacter(fam)}
+        <div><div class="hello">Meet ${r.petName}</div><p>${lore.intro}</p><button class="guardian-card-button" onclick="openGuardianCard(${fam})">View guardian Quest Card</button></div>
+      </div>
     </div>
+    <div class="realm-next-card"><div class="eyebrow">Recommended next</div><div class="next-title">${recommended.label}</div><button class="btn" onclick="${recommended.fn}">${icon(recommended.icon)}<span>${recommended.label}<small style="display:block;font:700 10px var(--body);opacity:.75">${recommended.sub}</small></span></button></div>
     <div class="card" style="display:flex;align-items:center;gap:10px;justify-content:space-between">
       <div><h3 style="margin:0">Monsters caught</h3><p style="margin:0">${caught} of 13 in this family</p></div>
       <div style="font-family:var(--display);font-weight:800;font-size:26px">${caught}/13</div>
     </div>
+    <div class="card">
+      <h3 style="margin:0">Realm gem trail</h3>
+      <p style="margin:2px 0 0">Each map star pays once. Later realms are worth more.</p>
+      <div class="realm-gem-trail">${gemRewards.map((g,i)=>`<div class="realm-gem-step ${stars>i?'earned':''}"><strong>⭐ ${i+1}</strong>💎 ${g}</div>`).join('')}</div>
+    </div>
     <div class="mode-grid">
-      <button class="mode-card" onclick="startLearn(${fam})"><span class="em">📖</span><span class="nm">Learn</span><span class="sub">No timer, with helpers</span></button>
-      <button class="mode-card" onclick="startPractice(${fam})"><span class="em">🎯</span><span class="nm">Practice</span><span class="sub">Warm-up + today's facts</span></button>
-      <button class="mode-card" onclick="startTrial(${fam})"><span class="em">🏅</span><span class="nm">Mastery Trial</span><span class="sub">${roundLen()} facts • get ${trialNeeds()} right</span></button>
-      <button class="mode-card ${trialDone?'':'locked'}" onclick="startBoss(${fam})"><span class="em">⚔️</span><span class="nm">Boss Battle</span><span class="sub">${trialDone?(conquered?'Rematch the boss!':'Defeat it to climb on!'):'Pass the Trial first'}</span></button>
+      <button class="mode-card" onclick="startLearn(${fam})">${icon('learn')}<span class="nm">Learn</span><span class="sub">No timer, with helpers</span></button>
+      <button class="mode-card" onclick="startPractice(${fam})">${icon('target')}<span class="nm">Practice</span><span class="sub">Warm-up and today's facts</span></button>
+      <button class="mode-card" onclick="startTrial(${fam})">${icon('trial')}<span class="nm">Mastery Trial</span><span class="sub">${roundLen()} facts • get ${trialNeeds()} right</span></button>
+      <button class="mode-card ${trialDone?'':'locked'}" onclick="startBoss(${fam})">${icon('boss')}<span class="nm">Boss Battle</span><span class="sub">${trialDone?(conquered?'Rematch the boss':'Defeat it to climb on'):'Pass the Trial first'}</span></button>
     </div>`;
   showScreen('screen-realm');
 }
@@ -1321,7 +1519,7 @@ function warmupQs(excludeFam){
 function startQuiz(cfg){
   quiz={
     mode:cfg.mode, fams:cfg.fams, queue:cfg.queue, idx:0, total:cfg.queue.length,
-    correct:0, wrong:0, gems:0, fastStreak:0, hearts:cfg.hearts||0,
+    correct:0, wrong:0, gems:0, fastStreak:0, rewardProgress:0, hearts:cfg.hearts||0,
     needCorrect:cfg.needCorrect||0, timed:cfg.timed && state.settings.timer,
     boss:cfg.boss||null, bossHP:cfg.queue.length, title:cfg.title,
     caughtThis:[], answer:"", locked:false, learn:cfg.mode==='learn',
@@ -1399,7 +1597,8 @@ function checkAnswer(){
       // and for the boss's health, but it does not raise mastery and it does not
       // count toward the pass threshold.
       quiz.recovered++; quiz.fastStreak=0;
-      quiz.gems+=1; state.gems+=1;
+      quiz.rewardProgress++;
+      if(quiz.rewardProgress%4===0){ quiz.gems++; state.gems++; }
     } else {
       quiz.correct++;
       const before=f.rating;
@@ -1408,7 +1607,12 @@ function checkAnswer(){
       if(!f.bt || elapsed<f.bt) f.bt=Math.round(elapsed);
       const boost=quiz.fastStreak>=3;
       $('streak-flame').classList.toggle('show',boost);
-      let g = quiz.learn?1:2; if(fast)g++; if(boost)g*=2;
+      // One gem for a correct answer; a fast three-answer streak adds one bonus.
+      // Learn and retry reps pay every four correct responses instead.
+      const gemBoost=fast && quiz.fastStreak>0 && quiz.fastStreak%3===0;
+      let g=0;
+      if(quiz.learn){ quiz.rewardProgress++; if(quiz.rewardProgress%4===0) g=1; }
+      else g=1+(gemBoost?1:0);
       quiz.gems+=g; state.gems+=g;
       if(before<4 && f.rating>=4) quiz.caughtThis.push({a:q.a,b:q.b,shiny:false});
       else if(before<5 && f.rating===5) quiz.caughtThis.push({a:q.a,b:q.b,shiny:true});
@@ -1480,7 +1684,7 @@ function finishQuiz(failed=false){
   const qz=quiz; quiz=null;
   const acc = qz.correct+qz.wrong>0 ? qz.correct/(qz.correct+qz.wrong) : 0;
   const passed = !failed && (qz.needCorrect===0 || qz.correct>=qz.needCorrect);
-  let headline="", em="🎉", sub="", newPiece=null, newBlueprints=[];
+  let headline="", em="🎉", sub="", newPiece=null, newBlueprints=[], starReward={gems:0,stars:[]};
 
   if(qz.mode==='trial' && passed){
     state.realms[qz.fams[0]].trial=true;
@@ -1495,7 +1699,6 @@ function finishQuiz(failed=false){
     const next=unlockedFamilies(); const newest=next[next.length-1];
     sub = first && newest!==fam ? `${REALMS[newest].name} (the ×${newest}s) is unlocked! ⛰️` : "The realm is yours!";
     if(first){
-      state.gems+=50;
       newPiece=REALM_PIECES[fam];
       newBlueprints=blueprintsAt(conquestCount());
     }
@@ -1513,6 +1716,7 @@ function finishQuiz(failed=false){
     sub = `${qz.correct} correct out of ${qz.correct+qz.wrong} answers`;
   }
   const stars = passed&&acc>=0.99?3 : acc>=0.85?2 : acc>=0.6?1:0;
+  if(qz.fams.length===1 && REALMS[qz.fams[0]]) starReward=claimRealmStarRewards(qz.fams[0]);
   if(passed && (qz.mode==='boss'||qz.mode==='summit'||stars===3)){ confetti(); sfx.win(); }
   else if(stars>=1) sfx.win();
 
@@ -1537,7 +1741,7 @@ function finishQuiz(failed=false){
     </div>`:''}
     <div class="reward-row">
       <div class="reward-pill">💎 +${qz.gems} gems</div>
-      ${newPiece?`<div class="reward-pill">💎 +50 boss bonus</div>`:''}
+      ${starReward.gems?`<div class="reward-pill">⭐ +${starReward.gems} realm mastery gems</div>`:''}
       <div class="reward-pill">✅ ${qz.correct} first try</div>
       ${qz.recovered?`<div class="reward-pill">💡 ${qz.recovered} on the retry</div>`:''}
       ${qz.wrong?`<div class="reward-pill">🩹 ${qz.wrong} to train</div>`:''}
@@ -1545,8 +1749,8 @@ function finishQuiz(failed=false){
     ${qz.caughtThis.length?`<div class="sub" style="margin-bottom:6px">Monsters ${qz.caughtThis.some(c=>c.shiny)?'caught & shined':'caught'}!</div>
     <div class="caught-list">${qz.caughtThis.slice(0,6).map(c=>`<div class="caught-monster ${c.shiny?'shiny':''}"><span class="em">${c.shiny?'✨':''}${monsterFor(c.a,c.b)}</span>${Math.min(c.a,c.b)}×${Math.max(c.a,c.b)}</div>`).join('')}</div>`:''}
     <div class="btn-row" style="width:100%;max-width:330px">
-      <button class="btn ghost" onclick="showScreen('screen-map')">🗻 Map</button>
-      <button class="btn gold" onclick="repeatLast()">🔁 Again</button>
+      <button class="btn ghost" onclick="showScreen('screen-map')">${icon('map')} Map</button>
+      <button class="btn gold" onclick="repeatLast()">${icon('repeat')} Again</button>
     </div>`;
   lastConfig._repeat=true;
   showScreen('screen-results');
@@ -1612,6 +1816,21 @@ function startSummit(){
 let hallSel=new Set();
 function renderHall(){
   const unlocked=unlockedFamilies();
+  const weak=getWeakFacts();
+  const recommended=weak.length
+    ? {title:'Weak Fact Workout',copy:`Coach the ${weak.length} fact${weak.length===1?'':'s'} that need the most help. No timer.`,fn:'startWeakWorkout()',icon:'heal'}
+    : {title:`×${currentFamily()} Realm Practice`,copy:'The best next workout for your current climb.',fn:"hallStart('practice')",icon:'target'};
+  $('hall-body').innerHTML=`
+    <div class="training-hero">${icon(recommended.icon)}<div class="copy"><span class="sect-label" style="margin:0;color:#765411">Recommended workout</span><strong>${recommended.title}</strong><p>${recommended.copy}</p><button class="btn" onclick="${recommended.fn}">${icon('spark')} Start workout</button></div></div>
+    <div class="training-family-panel"><div class="sect-label">Choose unlocked families</div><div class="fam-pick" id="fam-pick"></div><p id="hall-note" style="color:#B7AEE8;font-size:11.5px;font-weight:700;margin-top:9px"></p></div>
+    <div class="sect-label">Workout library</div>
+    <div class="training-workout-grid">
+      <button class="training-workout" onclick="hallStart('practice')">${icon('target')}<strong>Practice</strong><span>Focused repetitions without the speed pressure.</span></button>
+      <button class="training-workout" onclick="hallStart('speed')">${icon('spark')}<strong>Speed Round</strong><span>Build fast recall and improve mastery ratings.</span></button>
+      <button class="training-workout" onclick="startWeakWorkout()">${icon('heal')}<strong>Weak Facts</strong><span>Adaptive coaching for recent misses and slow answers.</span></button>
+      <button class="training-workout" onclick="startMixedMayhem()">${icon('mix')}<strong>Mixed Mayhem</strong><span>Keep every unlocked family fresh.</span></button>
+      <button class="training-workout" id="division-btn" onclick="startDivision()">${icon('divide')}<strong>Division</strong><span>Reverse mastered multiplication facts.</span></button>
+    </div>`;
   const pick=$('fam-pick'); pick.innerHTML='';
   REALM_ORDER.slice().sort((a,b)=>a-b).forEach(f=>{
     const b=document.createElement('button');
@@ -1621,7 +1840,6 @@ function renderHall(){
     b.onclick=()=>{ hallSel.has(f)?hallSel.delete(f):hallSel.add(f); renderHall(); };
     pick.appendChild(b);
   });
-  const weak=getWeakFacts();
   $('hall-note').textContent = weak.length
     ? `Smart tracker: ${weak.length} fact${weak.length>1?'s':''} need extra love right now (${weak.slice(0,3).map(k=>k.replace('*','×')).join(', ')}${weak.length>3?'…':''})`
     : 'No weak facts detected — go catch some new monsters!';
@@ -1676,19 +1894,21 @@ function startDivision(){
 let monsterFilter='all';
 function renderMonsters(){
   const seg=$('monster-seg');
-  const filters=[['all','All'],['caught','Caught'],['shiny','✨ Shiny'],['sleepy','😴 Sleepy'],['wild','Wild']];
+  const filters=[['all','All'],['caught','Caught'],['shiny','Shiny'],['sleepy','Sleepy'],['wild','Wild']];
   seg.innerHTML=filters.map(([k,l])=>`<button class="${monsterFilter===k?'on':''}" onclick="monsterFilter='${k}';renderMonsters()">${l}</button>`).join('');
   const grid=$('monster-grid'); grid.innerHTML='';
   let caughtN=0,total=0;
   const unlocked=unlockedFamilies();
-  const seen=new Set();
+  grid.innerHTML=`<div class="monster-book-intro" style="grid-column:1/-1">${icon('cards')}<div><strong>Quest Card Field Guide</strong><span>Tap any creature to inspect its fact, accuracy, best time, and realm strategy.</span></div></div>`;
   unlocked.forEach(fam=>{
+    const section=document.createElement('section'); section.className='monster-realm-section';
+    const realmGrid=document.createElement('div'); realmGrid.className='monster-grid';
+    let realmCaught=0,realmShown=0;
     for(let b=0;b<=12;b++){
       const k=fkey(fam,b);
-      if(seen.has(k)) continue; seen.add(k);
       total++;
       const r=factRating(fam,b);
-      if(r>=4) caughtN++;
+      if(r>=4){ caughtN++; realmCaught++; }
       const st = r===0?'undiscovered': r<=2?'wild': r===3?'sleepy': r===4?'caught':'shiny';
       if(monsterFilter!=='all'){
         if(monsterFilter==='caught'&&r<4) continue;
@@ -1697,14 +1917,16 @@ function renderMonsters(){
         if(monsterFilter==='wild'&&(st!=='wild'&&st!=='undiscovered')) continue;
       }
       const [lo,hi]=k.split('*');
-      const cell=document.createElement('div');
+      const cell=document.createElement('button');
       cell.className=`monster-cell ${st}`;
+      cell.onclick=()=>openMonsterCard(+lo,+hi);
       cell.innerHTML=`<span class="em">${r===0?'❓':monsterFor(+lo,+hi)}</span><span class="fact">${lo}×${hi}</span><span class="st">${RATING_LABEL[r]}</span>`;
-      grid.appendChild(cell);
+      realmGrid.appendChild(cell); realmShown++;
     }
+    if(realmShown){ section.innerHTML=`<div class="monster-realm-head">${realmCharacter(fam)}<strong>${REALMS[fam].name}</strong><span>${realmCaught}/13 caught</span></div>`; section.appendChild(realmGrid); grid.appendChild(section); }
   });
   $('monster-count').textContent=`${caughtN} of ${total} caught`;
-  if(!grid.children.length) grid.innerHTML='<div style="grid-column:1/-1;color:#8B83BD;font-weight:700;text-align:center;padding:30px 10px">Nothing here yet — go practice to find monsters!</div>';
+  if(grid.children.length===1) grid.innerHTML+='<div style="grid-column:1/-1;color:#8B83BD;font-weight:700;text-align:center;padding:30px 10px">Nothing here yet — go practice to find monsters!</div>';
 }
 
 /* =====================================================
@@ -1913,7 +2135,15 @@ function pieceFree(id){ return pieceOwned(id)-piecePlaced(id); }
 function pieceEm(id){ const p=pieceById(id); return p?p.em:'❓'; }
 function pieceSize(id){ const p=pieceById(id); return {w:p&&p.w||1,h:p&&p.h||1}; }
 function conquestCount(){ return REALM_ORDER.filter(f=>state.realms[f].conquered).length; }
-function pieceUnlocked(p){ return !p || p.kind!=='build' || conquestCount()>=p.unlockAfterConquests; }
+function pieceUnlockReason(p){
+  if(!p || p.kind!=='build') return '';
+  // Never re-lock an upgrade already owned or placed by an existing save.
+  if((Number(state.bought&&state.bought[p.id])||0)>0 || (state.placed||[]).some(item=>item.t===p.id)) return '';
+  if(conquestCount()<p.unlockAfterConquests) return `${p.unlockAfterConquests} realm conquests`;
+  if(mapStarCount()<p.unlockAfterStars) return `${p.unlockAfterStars} map stars`;
+  return '';
+}
+function pieceUnlocked(p){ return !pieceUnlockReason(p); }
 function blueprintsAt(count){ return CAMP_BUILD_PIECES.filter(p=>!p.starterGrant && p.unlockAfterConquests===count); }
 function rectsOverlap(a,b){ return a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y; }
 function campCellBuildable(x,y){
@@ -2053,7 +2283,7 @@ function buyCampUpgrade(chainId){
   const nextIndex=current ? current.tier : 0;
   const next=chain.tiers[nextIndex];
   if(!next){ if(current) holdPiece(current.id); return; }
-  if(!pieceUnlocked(next)){ toast(`${next.name} unlocks after ${next.unlockAfterConquests} realm conquests`); return; }
+  if(!pieceUnlocked(next)){ toast(`${next.name} unlocks at ${pieceUnlockReason(next)}`); return; }
   if(state.gems<next.price){ toast(`Need ${next.price-state.gems} more gems - go practice!`); return; }
   const placedIndex=current ? state.placed.findIndex(p=>p.t===current.id && !p.legacy) : -1;
   if(placedIndex>=0){
@@ -2117,7 +2347,7 @@ function holdPiece(id){
   const p=pieceById(id);
   if(!p) return;
   if(p.locked || !pieceUnlocked(p)){
-    toast(p.kind==='build' ? `${p.name} unlocks after ${p.unlockAfterConquests} realm conquests` : (p.fam===null ? 'Conquer Mount Twelve for this one!' : `Beat ${bossName(p.fam)} to earn this`));
+    toast(p.kind==='build' ? `${p.name} unlocks at ${pieceUnlockReason(p)}` : (p.fam===null ? 'Conquer Mount Twelve for this one!' : `Beat ${bossName(p.fam)} to earn this`));
     return;
   }
   if(pieceFree(id)<=0){
@@ -2221,7 +2451,7 @@ function renderCamp(preserveCamera=true){
     const held=heldPiece===p.id;
     const locked=!!p.locked || !pieceUnlocked(p);
     let pr;
-    if(locked && p.kind==='build') pr = `Unlocks after ${p.unlockAfterConquests} realms`;
+    if(locked && p.kind==='build') pr = `Unlocks at ${pieceUnlockReason(p)}`;
     else if(locked)       pr = p.fam===null?'🔒 Summit':`🔒 ×${p.fam} realm`;
     else if(held)         pr = 'Holding…';
     else if(free>0)       pr = free>1?`Tap to place (${free})`:'Tap to place';
@@ -2243,12 +2473,12 @@ function renderCamp(preserveCamera=true){
     if(!current){
       action=pieceUnlocked(next)
         ? `<button class="btn gold" onclick="buyCampUpgrade('${id}')">Build ${next.name} · 💎 ${next.price}</button>`
-        : `<button class="btn secondary" disabled>Preview · unlocks after next realm</button>`;
+        : `<button class="btn secondary" disabled>Preview · ${pieceUnlockReason(next)}</button>`;
     } else {
       const free=pieceFree(current.id)>0;
       let upgrade='';
       if(next && pieceUnlocked(next)) upgrade=`<button class="btn gold" onclick="buyCampUpgrade('${id}')">Upgrade → ${next.name} · 💎 ${next.price}</button>`;
-      else if(next && next.unlockAfterConquests===count+1) upgrade=`<button class="btn secondary" disabled>Next: ${next.name} · after next realm</button>`;
+      else if(next) upgrade=`<button class="btn secondary" disabled>Next: ${next.name} · ${pieceUnlockReason(next)}</button>`;
       action=`<div class="camp-chain-actions"><button class="btn secondary" onclick="${free?'holdPiece':'pickUpCampPiece'}('${current.id}')">${free?'Place current tier':'Move current tier'}</button>${upgrade}</div>`;
     }
     return `<div class="camp-chain"><div class="camp-chain-top">${pieceVisual(shown.id)}<div class="camp-chain-copy"><div class="kind">${chain.name}</div><div class="nm">${shown.name}</div><div class="tier">Tier ${shown.tier} of ${chain.tiers.length}${current?' · built':' · blueprint preview'}</div></div></div>${action}</div>`;
@@ -2283,7 +2513,7 @@ function renderCamp(preserveCamera=true){
   const climberPlaced=piecePlaced(CAMP_CLIMBER_PIECE.id)>0;
   let panelTitle='',panelSub='',panelBody='';
   if(campPanel==='build'){
-    panelTitle='Build your camp'; panelSub='Upgrades, paths, and camp life';
+    panelTitle='Build your camp'; panelSub=`${mapStarCount()} of 39 map stars · upgrades, paths, and camp life`;
     panelBody=`
       <div class="sect-label">Camp upgrades</div>
       <div class="camp-chain-grid">${Object.entries(CAMP_CHAINS).map(renderChain).join('')}</div>
@@ -2313,8 +2543,8 @@ function renderCamp(preserveCamera=true){
         <div class="camp-place-name">Base Camp<small>${campImmersive?'Swipe to explore the clearing':'Your mountain home'}</small></div>
         <span class="camp-top-spacer"></span>
         <div class="chip" aria-label="${state.gems} gems">💎 ${state.gems}</div>
-        <button class="camp-hud-btn camp-recenter" onclick="centerCampCamera()" aria-label="Center on your climber" title="Center on your climber">⌖</button>
-        <button class="camp-hud-btn" onclick="toggleCampImmersive()" aria-label="${campImmersive?'Close full-screen camp':'Open full-screen camp'}" title="${campImmersive?'Close full screen':'Explore full screen'}">${campImmersive?'×':'⛶'}</button>
+        <button class="camp-hud-btn camp-recenter" onclick="centerCampCamera()" aria-label="Center on your climber" title="Center on your climber">${icon('locate')}</button>
+        <button class="camp-hud-btn" onclick="toggleCampImmersive()" aria-label="${campImmersive?'Close full-screen camp':'Open full-screen camp'}" title="${campImmersive?'Close full screen':'Explore full screen'}">${icon(campImmersive?'collapse':'expand')}</button>
       </div>
       <div class="camp-pan-hint">${campImmersive?'↔ Swipe in every direction':'Tap ⛶ for full-screen exploring'}</div>
       <div class="camp-status-stack" aria-live="polite">
@@ -2323,14 +2553,14 @@ function renderCamp(preserveCamera=true){
         <div class="held-bar ${heldPiece?'on':''}">
           <span class="hem">${heldPiece?pieceEm(heldPiece):''}</span>
           <span>Tap the top-left of a clear ${heldPiece?`${pieceSize(heldPiece).w}×${pieceSize(heldPiece).h}`:''} space</span><span class="spacer"></span>
-          <button class="btn small ghost" style="color:#6B4E00;box-shadow:none;border-color:var(--gold-dark)" onclick="putAway()">🎒 Put away</button>
+          <button class="btn small ghost" style="color:#6B4E00;box-shadow:none;border-color:var(--gold-dark)" onclick="putAway()">${icon('backpack')} Put away</button>
         </div>
       </div>
       ${campPanel?`<section class="camp-sheet" aria-label="${panelTitle}"><div class="camp-sheet-head"><div class="camp-sheet-title">${panelTitle}<small>${panelSub}</small></div><button class="camp-sheet-close" onclick="setCampPanel('${campPanel}')" aria-label="Close ${panelTitle}">⌄</button></div><div class="camp-sheet-scroll">${panelBody}</div></section>`:''}
       <nav class="camp-dock" aria-label="Camp tools">
-        <button class="${campPanel==='build'?'on':''}" onclick="setCampPanel('build')" aria-pressed="${campPanel==='build'}" ${heldPiece?'disabled':''}><span class="em">⛺</span><span>Build</span></button>
-        <button class="${campPanel==='treasures'?'on':''}" onclick="setCampPanel('treasures')" aria-pressed="${campPanel==='treasures'}" ${heldPiece?'disabled':''}><span class="em">🏆</span><span>Treasures</span></button>
-        <button class="${campPanel==='avatar'?'on':''}" onclick="setCampPanel('avatar')" aria-pressed="${campPanel==='avatar'}" ${heldPiece?'disabled':''}><span class="em">🧗</span><span>Climber</span></button>
+        <button class="${campPanel==='build'?'on':''}" onclick="setCampPanel('build')" aria-pressed="${campPanel==='build'}" ${heldPiece?'disabled':''}>${icon('hammer')}<span>Build</span></button>
+        <button class="${campPanel==='treasures'?'on':''}" onclick="setCampPanel('treasures')" aria-pressed="${campPanel==='treasures'}" ${heldPiece?'disabled':''}>${icon('treasure')}<span>Treasures</span></button>
+        <button class="${campPanel==='avatar'?'on':''}" onclick="setCampPanel('avatar')" aria-pressed="${campPanel==='avatar'}" ${heldPiece?'disabled':''}>${icon('climber')}<span>Climber</span></button>
       </nav>
     </div>
     <p class="camp-help">Tap an item in the scene to move it. The perspective grid appears only while you are placing something.</p>`;
@@ -2377,8 +2607,10 @@ function startCustomQuiz(){
    BOOT
    ===================================================== */
 document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>showScreen(b.dataset.s));
+hydrateIcons();
 $('keypad').addEventListener('click',e=>{ const k=e.target.closest('.key'); if(k) pressKey(k.dataset.k); });
 document.addEventListener('keydown',e=>{
+  if(e.key==='Escape' && $('card-modal').classList.contains('on')){ closeQuestCard(); return; }
   if(e.key==='Escape' && campImmersive){ toggleCampImmersive(false); return; }
   if(!quiz) return;
   if(e.key>='0'&&e.key<='9') pressKey(e.key);

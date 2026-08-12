@@ -198,9 +198,10 @@ everything else.
 
 ## 4. The catalogue
 
-Prices are tuned against the current economy: roughly 30–40 gems a round, so a
-100-gem item is about three sessions of saving and the 500-gem Lodge is a genuine
-multi-week goal.
+Prices are tuned against the progression economy: a perfect fast 12-question
+round pays about 16 gems, while each realm's first, second, and third map stars
+award a larger one-time mastery bonus. Late camp tiers also require cumulative
+map-star milestones; the 500-gem Base Camp Lodge requires all 39 realm stars.
 
 Realm trophies (the 13 conquest pieces plus the Summit Trophy) stay **unbuyable** —
 they're earned. These chains are the gem sink.
