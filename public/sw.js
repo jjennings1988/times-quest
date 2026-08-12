@@ -1,5 +1,5 @@
 /* Times Quest service worker — offline-first app shell */
-const CACHE = 'times-quest-v13';
+const CACHE = 'times-quest-v14';
 const SHELL = [
   './',
   './index.html',
@@ -51,6 +51,19 @@ const SHELL = [
   './art/camp/camp-activity-rope-swing.png',
   './art/camp/camp-activity-zipline.png',
   './art/camp/camp-trophy-x0.png',
+  './art/camp/camp-trophy-x1.png',
+  './art/camp/camp-trophy-x2.png',
+  './art/camp/camp-trophy-x3.png',
+  './art/camp/camp-trophy-x4.png',
+  './art/camp/camp-trophy-x5.png',
+  './art/camp/camp-trophy-x6.png',
+  './art/camp/camp-trophy-x7.png',
+  './art/camp/camp-trophy-x8.png',
+  './art/camp/camp-trophy-x9.png',
+  './art/camp/camp-trophy-x10.png',
+  './art/camp/camp-trophy-x11.png',
+  './art/camp/camp-trophy-x12.png',
+  './art/camp/camp-trophy-summit.png',
 ];
 
 self.addEventListener('install', (e) => {
