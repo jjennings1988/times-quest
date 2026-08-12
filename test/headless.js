@@ -169,6 +169,11 @@ async function boot(saveObj) {
   };
   const realmCharacters=Object.fromEntries(Array.from({length:13},(_,f)=>[`pet-${f}.png`,[512,512]]));
   const bossCharacters=Object.fromEntries(Array.from({length:13},(_,f)=>[`boss-${f}.png`,[512,512]]));
+  const avatarGear={
+    'hat/cap.png':[256,256], 'hat/tophat.png':[256,256], 'hat/helmet.png':[256,256],
+    'hat/cowboy.png':[256,256], 'hat/grad.png':[256,256], 'hat/crown.png':[256,256],
+    'buddy/cat.png':[256,256], 'buddy/dog.png':[256,256], 'buddy/unicorn.png':[256,256],
+  };
   const pngInfo=name=>{
     const buf=fs.readFileSync(require('path').join(PUBLIC,'art','camp',name));
     return {w:buf.readUInt32BE(16),h:buf.readUInt32BE(20),colorType:buf[25]};
@@ -243,6 +248,18 @@ async function boot(saveObj) {
   })();
   ok('climber is a transparent three-frame 768×256 sprite strip',
      climberInfo.w===768 && climberInfo.h===256 && climberInfo.colorType===6);
+  const avatarPngInfo=name=>{
+    const buf=fs.readFileSync(require('path').join(PUBLIC,'art',name));
+    return {w:buf.readUInt32BE(16),h:buf.readUInt32BE(20),colorType:buf[25]};
+  };
+  ok('all six hats and three shop buddies exist at 256×256',
+     Object.entries(avatarGear).every(([name,size])=>{
+       const p=require('path').join(PUBLIC,'art',name);
+       if(!fs.existsSync(p)) return false;
+       const info=avatarPngInfo(name); return info.w===size[0] && info.h===size[1];
+     }));
+  ok('all hats and shop buddies are transparent RGBA PNGs',
+     Object.keys(avatarGear).every(n=>avatarPngInfo(n).colorType===6));
   const swSource=fs.readFileSync(require('path').join(PUBLIC,'sw.js'),'utf8');
   ok('offline shell pre-caches every Batch 1 asset', Object.keys(batch1).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('offline shell pre-caches every Batch 2 asset', Object.keys(batch2).every(n=>swSource.includes(`./art/camp/${n}`)));
@@ -252,14 +269,24 @@ async function boot(saveObj) {
   ok('offline shell pre-caches every realm character', Object.keys(realmCharacters).every(n=>swSource.includes(`./art/realm/${n}`)));
   ok('offline shell pre-caches every boss portrait', Object.keys(bossCharacters).every(n=>swSource.includes(`./art/boss/${n}`)));
   ok('offline shell pre-caches the climber sprite', swSource.includes('./art/climber.png'));
+  ok('offline shell pre-caches all avatar gear', Object.keys(avatarGear).every(n=>swSource.includes(`./art/${n}`)));
   ok('runtime cache never stores missing future-batch art', swSource.includes('if (res.ok)'));
+  ok('offline shell pre-caches the scrolling adventure map', swSource.includes('./art/map/bg-adventure-map.png'));
   fresh.win.showScreen('screen-camp');
+  ok('camp opens as a scene-first experience with collapsed menus',
+     !!fresh.$('camp-experience') && !fresh.win.document.querySelector('.camp-sheet'));
+  ok('camp dock exposes build, treasure, and climber tools',
+     fresh.win.document.querySelectorAll('.camp-dock button').length === 3);
+  fresh.win.setCampPanel('build');
+  ok('build catalog opens as a collapsible sheet',
+     fresh.win.document.querySelector('.camp-sheet') && fresh.$('camp-body').textContent.includes('Build your camp'));
   ok('first camp visit grants the free starter pair',
      fev("state.bought['shelter-1']") === 1 && fev("state.bought['fire-1']") === 1);
   ok('starter placement tutorial begins with the Bedroll',
      fev('heldPiece') === 'shelter-1' && JSON.stringify(fev('state.campTutorial')) === JSON.stringify(['shelter-1','fire-1']));
   ok('one-conquest items preview early', fresh.$('camp-body').textContent.includes('Cook Pot'));
   ok('two-conquest items remain hidden', !fresh.$('camp-body').textContent.includes('Pack Pile'));
+  fresh.win.setCampPanel('build');
   fresh.win.document.querySelector('.camp-cell[data-x="0"][data-y="0"]')
     .dispatchEvent(new fresh.win.MouseEvent('click',{bubbles:true}));
   ok('placing Bedroll advances tutorial to Fire Ring', fev('heldPiece') === 'fire-1');
@@ -278,6 +305,16 @@ async function boot(saveObj) {
   ok('continue button has a label', ($('continue-btn').textContent||'').length > 5, $('continue-btn').textContent);
   ok('continue points at the current realm (×2 practice or learn)',
      /×2|Double River/.test($('continue-btn').textContent), $('continue-btn').textContent);
+  ok('adventure renders one map destination per realm plus the summit',
+     win.document.querySelectorAll('#map-trail .realm-node').length === 13 && !!win.document.querySelector('#map-trail .summit-node'));
+  ok('adventure route has one curved segment between every destination',
+     win.document.querySelectorAll('#map-trail .map-route-segment').length === 13);
+  ok('current map destination carries the climber marker',
+     !!win.document.querySelector('#map-trail .realm-node.here .map-you'));
+  win.toggleMapNotices(true);
+  ok('quest notes open as a collapsible map overlay',
+     $('map-notice-sheet').classList.contains('on') && $('map-quest-toggle').getAttribute('aria-expanded') === 'true');
+  win.toggleMapNotices(false);
 
   section('Realm screen');
   win.openRealm(2);
@@ -400,6 +437,14 @@ async function boot(saveObj) {
   ok('climber is a movable camp piece, not scene decoration',
      ev("state.placed.some(p=>p.t==='camp-climber')") && ev("pieceVisual('camp-climber')").includes('art/climber.png'));
   ok('existing pieces rendered', win.document.querySelectorAll('.citem.placed').length === n0);
+  win.toggleCampImmersive(true);
+  ok('full-screen camp mode is available and hides app chrome',
+     $('camp-experience').classList.contains('immersive') && win.document.body.classList.contains('camp-immersive-open'));
+  ok('full-screen camp includes recenter and exit controls',
+     !!win.document.querySelector('.camp-recenter') && !!win.document.querySelector('[aria-label="Close full-screen camp"]'));
+  win.toggleCampImmersive(false);
+  ok('full-screen camp returns to the embedded view',
+     !$('camp-experience').classList.contains('immersive') && !win.document.body.classList.contains('camp-immersive-open'));
 
   win.holdPiece('trophy-x0');                             // ×0 conquered → owned
   ok('piece picked up', ev('heldPiece') === 'trophy-x0');
@@ -534,6 +579,11 @@ async function boot(saveObj) {
   ev("state.equipped.buddy='pet1'");
   ok('equipped realm buddy uses its PNG-backed character markup', ev('avatarStr()').includes('art/realm/pet-1.png'));
   ok('map and camp avatar markup use the illustrated climber', ev('avatarStr()').includes('art/climber.png'));
+  ev("state.equipped.hat='cap'; state.equipped.buddy='cat'");
+  ok('equipped hat and shop buddy use PNG-backed avatar layers',
+     ev('avatarStr()').includes('art/hat/cap.png') && ev('avatarStr()').includes('art/buddy/cat.png'));
+  ok('shop art keeps emoji fallback beneath each new PNG',
+     ev("shopArt(SHOP.find(i=>i.id==='helmet'))").includes('🪖') && ev("shopArt(SHOP.find(i=>i.id==='helmet'))").includes('art/hat/helmet.png'));
 
   ev("state.placed=[{t:'shelter-2',x:0,y:0,k:false},{t:'ground-stone-path',x:5,y:4,k:false},{t:'fire-2',x:1,y:2,k:false},{t:'light-1',x:0,y:4,k:false}]");
   win.renderCamp();

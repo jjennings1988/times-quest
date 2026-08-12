@@ -4,6 +4,18 @@ Companion to `CAMP-ART.md`. Same world, same style bible. This covers everything
 outside the camp: the realm characters, the bosses, the 40 fact-monsters, the
 climber, and the interface icons.
 
+## Production status
+
+| Set | Status |
+|---|---|
+| 13 realm characters | Complete — transparent 512×512 PNGs |
+| 13 bosses | Complete — transparent 512×512 PNGs |
+| Climber | Complete — transparent 3-frame 768×256 strip |
+| 6 hats | Complete — transparent 256×256 PNGs, layered on the climber |
+| 3 shop buddies | Complete — transparent 256×256 PNGs |
+| 40 fact monsters | Deferred for the dedicated collectible-monster pass |
+| Tier B interface icons | Still emoji; planned as inline SVG rather than PNG |
+
 **Inventory: 137 distinct emoji, 223 uses.** They do not all want the same
 treatment, and that's the main finding here.
 
