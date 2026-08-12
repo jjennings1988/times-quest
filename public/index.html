@@ -422,17 +422,15 @@ body{
 .shop-item.owned .pr{color:var(--green-dark)}
 .shop-item.equipped{border-color:var(--gold);background:#FFF3D6}
 .shop-item.cant{opacity:.5}
-.camp-experience{
-  position:relative;height:min(61dvh,500px);min-height:390px;border-radius:24px;overflow:hidden;
-  background:#151132;box-shadow:0 8px 0 rgba(0,0,0,.32),0 18px 38px rgba(0,0,0,.26);isolation:isolate;
-}
+.camp-experience{position:fixed;inset:0;width:100vw;height:100dvh;min-height:0;overflow:hidden;background:#151132;isolation:isolate;z-index:300}
 .camp-viewport{
-  position:absolute;inset:0 0 72px;overflow:auto;background:#151132;display:flex;align-items:center;
-  overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none;touch-action:pan-x pan-y;
+  position:absolute;inset:0;overflow-x:auto;overflow-y:hidden;background:#151132;display:flex;align-items:stretch;
+  overscroll-behavior-x:contain;overscroll-behavior-y:none;-webkit-overflow-scrolling:touch;scrollbar-width:none;touch-action:pan-x;
+  scroll-snap-type:x proximity;
 }
 .camp-viewport::-webkit-scrollbar{display:none}
 .camp-scene{
-  position:relative;flex:0 0 auto;width:max(135%,520px);height:auto;aspect-ratio:1.84375;overflow:hidden;touch-action:pan-x pan-y;
+  position:relative;flex:0 0 auto;height:100dvh;width:max(100vw,calc(100dvh * 1.84375));overflow:hidden;touch-action:pan-x;
   background-image:var(--camp-background,url('art/camp/bg-camp-dusk.png')),linear-gradient(180deg,#241E4E 0%,#553E9E 40%,#2E8B57 41%,#1E5F3C 100%);
   background-size:100% 100%;background-position:0 0;transform:translateZ(0);
 }
@@ -449,10 +447,13 @@ body{
 .camp-scene .citem{position:absolute;font-size:30px;filter:drop-shadow(0 3px 2px rgba(0,0,0,.35))}
 .camp-scene .fire{animation:flicker 1.1s infinite}
 .camp-cell{position:absolute;z-index:1;transition:background .12s;clip-path:var(--cell-shape)}
-.camp-scene.placing .camp-cell{background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.13)}
-.camp-scene.placing .camp-cell.can-place{background:rgba(74,222,128,.16);box-shadow:inset 0 0 0 1.5px rgba(155,240,190,.42)}
-.camp-scene.placing .camp-cell.cant-place{background:rgba(255,107,107,.08)}
+.camp-scene.placing .camp-cell.nearby{background:rgba(255,255,255,.07);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.13)}
+.camp-scene.placing .camp-cell.can-place.nearby{background:rgba(74,222,128,.16);box-shadow:inset 0 0 0 1.5px rgba(155,240,190,.42)}
+.camp-scene.placing .camp-cell.cant-place.nearby{background:rgba(255,107,107,.08)}
 .camp-scene.placing .camp-cell:active{background:rgba(255,197,61,.4)}
+.camp-placement-preview{position:absolute;z-index:29;display:flex;align-items:center;justify-content:center;pointer-events:none;opacity:.7;filter:drop-shadow(0 0 4px #FFF3B0) drop-shadow(0 4px 4px rgba(0,0,0,.45));transform:scale(var(--depth-scale,1));transform-origin:50% 100%;animation:campPreviewPulse 1.2s ease-in-out infinite alternate}
+.camp-placement-preview.ground-piece{transform:none;opacity:.62}.camp-placement-preview .piece-visual{width:100%;height:100%}.camp-placement-preview.ground-piece .piece-visual{clip-path:var(--preview-shape)}.camp-placement-preview.ground-piece .piece-image{background-size:100% 100%}.camp-placement-preview .profile-avatar-art{width:100%;height:100%;object-fit:contain;object-position:center bottom}
+.camp-placement-preview::after{content:"Tap here";position:absolute;left:50%;bottom:-18px;transform:translateX(-50%) scale(calc(1 / var(--depth-scale,1)));transform-origin:center;white-space:nowrap;background:rgba(27,21,57,.9);color:#FFF7D5;border:1px solid rgba(255,255,255,.35);border-radius:999px;padding:2px 7px;font:900 8px var(--body);box-shadow:0 2px 6px rgba(0,0,0,.35)}
 .citem.placed{cursor:pointer;z-index:2;padding:2px;display:flex;align-items:center;justify-content:center;transform:scale(var(--depth-scale,1));transform-origin:50% 100%;transition:filter .12s}
 .citem.placed:not(.ground-piece)::after{content:"";position:absolute;left:50%;top:50%;width:max(100%,34px);height:max(100%,34px);transform:translate(-50%,-50%);border-radius:12px}
 .citem.placed:active{filter:drop-shadow(0 3px 2px rgba(0,0,0,.35)) brightness(1.15)}
@@ -521,14 +522,16 @@ body{
 .held-bar.on{display:flex}
 .held-bar .hem{font-size:26px}
 .held-bar .spacer{flex:1}
+.held-bar .held-name{min-width:0}.held-bar .held-name strong{display:block;font-family:var(--display);font-size:13px;line-height:1}.held-bar .held-name span{display:block;font-size:9.5px;margin-top:2px}.held-pan{display:flex;gap:5px}.held-pan button{width:35px;height:35px;border:1.5px solid #D9A627;border-radius:11px;background:#FFF8EC;color:#6B4E00;font:900 18px var(--body);cursor:pointer}.held-pan button:active{background:#FFE7A1}
+.camp-edge-pan{display:none;position:absolute;z-index:24;top:34%;width:42px;height:72px;border:1px solid rgba(255,255,255,.25);background:rgba(23,18,53,.7);color:#fff;font:900 25px var(--body);backdrop-filter:blur(8px);cursor:pointer}.camp-edge-pan.left{display:block;left:max(7px,env(safe-area-inset-left));border-radius:0 18px 18px 0}.camp-edge-pan.right{display:block;right:max(7px,env(safe-area-inset-right));border-radius:18px 0 0 18px}.camp-edge-pan:active{background:rgba(255,197,61,.55)}
 .camp-notice{margin:0;padding:8px 11px;border-radius:12px;background:rgba(232,246,233,.96);border:2px solid #7CB982;color:#245A31;font-size:11.5px;font-weight:800;line-height:1.3}
 .camp-notice.relocate{background:#FFF3D6;border-color:var(--gold-dark);color:#6B4E00}
 .camp-dock{
-  position:absolute;z-index:23;left:8px;right:8px;bottom:7px;height:58px;display:flex;align-items:center;justify-content:center;gap:5px;
-  padding:5px;background:rgba(20,16,46,.94);border:1.5px solid rgba(255,255,255,.16);border-radius:18px;box-shadow:0 8px 28px rgba(0,0,0,.4);backdrop-filter:blur(14px);
+  position:absolute;z-index:23;left:50%;bottom:max(8px,env(safe-area-inset-bottom));width:min(520px,calc(100vw - 16px));height:64px;display:flex;align-items:center;justify-content:center;gap:3px;
+  transform:translateX(-50%);padding:5px;background:rgba(20,16,46,.88);border:1.5px solid rgba(255,255,255,.2);border-radius:20px;box-shadow:0 8px 28px rgba(0,0,0,.4);backdrop-filter:blur(16px);
 }
 .camp-dock button{
-  min-width:0;flex:1;height:47px;background:transparent;border:0;border-radius:13px;color:#B7AEE8;font-family:var(--body);font-size:9.5px;font-weight:900;
+  min-width:0;flex:1;height:52px;background:transparent;border:0;border-radius:14px;color:#D7D1F6;font-family:var(--body);font-size:9px;font-weight:900;
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:pointer;
 }
 .camp-dock button .em{font-size:20px;line-height:1}
@@ -537,15 +540,21 @@ body{
 .camp-dock button:disabled{opacity:.32;pointer-events:none}
 .camp-dock button:active{transform:scale(.96)}
 .camp-sheet{
-  position:absolute;z-index:22;left:8px;right:8px;bottom:71px;max-height:calc(100% - 88px);display:flex;flex-direction:column;
-  background:rgba(255,248,236,.98);border:2px solid rgba(255,255,255,.65);border-radius:20px;box-shadow:0 14px 40px rgba(0,0,0,.42);
+  position:absolute;z-index:22;left:50%;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 70px);width:min(600px,calc(100vw - 16px));height:min(42dvh,390px);display:flex;flex-direction:column;transform:translateX(-50%);
+  background:rgba(255,248,236,.98);border:2px solid rgba(255,255,255,.65);border-radius:20px;box-shadow:0 14px 40px rgba(0,0,0,.42);--sheet-drag:0px;transform:translateX(-50%) translateY(var(--sheet-drag));transition:transform .12s ease-out;
   overflow:hidden;animation:campSheetIn .18s ease-out both;
 }
-.camp-sheet-head{display:flex;align-items:center;gap:10px;padding:9px 12px 7px;border-bottom:1.5px solid var(--cream-dim)}
+.camp-sheet-head{display:flex;align-items:center;gap:10px;padding:9px 12px 7px;border-bottom:1.5px solid var(--cream-dim);touch-action:none;cursor:grab}.camp-sheet-head:active{cursor:grabbing}
+.camp-sheet-handle{position:absolute;left:50%;top:4px;width:42px;height:4px;transform:translateX(-50%);border-radius:999px;background:#D5C9B6}.camp-sheet-head{padding-top:13px}
 .camp-sheet-title{font-family:var(--display);font-size:17px;font-weight:800;flex:1;line-height:1}
 .camp-sheet-title small{display:block;margin-top:3px;color:var(--ink-soft);font-family:var(--body);font-size:10px;font-weight:800}
 .camp-sheet-close{width:34px;height:30px;border:0;border-radius:10px;background:var(--cream-dim);color:var(--ink);font-size:19px;font-weight:900;cursor:pointer}
 .camp-sheet-scroll{overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:4px 11px 14px}
+.camp-category-row,.camp-filter-row{display:flex;gap:7px;overflow-x:auto;padding:7px 1px 5px;scrollbar-width:none}.camp-category-row::-webkit-scrollbar,.camp-filter-row::-webkit-scrollbar{display:none}
+.camp-category-chip,.camp-filter-chip{white-space:nowrap;border:1.5px solid #D7CBB9;background:#FFF;border-radius:999px;padding:7px 10px;color:var(--ink-soft);font:900 10.5px var(--body);cursor:pointer}
+.camp-category-chip.on,.camp-filter-chip.on{background:#5A478F;border-color:#5A478F;color:#FFF}
+.camp-inventory-shelf{display:flex;gap:9px;overflow-x:auto;padding:5px 2px 12px;scroll-snap-type:x proximity;scrollbar-width:none}.camp-inventory-shelf::-webkit-scrollbar{display:none}
+.camp-inventory-shelf>.shop-item{flex:0 0 112px;scroll-snap-align:start;margin:0;min-height:126px}.camp-inventory-shelf>.camp-chain{flex:0 0 188px;scroll-snap-align:start}
 .camp-sheet .sect-label{color:var(--ink-soft);margin-top:11px}
 .camp-sheet .shop-grid{gap:8px}
 .camp-sheet .shop-item{box-shadow:0 3px 0 rgba(45,42,74,.18)}
@@ -559,19 +568,12 @@ body{
 .camp-climber-copy strong{display:block;font-family:var(--display);font-size:15px}
 .camp-climber-copy span{display:block;color:var(--ink-soft);font-size:10.5px;font-weight:800;line-height:1.25;margin-bottom:6px}
 .camp-climber-card .btn{font-size:12px;padding:7px 9px;border-radius:10px;box-shadow:0 3px 0 #CFC6B3}
-.camp-experience.immersive{position:fixed;inset:0;width:100vw;height:100dvh;min-height:0;border-radius:0;z-index:300;box-shadow:none;background:#151132}
-.camp-experience.immersive .camp-viewport{inset:0;overflow:auto}
-.camp-experience.immersive .camp-scene{width:max(560px,130vw);height:auto;max-width:none;flex:none;background-size:100% 100%;background-position:0 0}
-.camp-experience.immersive .camp-topbar{top:max(10px,env(safe-area-inset-top));left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right))}
-.camp-experience.immersive .camp-place-name{display:block}
-.camp-experience.immersive .camp-topbar>.chip{display:inline-flex}
-.camp-experience.immersive .camp-recenter{display:block}
-.camp-experience.immersive .camp-pan-hint{top:calc(max(10px,env(safe-area-inset-top)) + 48px);animation:campHintAway 6s 1s forwards}
-.camp-experience.immersive .camp-dock{left:50%;right:auto;bottom:max(8px,env(safe-area-inset-bottom));width:min(500px,calc(100vw - 16px));transform:translateX(-50%)}
-.camp-experience.immersive .camp-sheet{left:50%;right:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 64px);width:min(560px,calc(100vw - 16px));max-height:min(56dvh,560px);transform:translateX(-50%)}
-.camp-experience.immersive .camp-status-stack{left:50%;right:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 68px);width:min(560px,calc(100vw - 20px));transform:translateX(-50%)}
-body.camp-immersive-open #nav{visibility:hidden;pointer-events:none}
-body.camp-immersive-open .toast{position:fixed;z-index:400;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 76px)}
+.camp-topbar{top:max(10px,env(safe-area-inset-top));left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right))}
+.camp-place-name,.camp-topbar>.chip,.camp-recenter{display:flex}
+.camp-place-name{display:block}.camp-pan-hint{top:calc(max(10px,env(safe-area-inset-top)) + 48px);animation:campHintAway 6s 1s forwards}
+.camp-status-stack{left:50%;right:auto;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 76px);width:min(560px,calc(100vw - 20px));transform:translateX(-50%)}
+body.camp-world-open #nav,body.camp-world-open #screen-camp>.topbar{visibility:hidden;pointer-events:none}
+body.camp-world-open .toast{position:fixed;z-index:400;bottom:calc(max(8px,env(safe-area-inset-bottom)) + 76px)}
 @keyframes flicker{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
 /* With a 300%-wide strip, 0/50/100% select frames 1/2/3. The 150%
    endpoint plus steps(3) holds exactly those three positions. */
@@ -581,26 +583,20 @@ body.camp-immersive-open .toast{position:fixed;z-index:400;bottom:calc(max(8px,e
 @keyframes campBreathe{from{transform:scaleY(1)}to{transform:scaleY(1.015)}}
 @keyframes campFloat{from{transform:translate3d(-3px,4px,0);opacity:.28}50%{opacity:.9}to{transform:translate3d(5px,-7px,0);opacity:.42}}
 @keyframes campSheetIn{from{opacity:0}to{opacity:1}}
+@keyframes campPreviewPulse{from{opacity:.55}to{opacity:.82}}
 @keyframes campHintAway{0%,65%{opacity:1}to{opacity:0;visibility:hidden}}
 @media(max-width:420px){
   .realm-guide{grid-template-columns:78px 1fr}.realm-guide .realm-character{width:76px;height:76px}.realm-guide p{font-size:11.5px}
   .camp-chain-grid{grid-template-columns:1fr}
-  .camp-experience{height:min(61dvh,460px);min-height:382px}
+  .camp-sheet{height:min(40dvh,350px)}
   .camp-sheet-scroll{padding-left:9px;padding-right:9px}
-  .camp-status-stack .held-bar{font-size:11px}
-  .camp-status-stack .held-bar .btn{padding:7px 8px;font-size:11px}
+  .camp-status-stack .held-bar{font-size:11px;gap:6px;padding:7px 8px}.held-bar .hem{display:none}.held-bar .held-name{flex:1}.held-bar .held-name strong{font-size:12px}.held-pan button{width:32px;height:32px}.camp-status-stack .held-bar .btn{padding:7px 8px;font-size:10px}.camp-status-stack .held-bar .btn .ui-icon{display:none}
 }
 @media(min-width:700px){
-  .camp-experience{height:min(64dvh,540px)}
-  .camp-dock{left:50%;right:auto;width:470px;transform:translateX(-50%)}
-  .camp-sheet{left:50%;right:auto;width:560px;transform:translateX(-50%)}
+  .camp-dock{width:520px}.camp-sheet{width:600px;height:min(38dvh,430px)}
 }
 @media(orientation:landscape) and (max-height:520px){
-  .camp-experience.immersive .camp-scene{width:max(100vw,700px);height:auto}
-  .camp-experience.immersive .camp-sheet{max-height:60dvh}
-  .camp-experience.immersive .camp-dock{height:52px}
-  .camp-experience.immersive .camp-dock button{height:42px;flex-direction:row;gap:5px}
-  .camp-experience.immersive .camp-dock button .em{font-size:17px}
+  .camp-scene{width:max(175vw,calc(100dvh * 1.84375))}.camp-sheet{height:58dvh}.camp-dock{height:54px}.camp-dock button{height:43px;flex-direction:row;gap:4px}
 }
 .camp-help{color:#8B83BD;font-size:11px;font-weight:800;line-height:1.35;margin:12px 3px 0;text-align:center}
 .avatar-line{font-size:36px;text-align:center;margin:2px 0 6px;letter-spacing:2px}
@@ -859,6 +855,9 @@ const UI_ICONS={
   hammer:'<path d="m14 5 5 5M15.5 3.5l5 5-2 2-5-5zM14.5 9.5 5 19a2.1 2.1 0 0 1-3-3l9.5-9.5"/>',
   treasure:'<path d="M5 9h14v11H5zM4 9c0-3 2.4-5 5.3-5h5.4C17.6 4 20 6 20 9M12 9v11M9.5 13h5"/>',
   climber:'<circle cx="12" cy="5" r="2.5"/><path d="m8 12 4-3 4 3M12 9v6M12 15l-4 6M12 15l5 6M8 12l-3 4M16 12l3-4"/>',
+  paths:'<path d="M5 3h5v5H5zM14 8h5v5h-5zM7 15h5v5H7z"/><path d="m10 6 4 4M16 13l-5 4"/>',
+  scenery:'<path d="M4 18 9 8l3 6 3-4 5 8z"/><circle cx="17.5" cy="5.5" r="2.5"/><path d="M3 21h18"/>',
+  undo:'<path d="M9 7H4v-5"/><path d="M4.5 7.5A8 8 0 1 1 6 18"/>',
   repeat:'<path d="M20 7v5h-5M4 17v-5h5"/><path d="M18.5 12A7 7 0 0 0 6.3 7.3L4 9M5.5 12a7 7 0 0 0 12.2 4.7L20 15"/>',
   locate:'<circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/><path d="M12 2v4M12 18v4M2 12h4M18 12h4"/>',
   expand:'<path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/>',
@@ -970,7 +969,8 @@ function openMonsterCard(a,b){
 /* The build grid is projected onto the painted clearing, not the full image.
    Every logical row widens toward the camera, so both hit targets and sprites
    follow the background perspective. */
-const CAMP_COLS = 12, CAMP_ROWS = 8;
+const CAMP_COLS = 24, CAMP_ROWS = 8;
+const PREVIOUS_CAMP_COLS = 12;
 const LEGACY_CAMP_COLS = 10, LEGACY_CAMP_ROWS = 6;
 const CAMP_BACKGROUNDS=[
   {id:'dusk',name:'Mountain Dusk',art:'art/camp/bg-camp-dusk.png'},
@@ -981,7 +981,7 @@ const CAMP_BACKGROUNDS=[
 /* The build plane follows the full painted clearing. Rows use a power curve so
    distant cells compress toward the horizon and foreground cells open up. */
 const CAMP_PLANE = { top:.405, bottom:.965, leftTop:.205, rightTop:.795, leftBottom:.055, rightBottom:.945, depthCurve:1.72 };
-const CAMP_BLOCKED = new Set(['0,6','11,6','0,7','1,7','10,7','11,7']);
+const CAMP_BLOCKED = new Set(['0,6','23,6','0,7','1,7','22,7','23,7']);
 const DUPE_PRICE = 20;
 /* Camp purchases still reveal as the player climbs, while these mastery gates
    reserve the most impressive upgrades for stars earned across the whole map. */
@@ -1100,7 +1100,7 @@ const REALM_GEM_REWARDS = Object.fromEntries(REALM_ORDER.map((fam,index)=>[
 /* ---------- state ---------- */
 let state = null;
 const defaultState = () => ({
-  v: 4,
+  v: 5,
   gems: 0, streak: 0, lastPlayed: null, chest: false, chestFrom: null,
   questDate: null, questDone: false,
   settings: { ...PREF_DEFAULTS },
@@ -1116,6 +1116,7 @@ const defaultState = () => ({
   campTutorial: [],
   campSeen: null,  // toDateString() of last camp visit
   campBackground: 'dusk',
+  campCameras: {}, // environment id -> normalized horizontal camera position
   climberIntroduced: false,
 });
 function allAccessState(){
@@ -1203,6 +1204,7 @@ function migrateState(){
   if(!Array.isArray(state.campTutorial)) state.campTutorial=[];
   if(state.campSeen===undefined) state.campSeen=null;
   if(!CAMP_BACKGROUNDS.some(background=>background.id===state.campBackground)) state.campBackground='dusk';
+  if(!state.campCameras || typeof state.campCameras!=='object') state.campCameras={};
   // One-time: seed the camp arrangement from the old hardcoded SHOP coordinates
   // so an existing camp loads looking identical — and is suddenly movable.
   if(!Array.isArray(state.placed)){
@@ -1216,8 +1218,9 @@ function migrateState(){
   }
   if((Number(state.v)||0)<2) migrateLegacyCampV2();
   if((Number(state.v)||0)<3) migratePerspectiveCampV3();
+  if((Number(state.v)||0)<5) migratePanoramicCampV5();
   ensureCampClimber();
-  state.v=4;
+  state.v=5;
 }
 function migrateLegacyCampV2(){
   const own=(id,count=1)=>{ state.bought[id]=Math.max(Number(state.bought[id])||0,count); state.campDiscovered[id]=true; };
@@ -1252,8 +1255,19 @@ function migratePerspectiveCampV3(){
   state.placed=[];
   oldPlaced.forEach(p=>{
     const {w,h}=pieceSize(p.t);
-    const preferredX=Math.max(0,Math.min(CAMP_COLS-w,Math.round((Number(p.x)||0)/(LEGACY_CAMP_COLS-1)*(CAMP_COLS-1))));
+    const preferredX=Math.max(0,Math.min(PREVIOUS_CAMP_COLS-w,Math.round((Number(p.x)||0)/(LEGACY_CAMP_COLS-1)*(PREVIOUS_CAMP_COLS-1))));
     const preferredY=Math.max(0,Math.min(CAMP_ROWS-h,Math.round((Number(p.y)||0)/(LEGACY_CAMP_ROWS-1)*(CAMP_ROWS-1))));
+    const spot=findCampSpot(p.t,preferredX,preferredY);
+    if(spot) state.placed.push({...p,...spot});
+  });
+}
+function migratePanoramicCampV5(){
+  const oldPlaced=state.placed.map(p=>({...p}));
+  state.placed=[];
+  oldPlaced.forEach(p=>{
+    const {w}=pieceSize(p.t);
+    const preferredX=Math.max(0,Math.min(CAMP_COLS-w,(Number(p.x)||0)+6));
+    const preferredY=Math.max(0,Math.min(CAMP_ROWS-pieceSize(p.t).h,Number(p.y)||0));
     const spot=findCampSpot(p.t,preferredX,preferredY);
     if(spot) state.placed.push({...p,...spot});
   });
@@ -1262,7 +1276,7 @@ function ensureCampClimber(){
   if(state.climberIntroduced) return;
   state.climberIntroduced=true;
   if(state.placed.some(p=>p.t===CAMP_CLIMBER_PIECE.id)) return;
-  const spot=findCampSpot(CAMP_CLIMBER_PIECE.id,5,6);
+  const spot=findCampSpot(CAMP_CLIMBER_PIECE.id,11,6);
   if(spot) state.placed.push({t:CAMP_CLIMBER_PIECE.id,...spot,k:false});
 }
 let saveTimer = null;
@@ -1332,10 +1346,9 @@ function $(id){ return document.getElementById(id); }
 function showScreen(id){
   if(id!=='screen-camp'){
     campPanel=null; campCamera={left:null,top:null};
-    if(campImmersive){
-      campImmersive=false;
-      document.body.classList.remove('camp-immersive-open');
-    }
+    document.body.classList.remove('camp-world-open');
+  } else {
+    document.body.classList.add('camp-world-open');
   }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   $(id).classList.add('active');
@@ -2316,7 +2329,9 @@ function campItemPresentation(p){
   const baseLeft=campGridPoint(p.x,p.y+h), baseRight=campGridPoint(p.x+w,p.y+h);
   const depth=Math.max(0,Math.min(1,(p.y+h*.86)/CAMP_ROWS));
   const oneCellLeft=campGridPoint(p.x,p.y+h), oneCellRight=campGridPoint(Math.min(CAMP_COLS,p.x+1),p.y+h);
-  const childWidth=(oneCellRight.x-oneCellLeft.x)*1.10;
+  // The panoramic grid has twice as many horizontal placement cells, but props
+  // retain their real-world size relative to the climber and painted clearing.
+  const childWidth=(oneCellRight.x-oneCellLeft.x)*2.20;
   const physical=piecePhysicalWidth(p.t);
   const width=childWidth*physical;
   const left=(baseLeft.x+baseRight.x-width)/2;
@@ -2402,6 +2417,7 @@ function advanceCampTutorial(placedId){
 }
 function completeCampUpgrade(current,next,placedIndex=-1,x=null,y=null){
   if(state.gems<next.price){ toast(`Need ${next.price-state.gems} more gems - go practice!`); return false; }
+  rememberCampUndo();
   state.gems-=next.price;
   if(current){
     state.campDiscovered[current.id]=true;
@@ -2418,6 +2434,7 @@ function completeCampUpgrade(current,next,placedIndex=-1,x=null,y=null){
     heldPiece=next.id;
   }
   pendingUpgrade=null;
+  campPreviewCell=null;
   if(heldPiece) campPanel=null;
   sfx.gem(); confetti(16); saveState(); updateChips(); renderCamp();
   toast(current?`${next.name} upgraded!`:`${next.name} is ready to place!`);
@@ -2451,23 +2468,24 @@ function buyCampUpgrade(chainId){
 /* ---------- tap-tap placement ----------
    Tap a piece to hold it, tap a cell to put it down. No drag — drag fights
    page scroll on iPad Safari and needs pointer capture to behave. */
-let heldPiece=null,pendingUpgrade=null;
-let campPanel=null,campImmersive=false,campCamera={left:null,top:null};
+let heldPiece=null,pendingUpgrade=null,campUndo=null;
+let campPanel=null,campCategory='all',campFilter='all',campCamera={left:null,top:null},campPreviewCell=null,campAutoPanTimer=null,campSheetDrag=null;
 function captureCampCamera(){
   const viewport=$('camp-viewport');
-  if(viewport && campImmersive) campCamera={left:viewport.scrollLeft,top:viewport.scrollTop};
+  if(!viewport) return;
+  const max=Math.max(0,viewport.scrollWidth-viewport.clientWidth);
+  const ratio=max?viewport.scrollLeft/max:.5;
+  campCamera={left:viewport.scrollLeft,top:0,ratio};
+  state.campCameras[state.campBackground]=ratio;
 }
 function restoreCampCamera(center=false){
   const go=()=>{
     const viewport=$('camp-viewport'); if(!viewport) return;
-    if(!campImmersive){
-      viewport.scrollLeft=Math.max(0,(viewport.scrollWidth-viewport.clientWidth)/2);
-      viewport.scrollTop=Math.max(0,(viewport.scrollHeight-viewport.clientHeight)/2);
-      return;
-    }
-    if(center || campCamera.left===null){ centerCampCamera(); return; }
-    viewport.scrollLeft=campCamera.left;
-    viewport.scrollTop=campCamera.top;
+    const saved=Number(state.campCameras[state.campBackground]);
+    if(center || (campCamera.left===null && !Number.isFinite(saved))){ centerCampCamera(); return; }
+    const max=Math.max(0,viewport.scrollWidth-viewport.clientWidth);
+    viewport.scrollLeft=campCamera.left!==null?Math.min(max,campCamera.left):max*Math.max(0,Math.min(1,saved));
+    campCamera={left:viewport.scrollLeft,top:0,ratio:max?viewport.scrollLeft/max:.5};
   };
   (window.requestAnimationFrame||window.setTimeout)(go);
 }
@@ -2476,26 +2494,40 @@ function centerCampCamera(){
   if(!viewport || !scene) return;
   const climber=scene.querySelector(`[data-piece="${CAMP_CLIMBER_PIECE.id}"]`);
   const targetX=climber ? climber.offsetLeft+climber.offsetWidth/2 : scene.scrollWidth*.5;
-  const targetY=climber ? climber.offsetTop+climber.offsetHeight/2 : scene.scrollHeight*.7;
   viewport.scrollLeft=Math.max(0,targetX-viewport.clientWidth/2);
-  viewport.scrollTop=Math.max(0,targetY-viewport.clientHeight/2);
-  campCamera={left:viewport.scrollLeft,top:viewport.scrollTop};
-}
-function toggleCampImmersive(force){
-  const next=typeof force==='boolean'?force:!campImmersive;
-  if(next===campImmersive) return;
-  campImmersive=next;
-  campCamera={left:null,top:null};
-  document.body.classList.toggle('camp-immersive-open',campImmersive);
-  renderCamp(false);
+  const max=Math.max(0,viewport.scrollWidth-viewport.clientWidth);
+  campCamera={left:viewport.scrollLeft,top:0,ratio:max?viewport.scrollLeft/max:.5};
+  state.campCameras[state.campBackground]=campCamera.ratio;
+  saveState();
 }
 function setCampPanel(panel){
   campPanel=campPanel===panel?null:panel;
+  campCategory='all'; campFilter='all';
   renderCamp();
+}
+function setCampCategory(category){ campCategory=category; renderCamp(); }
+function setCampFilter(filter){ campFilter=filter; renderCamp(); }
+function campSheetDragStart(e){ campSheetDrag={startY:e.clientY,lastY:e.clientY}; e.currentTarget.setPointerCapture?.(e.pointerId); }
+function campSheetDragMove(e){
+  if(!campSheetDrag) return; campSheetDrag.lastY=e.clientY;
+  const sheet=e.currentTarget.closest('.camp-sheet'); if(sheet) sheet.style.setProperty('--sheet-drag',`${Math.max(0,e.clientY-campSheetDrag.startY)}px`);
+}
+function campSheetDragEnd(e){
+  if(!campSheetDrag) return;
+  const distance=campSheetDrag.lastY-campSheetDrag.startY, sheet=e.currentTarget.closest('.camp-sheet'); campSheetDrag=null;
+  if(distance>70){ campPanel=null; renderCamp(); } else if(sheet) sheet.style.setProperty('--sheet-drag','0px');
 }
 function setCampBackground(id){
   const background=CAMP_BACKGROUNDS.find(option=>option.id===id); if(!background) return;
-  state.campBackground=id; saveState(); renderCamp(); toast(`${background.name} selected`);
+  captureCampCamera(); state.campBackground=id; campCamera={left:null,top:null}; saveState(); renderCamp(false); toast(`${background.name} selected`);
+}
+function rememberCampUndo(){
+  campUndo={placed:state.placed.map(p=>({...p})),heldPiece,pendingUpgrade:pendingUpgrade?{...pendingUpgrade}:null};
+}
+function undoCampAction(){
+  if(!campUndo){ toast('Nothing to undo yet'); return; }
+  state.placed=campUndo.placed.map(p=>({...p})); heldPiece=campUndo.heldPiece; pendingUpgrade=campUndo.pendingUpgrade; campUndo=null;
+  saveState(); renderCamp(); toast('Last camp move undone');
 }
 function holdPiece(id){
   const p=pieceById(id);
@@ -2528,16 +2560,58 @@ function holdPiece(id){
   }
   pendingUpgrade=null;
   heldPiece=id;
+  campPreviewCell=null;
   campPanel=null;
   renderCamp();
 }
-function putAway(){ heldPiece=null; pendingUpgrade=null; renderCamp(); }
+function putAway(){ heldPiece=null; pendingUpgrade=null; campPreviewCell=null; stopCampAutoPan(); renderCamp(); }
 function pickUpCampPiece(id){
   const idx=state.placed.findIndex(p=>p.t===id);
   if(idx<0){ holdPiece(id); return; }
-  state.placed.splice(idx,1); heldPiece=id; campPanel=null; saveState(); renderCamp();
+  rememberCampUndo();
+  state.placed.splice(idx,1); heldPiece=id; campPreviewCell=null; campPanel=null; saveState(); renderCamp();
+}
+function panCamp(direction){
+  const viewport=$('camp-viewport'); if(!viewport) return;
+  viewport.scrollBy?viewport.scrollBy({left:direction*viewport.clientWidth*.58,behavior:state.settings.calm?'auto':'smooth'}):viewport.scrollLeft+=direction*viewport.clientWidth*.58;
+  setTimeout(()=>{ captureCampCamera(); updateCampPlacementPreview(); saveState(); },state.settings.calm?0:220);
+}
+function startCampAutoPan(direction){
+  if(!heldPiece) return; stopCampAutoPan();
+  campAutoPanTimer=setInterval(()=>panCamp(direction),420);
+}
+function stopCampAutoPan(){ if(campAutoPanTimer){ clearInterval(campAutoPanTimer); campAutoPanTimer=null; } }
+function nearestVisibleCampCell(){
+  const viewport=$('camp-viewport'),scene=$('camp-scene'); if(!viewport||!scene||!heldPiece) return null;
+  const ignore=pendingUpgrade?pendingUpgrade.placedIndex:-1;
+  const center=viewport.scrollLeft+viewport.clientWidth/2, centerRatio=center/Math.max(1,scene.offsetWidth);
+  const preferredX=Math.max(0,Math.min(CAMP_COLS-1,Math.floor(centerRatio*CAMP_COLS)));
+  const preferredY=Math.min(CAMP_ROWS-1,Math.max(0,campPreviewCell?campPreviewCell.y:Math.floor(CAMP_ROWS*.58)));
+  const options=[];
+  for(let y=0;y<CAMP_ROWS;y++) for(let x=0;x<CAMP_COLS;x++) if(canPlaceAt(heldPiece,x,y,ignore)) options.push({x,y});
+  options.sort((a,b)=>Math.abs(a.x-preferredX)+Math.abs(a.y-preferredY)*1.35-(Math.abs(b.x-preferredX)+Math.abs(b.y-preferredY)*1.35));
+  return options[0]||null;
+}
+function updateCampPlacementPreview(cell=null){
+  if(!heldPiece){ campPreviewCell=null; return; }
+  if(cell && canPlaceAt(heldPiece,cell.x,cell.y,pendingUpgrade?pendingUpgrade.placedIndex:-1)) campPreviewCell=cell;
+  else if(!campPreviewCell || !canPlaceAt(heldPiece,campPreviewCell.x,campPreviewCell.y,pendingUpgrade?pendingUpgrade.placedIndex:-1)) campPreviewCell=nearestVisibleCampCell();
+  const preview=$('camp-placement-preview');
+  if(!preview||!campPreviewCell) return;
+  const presentation=campItemPresentation({t:heldPiece,x:campPreviewCell.x,y:campPreviewCell.y});
+  preview.classList.toggle('ground-piece',presentation.ground); preview.setAttribute('style',presentation.style.replace('clip-path:','--preview-shape:'));
+  document.querySelectorAll('.camp-cell').forEach(node=>{
+    const x=+node.dataset.x,y=+node.dataset.y;
+    node.classList.toggle('nearby',Math.abs(x-campPreviewCell.x)<=3 && Math.abs(y-campPreviewCell.y)<=2);
+  });
+}
+function campPlacementMove(e){
+  if(!heldPiece) return;
+  const cell=e.target.closest('.camp-cell'); if(!cell) return;
+  updateCampPlacementPreview({x:+cell.dataset.x,y:+cell.dataset.y});
 }
 function campTap(e){
+  if(campPanel && !heldPiece){ campPanel=null; renderCamp(); return; }
   const item=e.target.closest('.citem.placed');
   if(pendingUpgrade){
     const cell=e.target.closest('.camp-cell');
@@ -2558,6 +2632,7 @@ function campTap(e){
     const idx=+item.dataset.idx;
     const there=state.placed[idx];
     if(!there) return;
+    rememberCampUndo();
     if(heldPiece){                       // swap: held goes in, that one comes out
       const {x,y}=there;
       if(!canPlaceAt(heldPiece,x,y,idx)){
@@ -2570,6 +2645,7 @@ function campTap(e){
     } else {                             // pick it up
       state.placed.splice(idx,1);
       heldPiece=there.t;
+      campPreviewCell=null;
     }
     saveState(); renderCamp(); return;
   }
@@ -2579,9 +2655,11 @@ function campTap(e){
     if(!canPlaceAt(heldPiece,x,y)){
       const size=pieceSize(heldPiece); toast(`That needs a clear ${size.w}×${size.h} space`); return;
     }
+    rememberCampUndo();
     const placedId=heldPiece;
     state.placed.push({t:placedId,x,y,k:false,legacy:isLegacyCampPiece(placedId)});
     heldPiece=null;
+    campPreviewCell=null;
     advanceCampTutorial(placedId);
     sfx.gem(); saveState(); renderCamp();
   }
@@ -2621,7 +2699,7 @@ function renderCamp(preserveCamera=true){
     const count=conquestCount();
     const current=campChainCurrent(id);
     const next=chain.tiers[current?current.tier:0];
-    if(!current && (!next || next.unlockAfterConquests>count+1)) return '';
+    if(!current && !next) return '';
     const shown=current||next;
     let action;
     if(!current){
@@ -2656,10 +2734,27 @@ function renderCamp(preserveCamera=true){
     items+=`<div class="citem placed ${presentation.ground?'ground-piece':''} ${p.k?'knocked':''}" data-idx="${i}" data-piece="${p.t}"
       role="button" aria-label="Move ${info?info.name:'camp item'}" style="${presentation.style};z-index:${2+depth}">${p.t===CAMP_CLIMBER_PIECE.id?avatarStr():pieceVisual(p.t)}</div>`;
   });
+  const previewMarkup=heldPiece?`<div class="camp-placement-preview" id="camp-placement-preview" aria-hidden="true">${heldPiece===CAMP_CLIMBER_PIECE.id?avatarStr():pieceVisual(heldPiece)}</div>`:'';
 
   const pieces=allPieces();
   const count=conquestCount();
-  const availableStandalones=CAMP_STANDALONES.filter(p=>p.unlockAfterConquests<=count+1);
+  const pieceMatchesFilter=p=>{
+    if(campFilter==='owned') return pieceOwned(p.id)>0 || piecePlaced(p.id)>0;
+    if(campFilter==='new') return pieceFree(p.id)>0;
+    if(campFilter==='afford') return pieceUnlocked(p) && (pieceFree(p.id)>0 || state.gems>=p.price);
+    return true;
+  };
+  const buildChains=Object.entries(CAMP_CHAINS).filter(([id,chain])=>{
+    if(campCategory!=='all' && campCategory!==id) return false;
+    const current=campChainCurrent(id), next=chain.tiers[current?current.tier:0], shown=current||next;
+    return shown && pieceMatchesFilter(shown);
+  });
+  const pathCategories={all:'All',groundwork:'Paths',campLife:'Camp life',activity:'Activities'};
+  const availableStandalones=CAMP_STANDALONES.filter(p=>{
+    const group=p.category==='groundwork'?'groundwork':p.category==='activity'?'activity':'campLife';
+    return (campCategory==='all'||campCategory===group) && pieceMatchesFilter(p);
+  });
+  const filterControls=`<div class="camp-filter-row">${[['all','All'],['owned','Owned'],['new','Ready'],['afford','Can afford']].map(([id,label])=>`<button class="camp-filter-chip ${campFilter===id?'on':''}" onclick="setCampFilter('${id}')">${label}</button>`).join('')}</div>`;
   const legacy=[
     ...CAMP_BUILD_PIECES.filter(p=>p.chain && pieceOwned(p.id)>0 && isLegacyCampPiece(p.id)),
     ...LEGACY_PIECES.filter(p=>pieceOwned(p.id)>0 || piecePlaced(p.id)>0),
@@ -2667,59 +2762,72 @@ function renderCamp(preserveCamera=true){
   const climberPlaced=piecePlaced(CAMP_CLIMBER_PIECE.id)>0;
   let panelTitle='',panelSub='',panelBody='';
   if(campPanel==='build'){
-    panelTitle='Build your camp'; panelSub=`${mapStarCount()} of 39 map stars · upgrades, paths, and camp life`;
+    panelTitle='Build your camp'; panelSub=`${mapStarCount()} of 39 map stars · camp upgrades`;
     panelBody=`
-      <div class="sect-label">Camp upgrades</div>
-      <div class="camp-chain-grid">${Object.entries(CAMP_CHAINS).map(renderChain).join('')}</div>
-      <div class="sect-label">Paths & extras</div>
-      <div class="shop-grid">${availableStandalones.map(renderPiece).join('')}</div>
-      ${legacy.length?`<div class="sect-label">Legacy keepsakes</div><div class="shop-grid">${legacy.map(renderPiece).join('')}</div>`:''}`;
+      <div class="camp-category-row">${[['all','All'],...Object.entries(CAMP_CHAINS).map(([id,chain])=>[id,chain.name])].map(([id,label])=>`<button class="camp-category-chip ${campCategory===id?'on':''}" onclick="setCampCategory('${id}')">${label}</button>`).join('')}</div>
+      ${filterControls}<div class="camp-inventory-shelf">${buildChains.map(renderChain).join('')||'<p class="camp-empty">No upgrades match this filter yet.</p>'}</div>
+      ${legacy.length?`<div class="sect-label">Legacy keepsakes</div><div class="camp-inventory-shelf">${legacy.filter(pieceMatchesFilter).map(renderPiece).join('')}</div>`:''}`;
+  } else if(campPanel==='paths'){
+    panelTitle='Paths & camp life'; panelSub='Shape the clearing and add activities';
+    panelBody=`<div class="camp-category-row">${Object.entries(pathCategories).map(([id,label])=>`<button class="camp-category-chip ${campCategory===id?'on':''}" onclick="setCampCategory('${id}')">${label}</button>`).join('')}</div>
+      ${filterControls}<div class="camp-inventory-shelf">${availableStandalones.map(renderPiece).join('')||'<p class="camp-empty">No items match this filter yet.</p>'}</div>`;
   } else if(campPanel==='treasures'){
     panelTitle='Realm treasures'; panelSub='Conquer realms to fill your collection';
-    panelBody=`<div class="shop-grid">${pieces.filter(p=>p.kind==='trophy').map(renderPiece).join('')}</div>`;
+    panelBody=`${filterControls}<div class="camp-inventory-shelf">${pieces.filter(p=>p.kind==='trophy'&&pieceMatchesFilter(p)).map(renderPiece).join('')}</div>`;
   } else if(campPanel==='avatar'){
     panelTitle='Your climber'; panelSub='Move your explorer or choose a camp buddy';
     panelBody=`
       <div class="camp-climber-card"><div class="avatar-line">${avatarStr()}</div><div class="camp-climber-copy"><strong>At Base Camp</strong><span>Your climber and equipped buddy live in the scene.</span><button class="btn secondary" onclick="${climberPlaced?'pickUpCampPiece':'holdPiece'}('${CAMP_CLIMBER_PIECE.id}')">${climberPlaced?'Move your climber':'Place your climber'}</button></div></div>
-      <div class="sect-label">Camp environment</div>
-      <div class="camp-background-pick">${CAMP_BACKGROUNDS.map(background=>`<button class="camp-background-option ${state.campBackground===background.id?'on':''}" style="--camp-preview:url('${background.art}')" onclick="setCampBackground('${background.id}')" aria-pressed="${state.campBackground===background.id}"><span>${background.name}</span></button>`).join('')}</div>
       <div class="sect-label">Buddies</div>
-      <div class="shop-grid">${buddies.map(renderItem).join('')}</div>`;
+      <div class="camp-inventory-shelf">${buddies.map(renderItem).join('')}</div>`;
+  } else if(campPanel==='scenery'){
+    panelTitle='Camp scenery'; panelSub='Change the atmosphere without moving your layout';
+    panelBody=`<div class="camp-background-pick">${CAMP_BACKGROUNDS.map(background=>`<button class="camp-background-option ${state.campBackground===background.id?'on':''}" style="--camp-preview:url('${background.art}')" onclick="setCampBackground('${background.id}')" aria-pressed="${state.campBackground===background.id}"><span>${background.name}</span></button>`).join('')}</div>`;
   }
   const motes=[['18%','35%','-1.1s','5.2s'],['29%','29%','-3.4s','6.1s'],['41%','37%','-.4s','4.8s'],['56%','31%','-2.2s','5.7s'],['67%','39%','-4.1s','6.4s'],['78%','34%','-1.7s','5.4s'],['34%','54%','-3s','6s'],['63%','57%','-.8s','4.9s']]
     .map(([x,y,delay,motion])=>`<span class="camp-mote" style="--x:${x};--y:${y};--delay:${delay};--motion:${motion}"></span>`).join('');
   $('camp-body').innerHTML=`
-    <div class="camp-experience ${campImmersive?'immersive':''}" id="camp-experience">
+    <div class="camp-experience" id="camp-experience">
       <div class="camp-viewport" id="camp-viewport" aria-label="Panoramic Base Camp. Swipe to explore.">
-        <div class="camp-scene ${heldPiece?'placing':''}" id="camp-scene" style="--camp-background:url('${(CAMP_BACKGROUNDS.find(background=>background.id===state.campBackground)||CAMP_BACKGROUNDS[0]).art}')"><div class="camp-ambience" aria-hidden="true">${motes}</div>${cells}${items}</div>
+        <div class="camp-scene ${heldPiece?'placing':''}" id="camp-scene" style="--camp-background:url('${(CAMP_BACKGROUNDS.find(background=>background.id===state.campBackground)||CAMP_BACKGROUNDS[0]).art}')"><div class="camp-ambience" aria-hidden="true">${motes}</div>${cells}${items}${previewMarkup}</div>
       </div>
       <div class="camp-topbar">
-        <div class="camp-place-name">Base Camp<small>${campImmersive?'Swipe to explore the clearing':'Your mountain home'}</small></div>
+        <button class="camp-hud-btn" onclick="showScreen('screen-map')" aria-label="Back to Adventure" title="Back to Adventure">‹</button>
+        <div class="camp-place-name">Base Camp<small>Swipe left and right to explore</small></div>
         <span class="camp-top-spacer"></span>
         <div class="chip" aria-label="${state.gems} gems">💎 ${state.gems}</div>
         <button class="camp-hud-btn camp-recenter" onclick="centerCampCamera()" aria-label="Center on your climber" title="Center on your climber">${icon('locate')}</button>
-        <button class="camp-hud-btn" onclick="toggleCampImmersive()" aria-label="${campImmersive?'Close full-screen camp':'Open full-screen camp'}" title="${campImmersive?'Close full screen':'Explore full screen'}">${icon(campImmersive?'collapse':'expand')}</button>
+        <button class="camp-hud-btn" onclick="undoCampAction()" aria-label="Undo last camp move" title="Undo last move" ${campUndo?'':'disabled'}>${icon('undo')}</button>
       </div>
-      <div class="camp-pan-hint">${campImmersive?'↔ Swipe in every direction':'Tap ⛶ for full-screen exploring'}</div>
+      <div class="camp-pan-hint">↔ Swipe to explore your whole camp</div>
       <div class="camp-status-stack" aria-live="polite">
         ${state.campTutorial.length?`<div class="camp-notice">Camp setup: place your ${pieceById(state.campTutorial[0]).name}. Your Bedroll and Fire Ring are free starter gear.</div>`:''}
         ${pendingUpgrade?`<div class="camp-notice relocate">Relocate to upgrade: choose a clear ${pieceSize(pendingUpgrade.nextId).w} × ${pieceSize(pendingUpgrade.nextId).h} space. Gems are charged only after placement.</div>`:''}
         <div class="held-bar ${heldPiece?'on':''}">
           <span class="hem">${heldPiece?pieceEm(heldPiece):''}</span>
-          <span>Tap the top-left of a clear ${heldPiece?`${pieceSize(heldPiece).w}×${pieceSize(heldPiece).h}`:''} space</span><span class="spacer"></span>
+          <span class="held-name"><strong>${heldPiece?pieceById(heldPiece).name:''}</strong><span>Tap a clear ${heldPiece?`${pieceSize(heldPiece).w}×${pieceSize(heldPiece).h}`:''} space</span></span><span class="spacer"></span>
+          ${heldPiece?`<span class="held-pan"><button onclick="panCamp(-1)" aria-label="Pan camp left">‹</button><button onclick="panCamp(1)" aria-label="Pan camp right">›</button></span>`:''}
           <button class="btn small ghost" style="color:#6B4E00;box-shadow:none;border-color:var(--gold-dark)" onclick="putAway()">${icon('backpack')} Put away</button>
         </div>
       </div>
-      ${campPanel?`<section class="camp-sheet" aria-label="${panelTitle}"><div class="camp-sheet-head"><div class="camp-sheet-title">${panelTitle}<small>${panelSub}</small></div><button class="camp-sheet-close" onclick="setCampPanel('${campPanel}')" aria-label="Close ${panelTitle}">⌄</button></div><div class="camp-sheet-scroll">${panelBody}</div></section>`:''}
+      ${heldPiece?`<button class="camp-edge-pan left" onpointerdown="startCampAutoPan(-1)" onpointerup="stopCampAutoPan()" onpointercancel="stopCampAutoPan()" onpointerleave="stopCampAutoPan()" onclick="panCamp(-1)" aria-label="Explore left while placing">‹</button><button class="camp-edge-pan right" onpointerdown="startCampAutoPan(1)" onpointerup="stopCampAutoPan()" onpointercancel="stopCampAutoPan()" onpointerleave="stopCampAutoPan()" onclick="panCamp(1)" aria-label="Explore right while placing">›</button>`:''}
+      ${campPanel?`<section class="camp-sheet" aria-label="${panelTitle}"><span class="camp-sheet-handle" aria-hidden="true"></span><div class="camp-sheet-head" onpointerdown="campSheetDragStart(event)" onpointermove="campSheetDragMove(event)" onpointerup="campSheetDragEnd(event)" onpointercancel="campSheetDragEnd(event)"><div class="camp-sheet-title">${panelTitle}<small>${panelSub}</small></div><button class="camp-sheet-close" onclick="setCampPanel('${campPanel}')" aria-label="Close ${panelTitle}">⌄</button></div><div class="camp-sheet-scroll">${panelBody}</div></section>`:''}
       <nav class="camp-dock" aria-label="Camp tools">
         <button class="${campPanel==='build'?'on':''}" onclick="setCampPanel('build')" aria-pressed="${campPanel==='build'}" ${heldPiece?'disabled':''}>${icon('hammer')}<span>Build</span></button>
+        <button class="${campPanel==='paths'?'on':''}" onclick="setCampPanel('paths')" aria-pressed="${campPanel==='paths'}" ${heldPiece?'disabled':''}>${icon('paths')}<span>Paths</span></button>
         <button class="${campPanel==='treasures'?'on':''}" onclick="setCampPanel('treasures')" aria-pressed="${campPanel==='treasures'}" ${heldPiece?'disabled':''}>${icon('treasure')}<span>Treasures</span></button>
         <button class="${campPanel==='avatar'?'on':''}" onclick="setCampPanel('avatar')" aria-pressed="${campPanel==='avatar'}" ${heldPiece?'disabled':''}>${icon('climber')}<span>Climber</span></button>
+        <button class="${campPanel==='scenery'?'on':''}" onclick="setCampPanel('scenery')" aria-pressed="${campPanel==='scenery'}" ${heldPiece?'disabled':''}>${icon('scenery')}<span>Scenery</span></button>
       </nav>
-    </div>
-    <p class="camp-help">Tap an item in the scene to move it. The perspective grid appears only while you are placing something.</p>`;
+    </div>`;
   $('camp-scene').addEventListener('click', campTap);
+  $('camp-scene').addEventListener('pointermove',campPlacementMove,{passive:true});
+  $('camp-viewport').addEventListener('scroll',()=>{
+    clearTimeout(window._campCameraSave);
+    window._campCameraSave=setTimeout(()=>{ captureCampCamera(); saveState(); },140);
+  },{passive:true});
   restoreCampCamera(!preserveCamera || campCamera.left===null);
+  (window.requestAnimationFrame||window.setTimeout)(()=>updateCampPlacementPreview());
 }
 function shopTap(id,type,price,locked){
   if(locked){ toast("🔒 Conquer that realm to unlock this pet!"); return; }
@@ -2765,7 +2873,7 @@ hydrateIcons();
 $('keypad').addEventListener('click',e=>{ const k=e.target.closest('.key'); if(k) pressKey(k.dataset.k); });
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape' && $('card-modal').classList.contains('on')){ closeQuestCard(); return; }
-  if(e.key==='Escape' && campImmersive){ toggleCampImmersive(false); return; }
+  if(e.key==='Escape' && $('screen-camp').classList.contains('active')){ if(campPanel){ setCampPanel(campPanel); } else { showScreen('screen-map'); } return; }
   if(!quiz) return;
   if(e.key>='0'&&e.key<='9') pressKey(e.key);
   else if(e.key==='Backspace') pressKey('back');
