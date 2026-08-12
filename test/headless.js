@@ -135,8 +135,8 @@ async function boot(saveObj) {
   ok('legacy progress migrates into the first profile without resetting',
      pev("profileBook.profiles.length===1 && profileById().name==='Climber' && state.gems===137"));
   profiles.win.renderProfileGate('create');
-  ok('profile creator offers twelve inclusive explorer choices',
-     profiles.win.document.querySelectorAll('.avatar-pick button').length===12 && pev('PROFILE_AVATARS.length')===12);
+  ok('profile creator offers nineteen inclusive explorer choices',
+     profiles.win.document.querySelectorAll('.avatar-pick button').length===19 && pev('PROFILE_AVATARS.length')===19);
   profiles.win.chooseProfileAvatar(4,profiles.win.document.querySelectorAll('.avatar-pick button')[4]);
   profiles.$('profile-name').value='Jordan';
   await profiles.win.createProfile();
@@ -146,6 +146,16 @@ async function boot(saveObj) {
   await profiles.win.switchProfile(pev("profileBook.profiles.find(p=>p.name==='Jordan').id"));
   ok('switching back restores the second child progress', pev('state.gems')===77);
   ok('chosen inclusive explorer appears in map and camp avatar markup', profiles.win.avatarStr().includes('art/avatar/profile-5.png'), profiles.win.avatarStr());
+
+  profiles.win.renderProfileGate('create');
+  profiles.$('profile-name').value='Summit Tester';
+  await profiles.win.createProfile();
+  ok('secret Summit Tester profile is isolated and clearly marked',
+     pev("profileById().qa===true && profileById().name==='Summit Tester'"));
+  ok('secret Summit Tester profile unlocks all realms, stars, and a testing gem balance',
+     pev('allConquered() && state.summitDone===true && mapStarCount()===39 && state.gems===99999'));
+  ok('secret Summit Tester profile exposes every camp blueprint and repeatable inventory',
+     pev('CAMP_BUILD_PIECES.every(p=>pieceUnlocked(p))') && pev("state.bought['ground-stone-path']===40"));
 
   section('Camp v1.1 catalogue and first-visit setup');
   ok('catalogue has 41 buyable build entries', fev('CAMP_BUILD_PIECES.length') === 41);
@@ -219,7 +229,11 @@ async function boot(saveObj) {
   const avatarGear={
     'buddy/cat.png':[256,256], 'buddy/dog.png':[256,256], 'buddy/unicorn.png':[256,256],
   };
-  const profileAvatars=Object.fromEntries(Array.from({length:12},(_,i)=>[`avatar/profile-${i+1}.png`,[512,512]]));
+  const profileAvatars=Object.fromEntries(Array.from({length:19},(_,i)=>[`avatar/profile-${i+1}.png`,[512,512]]));
+  const campBackgrounds={
+    'bg-camp-dusk.png':[1180,640], 'bg-camp-morning.png':[1180,640],
+    'bg-camp-autumn.png':[1180,640], 'bg-camp-moonlit.png':[1180,640],
+  };
   const pngInfo=name=>{
     const buf=fs.readFileSync(require('path').join(PUBLIC,'art','camp',name));
     return {w:buf.readUInt32BE(16),h:buf.readUInt32BE(20),colorType:buf[25]};
@@ -306,11 +320,17 @@ async function boot(saveObj) {
      }));
   ok('all shop buddies are transparent RGBA PNGs',
      Object.keys(avatarGear).every(n=>avatarPngInfo(n).colorType===6));
-  ok('all twelve profile explorers exist as transparent 512×512 PNGs',
+  ok('all nineteen profile explorers exist as transparent 512×512 PNGs',
      Object.entries(profileAvatars).every(([name,size])=>{
        const p=require('path').join(PUBLIC,'art',name);
        if(!fs.existsSync(p)) return false;
        const info=avatarPngInfo(name); return info.w===size[0] && info.h===size[1] && info.colorType===6;
+     }));
+  ok('all four selectable camp backgrounds share the locked 1180×640 build-plane contract',
+     Object.entries(campBackgrounds).every(([name,size])=>{
+       const p=require('path').join(PUBLIC,'art','camp',name);
+       if(!fs.existsSync(p)) return false;
+       const info=pngInfo(name); return info.w===size[0] && info.h===size[1];
      }));
   ok('retired hat art is preserved in the archive',
      Object.entries(archivedHats).every(([name,size])=>{
@@ -328,7 +348,8 @@ async function boot(saveObj) {
   ok('offline shell pre-caches every boss portrait', Object.keys(bossCharacters).every(n=>swSource.includes(`./art/boss/${n}`)));
   ok('offline shell pre-caches the climber sprite', swSource.includes('./art/climber.png'));
   ok('offline shell pre-caches all avatar gear', Object.keys(avatarGear).every(n=>swSource.includes(`./art/${n}`)));
-  ok('offline shell pre-caches all twelve profile explorers', Object.keys(profileAvatars).every(n=>swSource.includes(`./art/${n}`)));
+  ok('offline shell pre-caches all nineteen profile explorers', Object.keys(profileAvatars).every(n=>swSource.includes(`./art/${n}`)));
+  ok('offline shell pre-caches every selectable camp background', Object.keys(campBackgrounds).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('retired hats are not loaded into the live offline shell', !swSource.includes('./art/hat/') && !swSource.includes('./art/archive/hat-upgrades/'));
   ok('runtime cache never stores missing future-batch art', swSource.includes('if (res.ok)'));
   ok('offline shell pre-caches the scrolling adventure map', swSource.includes('./art/map/bg-adventure-map.png'));
@@ -340,13 +361,20 @@ async function boot(saveObj) {
   fresh.win.setCampPanel('build');
   ok('build catalog opens as a collapsible sheet',
      fresh.win.document.querySelector('.camp-sheet') && fresh.$('camp-body').textContent.includes('Build your camp'));
+  fresh.win.setCampPanel('avatar');
+  ok('climber panel offers four compatible camp environments',
+     fresh.win.document.querySelectorAll('.camp-background-option').length===4);
+  fresh.win.setCampBackground('autumn');
+  ok('camp environment choice persists without changing the placement plane',
+     fev("state.campBackground==='autumn' && CAMP_BACKGROUNDS.length===4 && CAMP_PLANE.top===.405"));
+  fresh.win.setCampPanel(null);
   ok('first camp visit grants the free starter pair',
      fev("state.bought['shelter-1']") === 1 && fev("state.bought['fire-1']") === 1);
   ok('starter placement tutorial begins with the Bedroll',
      fev('heldPiece') === 'shelter-1' && JSON.stringify(fev('state.campTutorial')) === JSON.stringify(['shelter-1','fire-1']));
+  fresh.win.setCampPanel('build');
   ok('one-conquest items preview early', fresh.$('camp-body').textContent.includes('Cook Pot'));
   ok('two-conquest items remain hidden', !fresh.$('camp-body').textContent.includes('Pack Pile'));
-  fresh.win.setCampPanel('build');
   fresh.win.document.querySelector('.camp-cell[data-x="0"][data-y="0"]')
     .dispatchEvent(new fresh.win.MouseEvent('click',{bubbles:true}));
   ok('placing Bedroll advances tutorial to Fire Ring', fev('heldPiece') === 'fire-1');
@@ -627,7 +655,14 @@ async function boot(saveObj) {
   ok('camera perspective is dramatically stronger near the foreground', nearScale > farScale*2, `${farScale} → ${nearScale}`);
   const nearLanternWidth=parseFloat(ev("campItemPresentation({t:'light-1',x:2,y:6}).style").match(/width:([\d.]+)/)[1]);
   const nearTentWidth=parseFloat(ev("campItemPresentation({t:'shelter-2',x:2,y:6}).style").match(/width:([\d.]+)/)[1]);
-  ok('physical sizing keeps a lantern much smaller than a tent at equal depth', nearLanternWidth < nearTentWidth*.65, `${nearLanternWidth}% vs ${nearTentWidth}%`);
+  const nearClimberWidth=parseFloat(ev("campItemPresentation({t:'camp-climber',x:2,y:6}).style").match(/width:([\d.]+)/)[1]);
+  ok('lantern renders at handheld scale beside a climber', nearLanternWidth < nearClimberWidth*.25, `${nearLanternWidth}% vs ${nearClimberWidth}%`);
+  ok('bedroll renders near a child body width rather than its two-cell footprint', nearBedrollWidth < nearClimberWidth*1.15, `${nearBedrollWidth}% vs ${nearClimberWidth}%`);
+  ok('physical sizing keeps a lantern much smaller than a tent at equal depth', nearLanternWidth < nearTentWidth*.15, `${nearLanternWidth}% vs ${nearTentWidth}%`);
+  ok('expanded shelter footprints do not stretch their square or 3:2 artwork',
+     ev("pieceArtAspect('shelter-4',3,2)")===1 && ev("pieceArtAspect('shelter-5',3,3)")===1.5);
+  ok('every non-ground camp item has an explicit audited physical width',
+     ev("CAMP_BUILD_PIECES.filter(p=>p.category!=='groundwork').every(p=>Number.isFinite(CAMP_PHYSICAL_WIDTH[p.id])&&CAMP_PHYSICAL_WIDTH[p.id]>0)"));
   ok('full clearing plane reaches farther to both foreground edges',
      ev('CAMP_PLANE.leftBottom') <= .06 && ev('CAMP_PLANE.rightBottom') >= .94);
 

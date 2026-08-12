@@ -433,7 +433,7 @@ body{
 .camp-viewport::-webkit-scrollbar{display:none}
 .camp-scene{
   position:relative;flex:0 0 auto;width:max(135%,520px);height:auto;aspect-ratio:1.84375;overflow:hidden;touch-action:pan-x pan-y;
-  background-image:url('art/camp/bg-camp-dusk.png'),linear-gradient(180deg,#241E4E 0%,#553E9E 40%,#2E8B57 41%,#1E5F3C 100%);
+  background-image:var(--camp-background,url('art/camp/bg-camp-dusk.png')),linear-gradient(180deg,#241E4E 0%,#553E9E 40%,#2E8B57 41%,#1E5F3C 100%);
   background-size:100% 100%;background-position:0 0;transform:translateZ(0);
 }
 .camp-scene::before{
@@ -549,6 +549,10 @@ body{
 .camp-sheet .sect-label{color:var(--ink-soft);margin-top:11px}
 .camp-sheet .shop-grid{gap:8px}
 .camp-sheet .shop-item{box-shadow:0 3px 0 rgba(45,42,74,.18)}
+.camp-background-pick{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:8px}
+.camp-background-option{position:relative;min-height:74px;border:2px solid #D8CBB6;border-radius:14px;overflow:hidden;background-image:var(--camp-preview);background-size:cover;background-position:center;color:#fff;font:900 11px var(--body);text-shadow:0 1px 3px #000;box-shadow:0 3px 0 #CFC6B3;cursor:pointer}
+.camp-background-option::after{content:"";position:absolute;inset:45% 0 0;background:linear-gradient(transparent,rgba(12,10,31,.86))}
+.camp-background-option span{position:absolute;z-index:1;left:8px;right:8px;bottom:6px;text-align:left}.camp-background-option.on{border-color:var(--gold);box-shadow:0 3px 0 var(--gold-dark),inset 0 0 0 2px #FFF3D6}
 .camp-climber-card{display:flex;align-items:center;gap:12px;background:#EAE3FF;border-radius:15px;padding:10px;margin-top:8px}
 .camp-climber-card .avatar-line{min-width:70px;margin:0}
 .camp-climber-copy{flex:1;min-width:0}
@@ -786,7 +790,8 @@ body.calm .stars{display:none}
 const REALM_ORDER = [0,1,10,2,5,11,3,4,9,6,12,8,7];
 const PROFILE_KEY='timesquest-profiles';
 const LEGACY_SAVE_KEY='timesquest-save';
-const PROFILE_AVATARS=Array.from({length:12},(_,i)=>`art/avatar/profile-${i+1}.png`);
+const PROFILE_AVATARS=Array.from({length:19},(_,i)=>`art/avatar/profile-${i+1}.png`);
+const QA_PROFILE_NAME='summit tester';
 let profileBook={v:1,active:null,profiles:[]},activeProfileId=null,profileDraftAvatar=0;
 
 function profileSaveKey(id){ return `timesquest-save-${id}`; }
@@ -818,10 +823,13 @@ async function createProfile(){
   const name=safeProfileName($('profile-name')&&$('profile-name').value);
   if(!name){ toast('Add a climber name first'); return; }
   const id=`p${Date.now().toString(36)}${Math.random().toString(36).slice(2,5)}`;
-  const p={id,name,avatar:profileDraftAvatar,created:Date.now(),snapshot:defaultState()};
+  const qa=name.toLocaleLowerCase()===QA_PROFILE_NAME;
+  const snapshot=qa?allAccessState():defaultState();
+  const p={id,name:qa?'Summit Tester':name,avatar:profileDraftAvatar,created:Date.now(),qa,snapshot};
   profileBook.profiles.push(p); activeProfileId=id; state=p.snapshot; migrateState();
   await storageSet(profileSaveKey(id),JSON.stringify(state)); await persistProfileBook();
   $('profile-gate').classList.remove('on'); applyCalm(); showScreen('screen-map');
+  if(qa) toast('QA profile ready: every realm and camp item is unlocked');
 }
 async function switchProfile(id){
   if(activeProfileId&&state){ await storageSet(profileSaveKey(activeProfileId),JSON.stringify(state)); const old=profileById(); if(old) old.snapshot=state; }
@@ -964,6 +972,12 @@ function openMonsterCard(a,b){
    follow the background perspective. */
 const CAMP_COLS = 12, CAMP_ROWS = 8;
 const LEGACY_CAMP_COLS = 10, LEGACY_CAMP_ROWS = 6;
+const CAMP_BACKGROUNDS=[
+  {id:'dusk',name:'Mountain Dusk',art:'art/camp/bg-camp-dusk.png'},
+  {id:'morning',name:'Alpine Morning',art:'art/camp/bg-camp-morning.png'},
+  {id:'autumn',name:'Autumn Ridge',art:'art/camp/bg-camp-autumn.png'},
+  {id:'moonlit',name:'Moonlit Meadow',art:'art/camp/bg-camp-moonlit.png'},
+];
 /* The build plane follows the full painted clearing. Rows use a power curve so
    distant cells compress toward the horizon and foreground cells open up. */
 const CAMP_PLANE = { top:.405, bottom:.965, leftTop:.205, rightTop:.795, leftBottom:.055, rightBottom:.945, depthCurve:1.72 };
@@ -1101,8 +1115,27 @@ const defaultState = () => ({
   campStarted: false,
   campTutorial: [],
   campSeen: null,  // toDateString() of last camp visit
+  campBackground: 'dusk',
   climberIntroduced: false,
 });
+function allAccessState(){
+  const next=defaultState();
+  next.gems=99999;
+  next.summitDone=true;
+  REALM_ORDER.forEach(fam=>{
+    next.realms[fam]={trial:true,conquered:true};
+    next.realmRewardStars[fam]=3;
+    for(let b=0;b<=12;b++) next.facts[fkey(fam,b)]={c:12,w:0,streak:12,rating:5,slow:0,last:null,bt:1000};
+  });
+  CAMP_BUILD_PIECES.forEach(piece=>{
+    next.campDiscovered[piece.id]=true;
+    if(!piece.chain || piece.repeatable) next.bought[piece.id]=piece.repeatable?40:1;
+  });
+  next.owned=SHOP.filter(item=>item.type==='buddy').map(item=>item.id);
+  next.campStarted=true;
+  next.campTutorial=[];
+  return next;
+}
 
 let memoryFallback = null;
 async function storageGet(key){
@@ -1169,6 +1202,7 @@ function migrateState(){
   if(state.campStarted===undefined) state.campStarted=false;
   if(!Array.isArray(state.campTutorial)) state.campTutorial=[];
   if(state.campSeen===undefined) state.campSeen=null;
+  if(!CAMP_BACKGROUNDS.some(background=>background.id===state.campBackground)) state.campBackground='dusk';
   // One-time: seed the camp arrangement from the old hardcoded SHOP coordinates
   // so an existing camp loads looking identical — and is suddenly movable.
   if(!Array.isArray(state.placed)){
@@ -2217,28 +2251,30 @@ function piecePlaced(id){ return state.placed.filter(p=>p.t===id).length; }
 function pieceFree(id){ return pieceOwned(id)-piecePlaced(id); }
 function pieceEm(id){ const p=pieceById(id); return p?p.em:'❓'; }
 function pieceSize(id){ const p=pieceById(id); return {w:p&&p.w||1,h:p&&p.h||1}; }
-/* Collision footprints stay grid-based. Visual scale is deliberately separate:
-   a lantern and a tent can both occupy build cells without appearing equally
-   large in the painted scene. Values are relative physical-world sizes. */
-const CAMP_VISUAL_SCALE={
-  'shelter-1':.62,'shelter-2':1.08,'shelter-3':1.18,'shelter-4':1.32,'shelter-5':1.48,
-  'fire-1':.50,'fire-2':.60,'fire-3':.86,'fire-4':1.05,
-  'light-1':.32,'light-2':.36,'light-3':.82,
-  'seating-1':.48,'seating-2':.78,'seating-3':.94,
-  'kitchen-1':.43,'kitchen-2':.70,'kitchen-3':1.02,
-  'water-1':.38,'water-2':.90,'water-3':1.10,
-  'garden-1':.42,'garden-2':.56,'garden-3':.82,'garden-4':1.18,
-  'storage-1':.46,'storage-2':.76,'storage-3':1.00,
-  'lookout-1':.48,'lookout-2':1.02,'lookout-3':1.20,
-  'banner-1':.44,'banner-2':.52,'banner-3':.78,
-  'ground-stone-path':1,'ground-wood-deck':1,
-  'life-bird-feeder':.38,'life-beehive':.44,'activity-kite':.62,'activity-rope-swing':.88,'activity-zipline':.75,
-  'camp-climber':.48,'legacy-canoe':.78,
-  'trophy-x0':.46,'trophy-x1':.72,'trophy-x10':.72,'trophy-x2':.86,'trophy-x5':.44,'trophy-x11':.78,
-  'trophy-x3':.68,'trophy-x4':.54,'trophy-x9':.82,'trophy-x6':.48,'trophy-x12':.95,'trophy-x8':.48,
-  'trophy-x7':.96,'trophy-summit':.46,
+/* Collision footprints and painted size are separate systems. These values are
+   each object's real-world width relative to a standing child (= 1). */
+const CAMP_PHYSICAL_WIDTH={
+  'shelter-1':1.05,'shelter-2':2.25,'shelter-3':2.55,'shelter-4':3.45,'shelter-5':4.00,
+  'fire-1':.70,'fire-2':.78,'fire-3':1.35,'fire-4':2.80,
+  'light-1':.18,'light-2':.23,'light-3':2.05,
+  'seating-1':.52,'seating-2':1.35,'seating-3':1.65,
+  'kitchen-1':.42,'kitchen-2':1.20,'kitchen-3':2.15,
+  'water-1':.36,'water-2':1.35,'water-3':2.35,
+  'garden-1':.58,'garden-2':.92,'garden-3':1.10,'garden-4':2.25,
+  'storage-1':.62,'storage-2':1.80,'storage-3':2.05,
+  'lookout-1':.85,'lookout-2':2.35,'lookout-3':2.85,
+  'banner-1':.85,'banner-2':1.25,'banner-3':1.75,
+  'life-bird-feeder':.75,'life-beehive':.58,'activity-kite':1.40,'activity-rope-swing':1.90,'activity-zipline':1.55,
+  'camp-climber':1,'legacy-canoe':1.85,
+  'trophy-x0':.48,'trophy-x1':1.05,'trophy-x10':1.10,'trophy-x2':1.65,'trophy-x5':.48,'trophy-x11':1.55,
+  'trophy-x3':1.10,'trophy-x4':.68,'trophy-x9':1.55,'trophy-x6':.58,'trophy-x12':1.85,'trophy-x8':.62,
+  'trophy-x7':1.85,'trophy-summit':.58,
 };
-function pieceVisualScale(id){ return CAMP_VISUAL_SCALE[id]||.72; }
+function piecePhysicalWidth(id){ return CAMP_PHYSICAL_WIDTH[id]||1; }
+/* Art aspect follows the PNG, not the occupied grid. These two shelter tiers
+   deliberately reserve expanded footprints without stretching their artwork. */
+const CAMP_ART_ASPECT={'shelter-4':1,'shelter-5':1.5};
+function pieceArtAspect(id,w,h){ return CAMP_ART_ASPECT[id]||w/Math.max(1,h); }
 function conquestCount(){ return REALM_ORDER.filter(f=>state.realms[f].conquered).length; }
 function pieceUnlockReason(p){
   if(!p || p.kind!=='build') return '';
@@ -2279,13 +2315,14 @@ function campItemPresentation(p){
   if(ground) return {ground:true,style:`left:${g.left}%;top:${g.top}%;width:${g.width}%;height:${g.height}%;clip-path:${g.shape};--depth-scale:1`};
   const baseLeft=campGridPoint(p.x,p.y+h), baseRight=campGridPoint(p.x+w,p.y+h);
   const depth=Math.max(0,Math.min(1,(p.y+h*.86)/CAMP_ROWS));
-  const physical=pieceVisualScale(p.t);
-  const footprintWidth=baseRight.x-baseLeft.x;
-  const width=footprintWidth*(.82+physical*.9);
+  const oneCellLeft=campGridPoint(p.x,p.y+h), oneCellRight=campGridPoint(Math.min(CAMP_COLS,p.x+1),p.y+h);
+  const childWidth=(oneCellRight.x-oneCellLeft.x)*1.10;
+  const physical=piecePhysicalWidth(p.t);
+  const width=childWidth*physical;
   const left=(baseLeft.x+baseRight.x-width)/2;
   const cameraScale=.42+1.12*Math.pow(depth,1.45);
-  const artRatio=w/Math.max(1,h);
-  return {ground:false,style:`left:${left.toFixed(3)}%;bottom:${(100-baseLeft.y).toFixed(3)}%;width:${width.toFixed(3)}%;aspect-ratio:${artRatio};--depth-scale:${cameraScale.toFixed(3)};--physical-scale:${physical}`};
+  const artRatio=pieceArtAspect(p.t,w,h);
+  return {ground:false,style:`left:${left.toFixed(3)}%;bottom:${(100-baseLeft.y).toFixed(3)}%;width:${width.toFixed(3)}%;aspect-ratio:${artRatio};--depth-scale:${cameraScale.toFixed(3)};--physical-width:${physical}`};
 }
 function canPlaceAt(id,x,y,ignoreIndex=-1){
   const {w,h}=pieceSize(id);
@@ -2455,6 +2492,10 @@ function toggleCampImmersive(force){
 function setCampPanel(panel){
   campPanel=campPanel===panel?null:panel;
   renderCamp();
+}
+function setCampBackground(id){
+  const background=CAMP_BACKGROUNDS.find(option=>option.id===id); if(!background) return;
+  state.campBackground=id; saveState(); renderCamp(); toast(`${background.name} selected`);
 }
 function holdPiece(id){
   const p=pieceById(id);
@@ -2640,6 +2681,8 @@ function renderCamp(preserveCamera=true){
     panelTitle='Your climber'; panelSub='Move your explorer or choose a camp buddy';
     panelBody=`
       <div class="camp-climber-card"><div class="avatar-line">${avatarStr()}</div><div class="camp-climber-copy"><strong>At Base Camp</strong><span>Your climber and equipped buddy live in the scene.</span><button class="btn secondary" onclick="${climberPlaced?'pickUpCampPiece':'holdPiece'}('${CAMP_CLIMBER_PIECE.id}')">${climberPlaced?'Move your climber':'Place your climber'}</button></div></div>
+      <div class="sect-label">Camp environment</div>
+      <div class="camp-background-pick">${CAMP_BACKGROUNDS.map(background=>`<button class="camp-background-option ${state.campBackground===background.id?'on':''}" style="--camp-preview:url('${background.art}')" onclick="setCampBackground('${background.id}')" aria-pressed="${state.campBackground===background.id}"><span>${background.name}</span></button>`).join('')}</div>
       <div class="sect-label">Buddies</div>
       <div class="shop-grid">${buddies.map(renderItem).join('')}</div>`;
   }
@@ -2648,7 +2691,7 @@ function renderCamp(preserveCamera=true){
   $('camp-body').innerHTML=`
     <div class="camp-experience ${campImmersive?'immersive':''}" id="camp-experience">
       <div class="camp-viewport" id="camp-viewport" aria-label="Panoramic Base Camp. Swipe to explore.">
-        <div class="camp-scene ${heldPiece?'placing':''}" id="camp-scene"><div class="camp-ambience" aria-hidden="true">${motes}</div>${cells}${items}</div>
+        <div class="camp-scene ${heldPiece?'placing':''}" id="camp-scene" style="--camp-background:url('${(CAMP_BACKGROUNDS.find(background=>background.id===state.campBackground)||CAMP_BACKGROUNDS[0]).art}')"><div class="camp-ambience" aria-hidden="true">${motes}</div>${cells}${items}</div>
       </div>
       <div class="camp-topbar">
         <div class="camp-place-name">Base Camp<small>${campImmersive?'Swipe to explore the clearing':'Your mountain home'}</small></div>

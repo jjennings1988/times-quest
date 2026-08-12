@@ -75,3 +75,15 @@ Screen**. iOS does not show automatic install prompts, so the in-app banner
 won't appear there — the Share method is the official path.
 
 After installing, the app works fully offline.
+
+## All-access testing profile
+
+To inspect late-game worlds and camp upgrades without changing a real child's
+progress, create a new profile with the exact name **Summit Tester**. The game
+turns that profile into an isolated QA save with all 39 stars, every realm and
+camp blueprint unlocked, 99,999 gems, and extra repeatable path/deck inventory.
+Deleting or resetting that profile does not affect the other child profiles.
+
+The **Climber** panel in Base Camp also includes four compatible environment
+choices: Mountain Dusk, Alpine Morning, Autumn Ridge, and Moonlit Meadow. They
+all share the same placement plane, so changing scenery never moves camp items.
