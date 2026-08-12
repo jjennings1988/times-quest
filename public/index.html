@@ -110,37 +110,74 @@ body{
 #nav button.on .em{transform:scale(1.15)}
 
 /* ---------- mountain map ---------- */
+#screen-map{position:fixed;inset:0;width:100vw;height:100dvh;z-index:2;overflow-y:auto;background:#2A1C16;scrollbar-width:none}
+#screen-map::-webkit-scrollbar{display:none}
+#screen-map .map-topbar{background:linear-gradient(180deg,rgba(30,19,18,.96),rgba(30,19,18,.8) 72%,transparent);position:sticky;top:0;z-index:12;padding-top:calc(12px + env(safe-area-inset-top));padding-left:max(16px,calc((100vw - 980px)/2));padding-right:max(16px,calc((100vw - 980px)/2))}
+#screen-map .map-topbar .title small{color:#E9D5A7}
+.map-pad{flex:0 0 auto;padding:0 0 170px;overflow:hidden}
 #map-trail{
-  position:relative;padding:30px 0 40px;display:flex;flex-direction:column-reverse;gap:26px;
+  position:relative;width:100%;height:clamp(1650px,380vw,2200px);overflow:hidden;
+  background:#D5AD70;isolation:isolate;box-shadow:inset 0 20px 30px rgba(55,27,13,.18),inset 0 -20px 30px rgba(55,27,13,.22);
 }
-#map-trail::before{
-  content:"";position:absolute;left:50%;top:20px;bottom:20px;width:0;
-  border-left:4px dashed rgba(255,255,255,.22);transform:translateX(-2px);
+#map-trail::after{
+  content:"";position:absolute;inset:0;z-index:5;pointer-events:none;
+  background:linear-gradient(90deg,rgba(57,26,12,.14),transparent 8%,transparent 92%,rgba(57,26,12,.14));
+  box-shadow:inset 0 0 42px rgba(63,31,14,.22);
 }
+.map-art{position:absolute;z-index:0;top:0;bottom:0;left:50%;width:clamp(720px,184vw,1044px);transform:translateX(-50%);background:url('art/map/bg-adventure-map.png') center/100% 100% no-repeat}
+.map-route{position:absolute;z-index:1;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;filter:drop-shadow(0 2px 0 rgba(255,244,205,.42))}
+.map-route-segment{fill:none;stroke:#6A482E;stroke-width:4;stroke-dasharray:2 10;stroke-linecap:round;vector-effect:non-scaling-stroke;opacity:.52}
+.map-route-segment.complete{stroke:#F6C344;stroke-width:5;opacity:1;filter:drop-shadow(0 1px 1px rgba(82,48,13,.72))}
+.map-route-segment.current{stroke:#FFE17A;stroke-width:5;opacity:1;animation:mapMarch 1.8s linear infinite}
 .realm-node{
-  display:flex;align-items:center;gap:12px;width:78%;position:relative;z-index:1;
+  position:absolute;z-index:3;width:148px;display:flex;flex-direction:column;align-items:center;text-align:center;
+  transform:translate(-50%,-50%);filter:drop-shadow(0 5px 4px rgba(72,38,17,.24));
 }
-.realm-node.left{align-self:flex-start;margin-left:4%}
-.realm-node.right{align-self:flex-end;margin-right:4%;flex-direction:row-reverse;text-align:right}
 .realm-bubble{
-  width:66px;height:66px;min-width:66px;border-radius:50%;display:flex;align-items:center;justify-content:center;
-  font-size:30px;border:4px solid #fff;box-shadow:0 5px 0 rgba(0,0,0,.3);cursor:pointer;
-  background:var(--cream);transition:transform .12s;position:relative;
+  width:72px;height:72px;min-width:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;padding:0;
+  font-size:30px;border:4px solid #F5E4BB;box-shadow:0 5px 0 #744827,0 0 0 2px rgba(69,37,17,.32);cursor:pointer;
+  background:var(--cream);transition:transform .12s,filter .15s;position:relative;font-family:var(--display);
 }
 .realm-bubble:active{transform:scale(.93)}
-.realm-node.locked .realm-bubble{filter:grayscale(1) brightness(.6);border-color:#777;cursor:default}
-.realm-node .meta{color:#fff;min-width:0}
-.realm-node .meta .nm{font-family:var(--display);font-weight:800;font-size:15px;line-height:1.15}
-.realm-node .meta .fam{font-size:12px;color:#B7AEE8;font-weight:700}
-.realm-node .stars-row{font-size:13px;letter-spacing:1px}
+.realm-node.locked .realm-bubble{filter:sepia(.8) grayscale(.72) brightness(.72);border-color:#B99C70;cursor:default}
+.realm-node .meta{color:#3B271B;min-width:128px;margin-top:5px;padding:4px 8px 5px;border:1.5px solid rgba(101,62,30,.35);border-radius:10px;background:rgba(250,226,177,.91);box-shadow:0 3px 0 rgba(87,48,22,.28);backdrop-filter:blur(2px)}
+.realm-node .meta .nm{font-family:var(--display);font-weight:800;font-size:12.5px;line-height:1.05}
+.realm-node .meta .fam{font-size:10px;color:#795534;font-weight:900;line-height:1.1;margin-top:1px}
+.realm-node .stars-row{font-size:9px;letter-spacing:.5px;line-height:1;margin-top:2px}
+.realm-number{position:absolute;z-index:4;top:-14px;left:50%;transform:translateX(-50%);min-width:42px;padding:2px 8px;border-radius:999px;background:#3A2753;color:#FFE17A;border:2px solid #F5E4BB;box-shadow:0 2px 0 #744827;font-family:var(--display);font-size:14px;font-weight:900;line-height:1.05}
 .realm-bubble .badge{
-  position:absolute;bottom:-6px;right:-6px;width:26px;height:26px;border-radius:50%;
-  background:var(--gold);border:2.5px solid #fff;display:flex;align-items:center;justify-content:center;font-size:13px;
+  position:absolute;bottom:-5px;right:-7px;width:25px;height:25px;border-radius:50%;
+  background:var(--gold);color:#2D2A4A;border:2.5px solid #FFF2CB;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;
 }
-.realm-node.here .realm-bubble{animation:bounce 1.6s infinite;border-color:var(--gold)}
+.realm-node.here{z-index:4}
+.realm-node.here .realm-bubble{animation:mapBeacon 1.8s infinite;border-color:#FFE17A;box-shadow:0 5px 0 #744827,0 0 0 4px rgba(255,225,122,.38),0 0 24px rgba(255,197,61,.75)}
+.realm-node.conquered .realm-bubble{border-color:#FFE17A}
+.map-you{position:absolute;top:40px;left:calc(50% + 42px);display:flex;flex-direction:column;align-items:center;pointer-events:none;filter:drop-shadow(0 3px 2px rgba(46,23,12,.45))}
+.map-you .avatar-render{transform:scale(1.16);transform-origin:50% 100%}
+.map-you span.you-tag{margin-top:-2px;padding:2px 6px;border-radius:999px;background:#3A2753;color:#FFE17A;border:1.5px solid #F5E4BB;font-size:8px;font-weight:900;white-space:nowrap}
 @keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
-.summit-node{align-self:center;text-align:center;color:#fff;z-index:1}
-.summit-node .realm-bubble{width:84px;height:84px;font-size:40px;margin:0 auto 6px}
+.summit-node{position:absolute;z-index:3;width:170px;display:flex;flex-direction:column;align-items:center;text-align:center;transform:translate(-50%,-50%);filter:drop-shadow(0 5px 5px rgba(54,28,15,.28))}
+.summit-node .realm-bubble{width:84px;height:84px;font-size:40px}
+.summit-node .meta{margin-top:6px;padding:5px 10px;border-radius:11px;background:rgba(250,226,177,.93);border:1.5px solid rgba(101,62,30,.38);box-shadow:0 3px 0 rgba(87,48,22,.3);color:#3B271B}
+.summit-node .nm{font-family:var(--display);font-weight:800;font-size:14px;line-height:1}
+.summit-node .fam{font-size:9.5px;color:#795534;font-weight:900;line-height:1.15;margin-top:2px}
+.map-continue-wrap{position:fixed;z-index:11;left:50%;bottom:calc(74px + env(safe-area-inset-bottom));width:min(596px,calc(100vw - 24px));transform:translateX(-50%);pointer-events:none}
+.map-continue-wrap .continue-btn{pointer-events:auto;margin:0;padding:11px 16px;border-radius:16px;box-shadow:0 5px 0 #A66C09,0 9px 22px rgba(29,15,10,.38);font-size:16px;border:1.5px solid rgba(255,255,255,.38)}
+.map-continue-wrap .continue-btn small{font-size:10px}
+.map-quest-toggle{position:relative;width:42px;height:38px;flex:0 0 42px;border-radius:13px;border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#fff;font-size:19px;cursor:pointer}
+.map-quest-toggle .dot{display:none;position:absolute;right:4px;top:3px;width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 2px #2A1C16}
+.map-quest-toggle.has-reward .dot{display:block}
+.map-notice-sheet{display:none;position:fixed;z-index:13;left:50%;top:calc(68px + env(safe-area-inset-top));width:min(588px,calc(100vw - 24px));transform:translateX(-50%);padding:9px;border-radius:18px;background:rgba(39,25,24,.96);border:1.5px solid rgba(255,255,255,.16);box-shadow:0 12px 34px rgba(21,10,7,.5);backdrop-filter:blur(14px)}
+.map-notice-sheet.on{display:block}
+.map-notice-sheet .daily-quest{margin-bottom:8px}
+.map-notice-sheet .daily-quest:last-child{margin-bottom:0}
+.map-notice-close{width:100%;border:0;background:transparent;color:#DCC9A5;font-family:var(--body);font-size:11px;font-weight:900;padding:2px 4px 6px;cursor:pointer;text-align:right}
+@keyframes mapMarch{to{stroke-dashoffset:-24}}
+@keyframes mapBeacon{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@media(min-width:700px){
+  .realm-node{width:164px}.realm-node .meta{min-width:142px}.realm-node .meta .nm{font-size:14px}
+  .realm-bubble{width:78px;height:78px}.map-you{left:calc(50% + 48px)}
+}
 
 /* ---------- realm detail ---------- */
 .realm-hero{
@@ -539,27 +576,31 @@ body.calm .stars{display:none}
 
   <!-- ============ MAP SCREEN ============ -->
   <div class="screen active" id="screen-map">
-    <div class="topbar">
+    <div class="topbar map-topbar">
       <div class="title">Times Quest<small>The Climb to Mount Twelve</small></div>
       <div class="chip"><span class="em">💎</span><span id="gem-count">0</span></div>
       <div class="chip"><span class="em">🔥</span><span id="streak-count">0</span></div>
+      <button class="map-quest-toggle" id="map-quest-toggle" onclick="toggleMapNotices()" aria-label="Open quest notes" aria-expanded="false">📜<span class="dot"></span></button>
     </div>
-    <div class="screen-pad">
-      <button class="btn gold continue-btn" id="continue-btn" onclick="doContinue()"></button>
-      <div class="daily-quest" id="install-banner" style="display:none;cursor:pointer" onclick="doInstall()">
-        <span class="em">📲</span>
-        <div><div class="t">Install Times Quest</div><div class="s">Add to home screen — plays offline, no browser bar!</div></div>
-      </div>
-      <div class="daily-quest" id="daily-quest">
-        <span class="em">📜</span>
-        <div><div class="t" id="dq-title">Daily Quest</div><div class="s" id="dq-sub"></div></div>
-      </div>
-      <div id="chest-banner" style="display:none" class="daily-quest">
-        <span class="em">🎁</span>
-        <div><div class="t">Mystery Chest!</div><div class="s">Finish any round today to open it.</div></div>
+    <div class="map-pad">
+      <div class="map-notice-sheet" id="map-notice-sheet">
+        <button class="map-notice-close" onclick="toggleMapNotices(false)">Close ×</button>
+        <div class="daily-quest" id="install-banner" style="display:none;cursor:pointer" onclick="doInstall()">
+          <span class="em">📲</span>
+          <div><div class="t">Install Times Quest</div><div class="s">Add to home screen — plays offline, no browser bar!</div></div>
+        </div>
+        <div class="daily-quest" id="daily-quest">
+          <span class="em">📜</span>
+          <div><div class="t" id="dq-title">Daily Quest</div><div class="s" id="dq-sub"></div></div>
+        </div>
+        <div id="chest-banner" style="display:none" class="daily-quest">
+          <span class="em">🎁</span>
+          <div><div class="t">Mystery Chest!</div><div class="s">Finish any round today to open it.</div></div>
+        </div>
       </div>
       <div id="map-trail"></div>
     </div>
+    <div class="map-continue-wrap"><button class="btn gold continue-btn" id="continue-btn" onclick="doContinue()"></button></div>
   </div>
 
   <!-- ============ REALM SCREEN ============ -->
@@ -1125,18 +1166,43 @@ function doContinue(){
   activeRealm=null; // quitting from here should land back on the map
   a.fn(...a.args);
 }
+let mapNoticesOpen=false;
+function toggleMapNotices(force){
+  mapNoticesOpen=typeof force==='boolean'?force:!mapNoticesOpen;
+  const sheet=$('map-notice-sheet'),button=$('map-quest-toggle');
+  if(sheet) sheet.classList.toggle('on',mapNoticesOpen);
+  if(button) button.setAttribute('aria-expanded',String(mapNoticesOpen));
+}
+const MAP_POSITIONS=[
+  {x:31,y:91.5},{x:70,y:84.3},{x:28,y:77.2},{x:69,y:70.1},{x:34,y:63.1},{x:72,y:56.0},{x:30,y:48.9},
+  {x:70,y:41.8},{x:31,y:34.7},{x:69,y:27.7},{x:34,y:21.0},{x:70,y:15.0},{x:38,y:9.3},{x:57,y:3.8},
+];
+function mapRouteSvg(completedCount){
+  const width=1000,height=2000;
+  const points=MAP_POSITIONS.map(p=>({x:p.x*10,y:p.y*20}));
+  const segment=(a,b,i)=>{
+    const bend=i%2===0?125:-125;
+    const midY=(a.y+b.y)/2;
+    const d=`M ${a.x} ${a.y} C ${a.x+bend} ${midY+48}, ${b.x-bend} ${midY-48}, ${b.x} ${b.y}`;
+    const cls=i<completedCount?'complete':i===completedCount?'current':'';
+    return `<path class="map-route-segment ${cls}" d="${d}"/>`;
+  };
+  return `<svg class="map-route" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true">${points.slice(0,-1).map((p,i)=>segment(p,points[i+1],i)).join('')}</svg>`;
+}
 function renderMap(){
-  const trail=$('map-trail'); trail.innerHTML='';
+  const trail=$('map-trail');
   const act=nextAction();
   $('continue-btn').innerHTML=`<span>${act.label}<small>${act.sub}</small></span>`;
   const unlocked=unlockedFamilies();
-  // summit node (top = last in column-reverse)
+  const completedCount=conquestCount();
+  trail.innerHTML=`<div class="map-art" aria-hidden="true"></div>${mapRouteSvg(completedCount)}`;
+  // summit node at the final background landmark
   const summit=document.createElement('div');
   summit.className='summit-node';
+  summit.style.cssText=`left:${MAP_POSITIONS[13].x}%;top:${MAP_POSITIONS[13].y}%`;
   const summitOpen=allConquered();
-  summit.innerHTML=`<div class="realm-bubble" style="background:${summitOpen?'linear-gradient(135deg,#FFE08A,#FFC53D)':'#555'};${summitOpen?'':'filter:grayscale(1) brightness(.6)'}">${state.summitDone?'🏆':'⛰️'}</div>
-    <div class="nm" style="font-family:var(--display);font-weight:800">The 12s Summit</div>
-    <div class="fam" style="font-size:12px;color:#B7AEE8;font-weight:700">${state.summitDone?'CONQUERED! 🎉':summitOpen?'The final challenge awaits!':'Conquer every realm to unlock'}</div>`;
+  summit.innerHTML=`<div class="realm-bubble" style="background:${summitOpen?'linear-gradient(135deg,#FFE08A,#FFC53D)':'#6F6258'};${summitOpen?'':'filter:sepia(.8) grayscale(.7) brightness(.72)'}">${state.summitDone?'🏆':'⛰️'}</div>
+    <div class="meta"><div class="nm">Mount Twelve</div><div class="fam">${state.summitDone?'CONQUERED! 🎉':summitOpen?'THE FINAL CHALLENGE':'CONQUER EVERY REALM'}</div></div>`;
   if(summitOpen) { summit.querySelector('.realm-bubble').style.cursor='pointer'; summit.querySelector('.realm-bubble').onclick=()=>startSummit(); }
   
   REALM_ORDER.forEach((fam,i)=>{
@@ -1145,17 +1211,19 @@ function renderMap(){
     const isHere=fam===currentFamily() && !state.realms[fam].conquered;
     const {stars}=realmStars(fam);
     const node=document.createElement('div');
-    node.className=`realm-node ${i%2===0?'left':'right'} ${isUnlocked?'':'locked'} ${isHere?'here':''}`;
+    const point=MAP_POSITIONS[i];
+    node.className=`realm-node ${isUnlocked?'':'locked'} ${isHere?'here':''} ${state.realms[fam].conquered?'conquered':''}`;
+    node.style.cssText=`left:${point.x}%;top:${point.y}%`;
     node.innerHTML=`
-      <div class="realm-bubble" style="background:${r.color}">${isUnlocked?realmCharacter(fam):'🔒'}
+      <div class="realm-bubble" style="background:${r.color}"><span class="realm-number">×${fam}</span>${isUnlocked?realmCharacter(fam):'🔒'}
         ${state.realms[fam].conquered?'<div class="badge">✓</div>':''}
       </div>
       <div class="meta">
         <div class="nm">${r.name}</div>
-        <div class="fam">×${fam} family</div>
+        <div class="fam">${state.realms[fam].conquered?'REALM CONQUERED':isHere?'CURRENT DESTINATION':isUnlocked?'READY TO EXPLORE':'ROUTE LOCKED'}</div>
         <div class="stars-row">${'⭐'.repeat(stars)}${'<span style="opacity:.25">⭐</span>'.repeat(3-stars)}</div>
-        ${isHere?`<div style="font-size:18px;margin-top:2px">${avatarStr()} <span style="font-size:11px;color:#FFC53D;font-weight:800">YOU ARE HERE</span></div>`:''}
-      </div>`;
+      </div>
+      ${isHere?`<div class="map-you">${avatarStr()}<span class="you-tag">YOU ARE HERE</span></div>`:''}`;
     if(isUnlocked) node.querySelector('.realm-bubble').onclick=()=>openRealm(fam);
     trail.appendChild(node);
   });
@@ -1166,6 +1234,7 @@ function renderMap(){
   $('dq-sub').textContent=state.questDone?'+25 gems earned — come back tomorrow!':q.s;
   $('daily-quest').classList.toggle('done',state.questDone);
   $('chest-banner').style.display = (state.chest && state.chestFrom!==todayStr()) ? 'flex':'none';
+  $('map-quest-toggle').classList.toggle('has-reward',!state.questDone || $('chest-banner').style.display==='flex');
   // scroll to current realm
   setTimeout(()=>{
     const here=trail.querySelector('.here');

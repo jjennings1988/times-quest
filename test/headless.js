@@ -271,6 +271,7 @@ async function boot(saveObj) {
   ok('offline shell pre-caches the climber sprite', swSource.includes('./art/climber.png'));
   ok('offline shell pre-caches all avatar gear', Object.keys(avatarGear).every(n=>swSource.includes(`./art/${n}`)));
   ok('runtime cache never stores missing future-batch art', swSource.includes('if (res.ok)'));
+  ok('offline shell pre-caches the scrolling adventure map', swSource.includes('./art/map/bg-adventure-map.png'));
   fresh.win.showScreen('screen-camp');
   ok('camp opens as a scene-first experience with collapsed menus',
      !!fresh.$('camp-experience') && !fresh.win.document.querySelector('.camp-sheet'));
@@ -304,6 +305,16 @@ async function boot(saveObj) {
   ok('continue button has a label', ($('continue-btn').textContent||'').length > 5, $('continue-btn').textContent);
   ok('continue points at the current realm (×2 practice or learn)',
      /×2|Double River/.test($('continue-btn').textContent), $('continue-btn').textContent);
+  ok('adventure renders one map destination per realm plus the summit',
+     win.document.querySelectorAll('#map-trail .realm-node').length === 13 && !!win.document.querySelector('#map-trail .summit-node'));
+  ok('adventure route has one curved segment between every destination',
+     win.document.querySelectorAll('#map-trail .map-route-segment').length === 13);
+  ok('current map destination carries the climber marker',
+     !!win.document.querySelector('#map-trail .realm-node.here .map-you'));
+  win.toggleMapNotices(true);
+  ok('quest notes open as a collapsible map overlay',
+     $('map-notice-sheet').classList.contains('on') && $('map-quest-toggle').getAttribute('aria-expanded') === 'true');
+  win.toggleMapNotices(false);
 
   section('Realm screen');
   win.openRealm(2);

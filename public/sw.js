@@ -1,5 +1,5 @@
 /* Times Quest service worker — offline-first app shell */
-const CACHE = 'times-quest-v19';
+const CACHE = 'times-quest-v20';
 const SHELL = [
   './',
   './index.html',
@@ -9,6 +9,7 @@ const SHELL = [
   './icons/icon-maskable-512.png',
   './icons/apple-touch-icon.png',
   './art/climber.png',
+  './art/map/bg-adventure-map.png',
   './art/hat/cap.png',
   './art/hat/tophat.png',
   './art/hat/helmet.png',
