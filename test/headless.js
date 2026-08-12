@@ -164,6 +164,7 @@ async function boot(saveObj) {
     'camp-trophy-summit.png':[192,192],
   };
   const realmCharacters=Object.fromEntries(Array.from({length:13},(_,f)=>[`pet-${f}.png`,[512,512]]));
+  const bossCharacters=Object.fromEntries(Array.from({length:13},(_,f)=>[`boss-${f}.png`,[512,512]]));
   const pngInfo=name=>{
     const buf=fs.readFileSync(require('path').join(PUBLIC,'art','camp',name));
     return {w:buf.readUInt32BE(16),h:buf.readUInt32BE(20),colorType:buf[25]};
@@ -220,6 +221,18 @@ async function boot(saveObj) {
      }));
   ok('all thirteen realm characters are transparent RGBA PNGs',
      Object.keys(realmCharacters).every(n=>realmPngInfo(n).colorType===6));
+  const bossPngInfo=name=>{
+    const buf=fs.readFileSync(require('path').join(PUBLIC,'art','boss',name));
+    return {w:buf.readUInt32BE(16),h:buf.readUInt32BE(20),colorType:buf[25]};
+  };
+  ok('all thirteen boss portraits exist at the locked 512px square size',
+     Object.entries(bossCharacters).every(([name,size])=>{
+       const p=require('path').join(PUBLIC,'art','boss',name);
+       if(!fs.existsSync(p)) return false;
+       const info=bossPngInfo(name); return info.w===size[0] && info.h===size[1];
+     }));
+  ok('all thirteen boss portraits are transparent RGBA PNGs',
+     Object.keys(bossCharacters).every(n=>bossPngInfo(n).colorType===6));
   const swSource=fs.readFileSync(require('path').join(PUBLIC,'sw.js'),'utf8');
   ok('offline shell pre-caches every Batch 1 asset', Object.keys(batch1).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('offline shell pre-caches every Batch 2 asset', Object.keys(batch2).every(n=>swSource.includes(`./art/camp/${n}`)));
@@ -227,6 +240,7 @@ async function boot(saveObj) {
   ok('offline shell pre-caches every Batch 4 asset', Object.keys(batch4).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('offline shell pre-caches every Batch 5 asset', Object.keys(batch5).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('offline shell pre-caches every realm character', Object.keys(realmCharacters).every(n=>swSource.includes(`./art/realm/${n}`)));
+  ok('offline shell pre-caches every boss portrait', Object.keys(bossCharacters).every(n=>swSource.includes(`./art/boss/${n}`)));
   ok('runtime cache never stores missing future-batch art', swSource.includes('if (res.ok)'));
   fresh.win.showScreen('screen-camp');
   ok('first camp visit grants the free starter pair',
@@ -341,6 +355,8 @@ async function boot(saveObj) {
   ev('state').realms[2].trial = true;
   win.startBoss(2);
   ok('boss has 3 hearts', ev('quiz').hearts === 3);
+  ok('boss battle markup keeps its emoji fallback', $('boss-em').innerHTML.includes('🌊'));
+  ok('boss battle markup points at the stable semantic PNG', $('boss-em').innerHTML.includes('art/boss/boss-2.png'));
   ok('needCorrect matches the hearts rule', ev('quiz').needCorrect === ev('quiz').queue.length - 3,
      `need ${ev('quiz').needCorrect} of ${ev('quiz').queue.length}`);
   for (let i = 0; i < 3; i++) {
@@ -353,6 +369,7 @@ async function boot(saveObj) {
   }
   await new Promise(r => setTimeout(r, 900));
   ok('three misses ends the fight', ev('quiz') === null, 'quiz still running');
+  ok('boss result keeps the illustrated portrait', $('results-body').innerHTML.includes('art/boss/boss-2.png'));
   ok('failure headline shown', $('results-body').innerHTML.includes('blocked you'));
 
   /* ---------------------------------------------------------------- */

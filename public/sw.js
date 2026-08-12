@@ -1,5 +1,5 @@
 /* Times Quest service worker — offline-first app shell */
-const CACHE = 'times-quest-v15';
+const CACHE = 'times-quest-v16';
 const SHELL = [
   './',
   './index.html',
@@ -21,6 +21,19 @@ const SHELL = [
   './art/realm/pet-10.png',
   './art/realm/pet-11.png',
   './art/realm/pet-12.png',
+  './art/boss/boss-0.png',
+  './art/boss/boss-1.png',
+  './art/boss/boss-2.png',
+  './art/boss/boss-3.png',
+  './art/boss/boss-4.png',
+  './art/boss/boss-5.png',
+  './art/boss/boss-6.png',
+  './art/boss/boss-7.png',
+  './art/boss/boss-8.png',
+  './art/boss/boss-9.png',
+  './art/boss/boss-10.png',
+  './art/boss/boss-11.png',
+  './art/boss/boss-12.png',
   './art/camp/bg-camp-dusk.png',
   './art/camp/camp-shelter-t1.png',
   './art/camp/camp-shelter-t2.png',

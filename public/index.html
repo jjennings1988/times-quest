@@ -184,6 +184,13 @@ body{
 .quiz-quit{background:none;border:none;color:#8B83BD;font-size:20px;cursor:pointer;padding:4px}
 .boss-bar{display:none;align-items:center;gap:10px;padding:8px 16px 0}
 .boss-bar .boss-em{font-size:36px;animation:bossFloat 2.2s infinite ease-in-out}
+.boss-visual{display:inline-flex;align-items:center;justify-content:center;position:relative;isolation:isolate;vertical-align:middle}
+.boss-visual-emoji{position:absolute;inset:0;z-index:0;display:flex;align-items:center;justify-content:center;line-height:1}
+.boss-visual-image{position:absolute;inset:0;z-index:1;opacity:0;background-image:var(--boss-art);background-repeat:no-repeat;background-position:center;background-size:contain;transition:opacity .12s}
+.boss-visual.art-ready .boss-visual-image{opacity:1}
+.boss-visual.art-ready .boss-visual-emoji{visibility:hidden}
+.boss-visual-probe{display:none}
+.boss-bar .boss-visual{width:58px;height:58px;font-size:36px}
 @keyframes bossFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 .boss-bar .hp-fill{background:linear-gradient(90deg,var(--coral),#FF9A6B)}
 .hearts{color:#FF6B6B;font-size:16px;letter-spacing:2px;padding:0 16px}
@@ -235,6 +242,7 @@ body{
 /* ---------- results ---------- */
 .results-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;text-align:center}
 .results-wrap .big-em{font-size:72px;animation:pop .5s}
+.results-wrap .boss-visual.result{width:116px;height:116px;font-size:72px}
 .results-wrap h2{font-family:var(--display);font-weight:800;font-size:30px;color:#fff;margin:8px 0 2px}
 .results-wrap .sub{color:#B7AEE8;font-weight:700;margin-bottom:14px}
 .result-stars{font-size:38px;letter-spacing:6px;margin-bottom:10px}
@@ -1089,7 +1097,7 @@ function startQuiz(cfg){
     recovered:0, retry:false,
   };
   $('boss-bar').style.display = quiz.boss?'flex':'none';
-  if(quiz.boss){ $('boss-em').textContent=quiz.boss; $('boss-hp').style.width='100%'; }
+  if(quiz.boss){ $('boss-em').innerHTML=bossVisual(cfg.fams[0]); $('boss-hp').style.width='100%'; }
   $('hearts').textContent = quiz.hearts?'❤️'.repeat(quiz.hearts):'';
   $('timer-track').style.visibility = quiz.timed?'visible':'hidden';
   $('hint-card').style.display='none';
@@ -1279,8 +1287,9 @@ function finishQuiz(failed=false){
 
   completeRound(qz.correct+qz.recovered, qz.fams);
 
+  const resultVisual=qz.mode==='boss'?bossVisual(qz.fams[0],'result'):em;
   $('results-body').innerHTML=`
-    <div class="big-em">${em}</div>
+    <div class="big-em">${resultVisual}</div>
     <h2>${headline}</h2>
     <div class="sub">${sub}</div>
     <div class="result-stars">${'⭐'.repeat(stars)}<span style="opacity:.25">${'⭐'.repeat(3-stars)}</span></div>
@@ -1350,6 +1359,10 @@ function startBoss(fam){
 }
 function bossEmoji(fam){ return {0:'🌫️',1:'🪞',10:'🏗️',2:'🌊',5:'🦑',11:'🗼',3:'🦍',4:'🗿',9:'🥷',6:'⚙️',12:'🐲',8:'🧊',7:'⛈️'}[fam]||'👹'; }
 function bossName(fam){ return {0:'The Vanishing Fog',1:'The Mirror Spirit',10:'The Mega Machine',2:'The River Serpent',5:'The Harbor Kraken',11:'The Tower Twins',3:'The Jungle King',4:'The Stone Golem',9:'The Ninja Master',6:'The Circuit Breaker',12:'The Clock Dragon',8:'The Ice Titan',7:'The Storm Lord'}[fam]||'The Boss'; }
+function bossVisual(fam, cls=''){
+  const art=`art/boss/boss-${fam}.png`;
+  return `<span class="boss-visual ${cls}" role="img" aria-label="${bossName(fam)}" style="--boss-art:url('${art}')"><span class="boss-visual-emoji" aria-hidden="true">${bossEmoji(fam)}</span><span class="boss-visual-image" aria-hidden="true"></span><img class="boss-visual-probe" src="${art}" alt="" onload="this.parentElement.classList.add('art-ready')" onerror="this.remove()"></span>`;
+}
 function startSummit(){
   lastConfig={fn:startSummit,args:[]};
   const queue=[];
