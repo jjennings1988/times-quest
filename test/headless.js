@@ -272,12 +272,20 @@ async function boot(saveObj) {
   ok('offline shell pre-caches all avatar gear', Object.keys(avatarGear).every(n=>swSource.includes(`./art/${n}`)));
   ok('runtime cache never stores missing future-batch art', swSource.includes('if (res.ok)'));
   fresh.win.showScreen('screen-camp');
+  ok('camp opens as a scene-first experience with collapsed menus',
+     !!fresh.$('camp-experience') && !fresh.win.document.querySelector('.camp-sheet'));
+  ok('camp dock exposes build, treasure, and climber tools',
+     fresh.win.document.querySelectorAll('.camp-dock button').length === 3);
+  fresh.win.setCampPanel('build');
+  ok('build catalog opens as a collapsible sheet',
+     fresh.win.document.querySelector('.camp-sheet') && fresh.$('camp-body').textContent.includes('Build your camp'));
   ok('first camp visit grants the free starter pair',
      fev("state.bought['shelter-1']") === 1 && fev("state.bought['fire-1']") === 1);
   ok('starter placement tutorial begins with the Bedroll',
      fev('heldPiece') === 'shelter-1' && JSON.stringify(fev('state.campTutorial')) === JSON.stringify(['shelter-1','fire-1']));
   ok('one-conquest items preview early', fresh.$('camp-body').textContent.includes('Cook Pot'));
   ok('two-conquest items remain hidden', !fresh.$('camp-body').textContent.includes('Pack Pile'));
+  fresh.win.setCampPanel('build');
   fresh.win.document.querySelector('.camp-cell[data-x="0"][data-y="0"]')
     .dispatchEvent(new fresh.win.MouseEvent('click',{bubbles:true}));
   ok('placing Bedroll advances tutorial to Fire Ring', fev('heldPiece') === 'fire-1');
@@ -418,6 +426,14 @@ async function boot(saveObj) {
   ok('climber is a movable camp piece, not scene decoration',
      ev("state.placed.some(p=>p.t==='camp-climber')") && ev("pieceVisual('camp-climber')").includes('art/climber.png'));
   ok('existing pieces rendered', win.document.querySelectorAll('.citem.placed').length === n0);
+  win.toggleCampImmersive(true);
+  ok('full-screen camp mode is available and hides app chrome',
+     $('camp-experience').classList.contains('immersive') && win.document.body.classList.contains('camp-immersive-open'));
+  ok('full-screen camp includes recenter and exit controls',
+     !!win.document.querySelector('.camp-recenter') && !!win.document.querySelector('[aria-label="Close full-screen camp"]'));
+  win.toggleCampImmersive(false);
+  ok('full-screen camp returns to the embedded view',
+     !$('camp-experience').classList.contains('immersive') && !win.document.body.classList.contains('camp-immersive-open'));
 
   win.holdPiece('trophy-x0');                             // ×0 conquered → owned
   ok('piece picked up', ev('heldPiece') === 'trophy-x0');
