@@ -128,6 +128,41 @@ async function boot(saveObj) {
     'camp-garden-t1.png':[192,192], 'camp-lookout-t1.png':[192,192],
     'camp-ground-stone-path.png':[192,192], 'camp-trophy-x0.png':[192,192],
   };
+  const batch2={
+    'camp-shelter-t3.png':[384,384], 'camp-shelter-t4.png':[384,384],
+    'camp-shelter-t5.png':[576,384],
+    'camp-fire-t3-strip3.png':[1152,384], 'camp-fire-t4-strip3.png':[1728,384],
+    'camp-light-t2.png':[192,192], 'camp-light-t3-strip3.png':[1152,192],
+    'camp-lookout-t2.png':[384,384], 'camp-lookout-t3.png':[576,384],
+    'camp-banner-t1-strip3.png':[576,192], 'camp-banner-t2-strip3.png':[576,192],
+    'camp-banner-t3-strip3.png':[1152,192],
+  };
+  const batch3={
+    'camp-seating-t2.png':[384,192], 'camp-seating-t3.png':[384,384],
+    'camp-kitchen-t1.png':[192,192], 'camp-kitchen-t2.png':[384,192],
+    'camp-kitchen-t3.png':[384,384],
+    'camp-water-t1.png':[192,192], 'camp-water-t2.png':[384,384],
+    'camp-water-t3-strip3.png':[1152,384],
+    'camp-garden-t2.png':[192,192], 'camp-garden-t3.png':[384,384],
+    'camp-garden-t4.png':[384,384],
+  };
+  const batch4={
+    'camp-storage-t1.png':[192,192], 'camp-storage-t2.png':[384,192],
+    'camp-storage-t3.png':[384,384],
+    'camp-ground-wood-deck.png':[192,192],
+    'camp-life-bird-feeder.png':[192,192], 'camp-life-beehive.png':[192,192],
+    'camp-activity-kite-strip3.png':[1152,192],
+    'camp-activity-rope-swing.png':[384,384], 'camp-activity-zipline.png':[384,192],
+  };
+  const batch5={
+    'camp-trophy-x1.png':[192,192], 'camp-trophy-x10.png':[192,192],
+    'camp-trophy-x2.png':[384,192], 'camp-trophy-x5.png':[192,192],
+    'camp-trophy-x11.png':[384,192], 'camp-trophy-x3.png':[192,192],
+    'camp-trophy-x4.png':[192,192], 'camp-trophy-x9.png':[384,192],
+    'camp-trophy-x6.png':[192,192], 'camp-trophy-x12.png':[384,384],
+    'camp-trophy-x8.png':[192,192], 'camp-trophy-x7.png':[384,384],
+    'camp-trophy-summit.png':[192,192],
+  };
   const pngInfo=name=>{
     const buf=fs.readFileSync(require('path').join(PUBLIC,'art','camp',name));
     return {w:buf.readUInt32BE(16),h:buf.readUInt32BE(20),colorType:buf[25]};
@@ -140,8 +175,44 @@ async function boot(saveObj) {
      }));
   ok('all ten Batch 1 sprites are RGBA PNGs',
      Object.keys(batch1).filter(n=>n!=='bg-camp-dusk.png').every(n=>pngInfo(n).colorType===6));
+  ok('all Batch 2 hero art files exist at exact locked dimensions',
+     Object.entries(batch2).every(([name,size])=>{
+       const p=require('path').join(PUBLIC,'art','camp',name);
+       if(!fs.existsSync(p)) return false;
+       const info=pngInfo(name); return info.w===size[0] && info.h===size[1];
+     }));
+  ok('all twelve Batch 2 hero sprites are RGBA PNGs',
+     Object.keys(batch2).every(n=>pngInfo(n).colorType===6));
+  ok('all Batch 3 breadth art files exist at exact locked dimensions',
+     Object.entries(batch3).every(([name,size])=>{
+       const p=require('path').join(PUBLIC,'art','camp',name);
+       if(!fs.existsSync(p)) return false;
+       const info=pngInfo(name); return info.w===size[0] && info.h===size[1];
+     }));
+  ok('all eleven Batch 3 breadth sprites are RGBA PNGs',
+     Object.keys(batch3).every(n=>pngInfo(n).colorType===6));
+  ok('all Batch 4 long-tail art files exist at exact locked dimensions',
+     Object.entries(batch4).every(([name,size])=>{
+       const p=require('path').join(PUBLIC,'art','camp',name);
+       if(!fs.existsSync(p)) return false;
+       const info=pngInfo(name); return info.w===size[0] && info.h===size[1];
+     }));
+  ok('all nine Batch 4 long-tail sprites are RGBA PNGs',
+     Object.keys(batch4).every(n=>pngInfo(n).colorType===6));
+  ok('all Batch 5 trophy art files exist at exact locked dimensions',
+     Object.entries(batch5).every(([name,size])=>{
+       const p=require('path').join(PUBLIC,'art','camp',name);
+       if(!fs.existsSync(p)) return false;
+       const info=pngInfo(name); return info.w===size[0] && info.h===size[1];
+     }));
+  ok('all thirteen Batch 5 trophy sprites are RGBA PNGs',
+     Object.keys(batch5).every(n=>pngInfo(n).colorType===6));
   const swSource=fs.readFileSync(require('path').join(PUBLIC,'sw.js'),'utf8');
   ok('offline shell pre-caches every Batch 1 asset', Object.keys(batch1).every(n=>swSource.includes(`./art/camp/${n}`)));
+  ok('offline shell pre-caches every Batch 2 asset', Object.keys(batch2).every(n=>swSource.includes(`./art/camp/${n}`)));
+  ok('offline shell pre-caches every Batch 3 asset', Object.keys(batch3).every(n=>swSource.includes(`./art/camp/${n}`)));
+  ok('offline shell pre-caches every Batch 4 asset', Object.keys(batch4).every(n=>swSource.includes(`./art/camp/${n}`)));
+  ok('offline shell pre-caches every Batch 5 asset', Object.keys(batch5).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('runtime cache never stores missing future-batch art', swSource.includes('if (res.ok)'));
   fresh.win.showScreen('screen-camp');
   ok('first camp visit grants the free starter pair',
