@@ -74,23 +74,25 @@ async function boot(saveObj) {
   ok('every fact record preserved',
      Object.keys(before.facts).every(k =>
        S().facts[k] && S().facts[k].c === before.facts[k].c && S().facts[k].rating === before.facts[k].rating));
-  ok('schema version stamped', S().v === 2);
+  ok('schema version stamped', S().v === 3);
   ok('bought initialised', typeof S().bought === 'object');
   ok('campSeen initialised', S().campSeen === null);
 
   // placed[] seeded from old camp gear, then migrated to locked v1.1 IDs
   const placedIds = S().placed.map(p => p.t).sort();
-  ok('placed seeded from owned camp gear only',
-     JSON.stringify(placedIds) === JSON.stringify(['banner-1','light-1','shelter-2']),
+  ok('placed seeded from owned camp gear plus the climber',
+     JSON.stringify(placedIds) === JSON.stringify(['banner-1','camp-climber','light-1','shelter-2']),
      JSON.stringify(placedIds));
   const at = id => S().placed.find(p => p.t === id);
-  ok('flag → banner-1 at original position', at('banner-1').x === 7 && at('banner-1').y === 1, JSON.stringify(at('banner-1')));
-  ok('lantern → light-1 at original position', at('light-1').x === 5 && at('light-1').y === 3, JSON.stringify(at('light-1')));
-  ok('tent → shelter-2 at original position', at('shelter-2').x === 6 && at('shelter-2').y === 3, JSON.stringify(at('shelter-2')));
+  ok('flag → banner-1 projected onto the clearing', at('banner-1').x === 9 && at('banner-1').y === 1, JSON.stringify(at('banner-1')));
+  ok('lantern → light-1 projected onto the clearing', at('light-1').x === 6 && at('light-1').y === 4, JSON.stringify(at('light-1')));
+  ok('tent → shelter-2 projected onto the clearing', at('shelter-2').x === 7 && at('shelter-2').y === 4, JSON.stringify(at('shelter-2')));
   ok('migrated pieces are owned under their stable IDs',
      ['banner-1','light-1','shelter-2'].every(id => S().bought[id] === 1));
   ok('no two seeded pieces share a cell',
      new Set(S().placed.map(p => p.x+','+p.y)).size === S().placed.length);
+  ok('every migrated footprint is buildable and collision-free',
+     S().placed.every((p,i)=>win.canPlaceAt(p.t,p.x,p.y,i)));
 
   section('Migration — complete legacy ID map and duplicate preservation');
   const richLegacy=legacySave();
@@ -110,7 +112,9 @@ async function boot(saveObj) {
   const fresh = await boot(undefined);
   const fev = expr => fresh.win.eval(expr);
   ok('fresh boot has no errors', fresh.errs.length === 0, fresh.errs.join('; '));
-  ok('fresh state has placed[]', Array.isArray(fev('state').placed) && fev('state').placed.length === 0);
+  ok('fresh state starts with one placeable climber',
+     Array.isArray(fev('state').placed) && fev('state').placed.length === 1 && fev('state').placed[0].t === 'camp-climber');
+  ok('fresh climber is only auto-introduced once', fev('state').climberIntroduced === true);
   ok('fresh state gems 0', fev('state').gems === 0);
 
   section('Camp v1.1 catalogue and first-visit setup');
@@ -163,6 +167,8 @@ async function boot(saveObj) {
     'camp-trophy-x8.png':[192,192], 'camp-trophy-x7.png':[384,384],
     'camp-trophy-summit.png':[192,192],
   };
+  const realmCharacters=Object.fromEntries(Array.from({length:13},(_,f)=>[`pet-${f}.png`,[512,512]]));
+  const bossCharacters=Object.fromEntries(Array.from({length:13},(_,f)=>[`boss-${f}.png`,[512,512]]));
   const pngInfo=name=>{
     const buf=fs.readFileSync(require('path').join(PUBLIC,'art','camp',name));
     return {w:buf.readUInt32BE(16),h:buf.readUInt32BE(20),colorType:buf[25]};
@@ -207,12 +213,45 @@ async function boot(saveObj) {
      }));
   ok('all thirteen Batch 5 trophy sprites are RGBA PNGs',
      Object.keys(batch5).every(n=>pngInfo(n).colorType===6));
+  const realmPngInfo=name=>{
+    const buf=fs.readFileSync(require('path').join(PUBLIC,'art','realm',name));
+    return {w:buf.readUInt32BE(16),h:buf.readUInt32BE(20),colorType:buf[25]};
+  };
+  ok('all thirteen realm character files exist at the locked 512px square size',
+     Object.entries(realmCharacters).every(([name,size])=>{
+       const p=require('path').join(PUBLIC,'art','realm',name);
+       if(!fs.existsSync(p)) return false;
+       const info=realmPngInfo(name); return info.w===size[0] && info.h===size[1];
+     }));
+  ok('all thirteen realm characters are transparent RGBA PNGs',
+     Object.keys(realmCharacters).every(n=>realmPngInfo(n).colorType===6));
+  const bossPngInfo=name=>{
+    const buf=fs.readFileSync(require('path').join(PUBLIC,'art','boss',name));
+    return {w:buf.readUInt32BE(16),h:buf.readUInt32BE(20),colorType:buf[25]};
+  };
+  ok('all thirteen boss portraits exist at the locked 512px square size',
+     Object.entries(bossCharacters).every(([name,size])=>{
+       const p=require('path').join(PUBLIC,'art','boss',name);
+       if(!fs.existsSync(p)) return false;
+       const info=bossPngInfo(name); return info.w===size[0] && info.h===size[1];
+     }));
+  ok('all thirteen boss portraits are transparent RGBA PNGs',
+     Object.keys(bossCharacters).every(n=>bossPngInfo(n).colorType===6));
+  const climberInfo=(()=>{
+    const buf=fs.readFileSync(require('path').join(PUBLIC,'art','climber.png'));
+    return {w:buf.readUInt32BE(16),h:buf.readUInt32BE(20),colorType:buf[25]};
+  })();
+  ok('climber is a transparent three-frame 768×256 sprite strip',
+     climberInfo.w===768 && climberInfo.h===256 && climberInfo.colorType===6);
   const swSource=fs.readFileSync(require('path').join(PUBLIC,'sw.js'),'utf8');
   ok('offline shell pre-caches every Batch 1 asset', Object.keys(batch1).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('offline shell pre-caches every Batch 2 asset', Object.keys(batch2).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('offline shell pre-caches every Batch 3 asset', Object.keys(batch3).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('offline shell pre-caches every Batch 4 asset', Object.keys(batch4).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('offline shell pre-caches every Batch 5 asset', Object.keys(batch5).every(n=>swSource.includes(`./art/camp/${n}`)));
+  ok('offline shell pre-caches every realm character', Object.keys(realmCharacters).every(n=>swSource.includes(`./art/realm/${n}`)));
+  ok('offline shell pre-caches every boss portrait', Object.keys(bossCharacters).every(n=>swSource.includes(`./art/boss/${n}`)));
+  ok('offline shell pre-caches the climber sprite', swSource.includes('./art/climber.png'));
   ok('runtime cache never stores missing future-batch art', swSource.includes('if (res.ok)'));
   fresh.win.showScreen('screen-camp');
   ok('first camp visit grants the free starter pair',
@@ -327,6 +366,8 @@ async function boot(saveObj) {
   ev('state').realms[2].trial = true;
   win.startBoss(2);
   ok('boss has 3 hearts', ev('quiz').hearts === 3);
+  ok('boss battle markup keeps its emoji fallback', $('boss-em').innerHTML.includes('🌊'));
+  ok('boss battle markup points at the stable semantic PNG', $('boss-em').innerHTML.includes('art/boss/boss-2.png'));
   ok('needCorrect matches the hearts rule', ev('quiz').needCorrect === ev('quiz').queue.length - 3,
      `need ${ev('quiz').needCorrect} of ${ev('quiz').queue.length}`);
   for (let i = 0; i < 3; i++) {
@@ -339,6 +380,7 @@ async function boot(saveObj) {
   }
   await new Promise(r => setTimeout(r, 900));
   ok('three misses ends the fight', ev('quiz') === null, 'quiz still running');
+  ok('boss result keeps the illustrated portrait', $('results-body').innerHTML.includes('art/boss/boss-2.png'));
   ok('failure headline shown', $('results-body').innerHTML.includes('blocked you'));
 
   /* ---------------------------------------------------------------- */
@@ -346,8 +388,17 @@ async function boot(saveObj) {
   win.showScreen('screen-camp');
   const placedCount = () => ev('state').placed.length;
   const n0 = placedCount();
-  ok('grid rendered', win.document.querySelectorAll('.camp-cell').length === 60,
+  ok('90 buildable clearing locations rendered', win.document.querySelectorAll('.camp-cell').length === 90,
      String(win.document.querySelectorAll('.camp-cell').length));
+  ok('placement plane starts below the sky',
+     [...win.document.querySelectorAll('.camp-cell')].every(c=>parseFloat(c.style.top)>=40));
+  ok('rows widen toward the camera',
+     parseFloat(win.document.querySelector('.camp-cell[data-x="5"][data-y="7"]').style.width) >
+     parseFloat(win.document.querySelector('.camp-cell[data-x="5"][data-y="0"]').style.width));
+  ok('rocky foreground corners are not placement targets',
+     !win.document.querySelector('.camp-cell[data-x="0"][data-y="7"]') && !ev('campCellBuildable(0,7)'));
+  ok('climber is a movable camp piece, not scene decoration',
+     ev("state.placed.some(p=>p.t==='camp-climber')") && ev("pieceVisual('camp-climber')").includes('art/climber.png'));
   ok('existing pieces rendered', win.document.querySelectorAll('.citem.placed').length === n0);
 
   win.holdPiece('trophy-x0');                             // ×0 conquered → owned
@@ -371,6 +422,12 @@ async function boot(saveObj) {
   win.putAway();
   ok('put away clears the hand', ev('heldPiece') === null);
   ok('put-away piece is back in the tray as free', win.pieceFree(tId) >= 1);
+  win.pickUpCampPiece('camp-climber');
+  const climberCell=[...win.document.querySelectorAll('.camp-cell')]
+    .find(c=>win.canPlaceAt('camp-climber',+c.dataset.x,+c.dataset.y));
+  climberCell.dispatchEvent(new win.MouseEvent('click',{bubbles:true}));
+  ok('climber can be picked up and placed on another clearing cell',
+     ev('heldPiece') === null && ev("state.placed.some(p=>p.t==='camp-climber'&&p.x==="+climberCell.dataset.x+"&&p.y==="+climberCell.dataset.y+")"));
 
   section('Camp — ownership and duplicates');
   ok('conquered realm grants its piece', win.pieceOwned('trophy-x0') >= 1);
@@ -415,7 +472,9 @@ async function boot(saveObj) {
      ev("state.placed.some(p=>p.t==='shelter-1'&&p.x===0&&p.y===0) && state.placed.some(p=>p.t==='fire-1'&&p.x===3&&p.y===0)"));
   const bedrollEl = [...win.document.querySelectorAll('.citem.placed')]
     .find(el => ev('state').placed[+el.dataset.idx].t === 'shelter-1');
-  ok('2-cell piece spans 20% of the grid', parseFloat(bedrollEl.style.width) === 20, bedrollEl.style.width);
+  const farBedrollWidth=parseFloat(bedrollEl.style.width);
+  const nearBedrollWidth=parseFloat(ev("campItemPresentation({t:'shelter-1',x:2,y:6}).style").match(/width:([\d.]+)/)[1]);
+  ok('same piece scales wider near the camera', nearBedrollWidth > farBedrollWidth, `${farBedrollWidth}% → ${nearBedrollWidth}%`);
 
   ev("state.bought['ground-stone-path']=1; state.placed.push({t:'ground-stone-path',x:0,y:1,k:false,legacy:false})");
   const blockedGems = ev('state').gems;
@@ -461,14 +520,20 @@ async function boot(saveObj) {
   const tentEl = [...win.document.querySelectorAll('.citem.placed')]
     .find(el => ev('state').placed[+el.dataset.idx].t === 'shelter-2');
   tentEl.dispatchEvent(new win.MouseEvent('click', {bubbles:true}));
-  win.document.querySelector('.camp-cell[data-x="9"][data-y="5"]')
+  win.document.querySelector('.camp-cell[data-x="10"][data-y="5"]')
     .dispatchEvent(new win.MouseEvent('click', {bubbles:true}));
-  ok('out-of-bounds placement is rejected', ev('heldPiece') === 'shelter-2');
+  ok('footprints crossing a blocked clearing edge are rejected', ev('heldPiece') === 'shelter-2');
   win.document.querySelector('.camp-cell[data-x="4"][data-y="0"]')
     .dispatchEvent(new win.MouseEvent('click', {bubbles:true}));
   const tentVisual = win.pieceVisual('shelter-2');
   ok('piece markup keeps an emoji fallback', tentVisual.includes('⛺'));
   ok('piece markup points at the stable semantic PNG', tentVisual.includes('art/camp/camp-shelter-t2.png'));
+  const poofVisual = ev('realmCharacter(0)');
+  ok('realm character markup keeps an emoji fallback', poofVisual.includes('👻'));
+  ok('realm character markup points at the stable semantic PNG', poofVisual.includes('art/realm/pet-0.png'));
+  ev("state.equipped.buddy='pet1'");
+  ok('equipped realm buddy uses its PNG-backed character markup', ev('avatarStr()').includes('art/realm/pet-1.png'));
+  ok('map and camp avatar markup use the illustrated climber', ev('avatarStr()').includes('art/climber.png'));
 
   ev("state.placed=[{t:'shelter-2',x:0,y:0,k:false},{t:'ground-stone-path',x:5,y:4,k:false},{t:'fire-2',x:1,y:2,k:false},{t:'light-1',x:0,y:4,k:false}]");
   win.renderCamp();
