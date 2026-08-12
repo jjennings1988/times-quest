@@ -1,5 +1,5 @@
 /* Times Quest service worker — offline-first app shell */
-const CACHE = 'times-quest-v23';
+const CACHE = 'times-quest-v26';
 const SHELL = [
   './',
   './index.html',
@@ -9,13 +9,19 @@ const SHELL = [
   './icons/icon-maskable-512.png',
   './icons/apple-touch-icon.png',
   './art/climber.png',
+  './art/avatar/profile-1.png',
+  './art/avatar/profile-2.png',
+  './art/avatar/profile-3.png',
+  './art/avatar/profile-4.png',
+  './art/avatar/profile-5.png',
+  './art/avatar/profile-6.png',
+  './art/avatar/profile-7.png',
+  './art/avatar/profile-8.png',
+  './art/avatar/profile-9.png',
+  './art/avatar/profile-10.png',
+  './art/avatar/profile-11.png',
+  './art/avatar/profile-12.png',
   './art/map/bg-adventure-map.png',
-  './art/hat/cap.png',
-  './art/hat/tophat.png',
-  './art/hat/helmet.png',
-  './art/hat/cowboy.png',
-  './art/hat/grad.png',
-  './art/hat/crown.png',
   './art/buddy/cat.png',
   './art/buddy/dog.png',
   './art/buddy/unicorn.png',

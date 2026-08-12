@@ -117,10 +117,35 @@ async function boot(saveObj) {
   const fresh = await boot(undefined);
   const fev = expr => fresh.win.eval(expr);
   ok('fresh boot has no errors', fresh.errs.length === 0, fresh.errs.join('; '));
+  ok('a new device opens the welcome profile screen',
+     fev('state') === null && fresh.$('profile-gate').classList.contains('on') && fresh.$('profile-gate-body').textContent.includes('Welcome, climber'));
+  fresh.win.renderProfileGate('create');
+  fresh.$('profile-name').value='Avery';
+  await fresh.win.createProfile();
   ok('fresh state starts with one placeable climber',
      Array.isArray(fev('state').placed) && fev('state').placed.length === 1 && fev('state').placed[0].t === 'camp-climber');
   ok('fresh climber is only auto-introduced once', fev('state').climberIntroduced === true);
   ok('fresh state gems 0', fev('state').gems === 0);
+  ok('first profile stores a separate name, avatar, and save slot',
+     fev("profileBook.profiles.length===1 && profileById().name==='Avery' && !!localStorage.getItem(profileSaveKey(activeProfileId))"));
+
+  section('Profiles — migration and separate child progress');
+  const profiles = await boot(legacySave());
+  const pev = expr => profiles.win.eval(expr);
+  ok('legacy progress migrates into the first profile without resetting',
+     pev("profileBook.profiles.length===1 && profileById().name==='Climber' && state.gems===137"));
+  profiles.win.renderProfileGate('create');
+  ok('profile creator offers twelve inclusive explorer choices',
+     profiles.win.document.querySelectorAll('.avatar-pick button').length===12 && pev('PROFILE_AVATARS.length')===12);
+  profiles.win.chooseProfileAvatar(4,profiles.win.document.querySelectorAll('.avatar-pick button')[4]);
+  profiles.$('profile-name').value='Jordan';
+  await profiles.win.createProfile();
+  pev('state.gems=77'); profiles.win.saveState(); await new Promise(r=>setTimeout(r,500));
+  await profiles.win.switchProfile('legacy');
+  ok('switching children restores the original progress', pev('state.gems')===137);
+  await profiles.win.switchProfile(pev("profileBook.profiles.find(p=>p.name==='Jordan').id"));
+  ok('switching back restores the second child progress', pev('state.gems')===77);
+  ok('chosen inclusive explorer appears in map and camp avatar markup', profiles.win.avatarStr().includes('art/avatar/profile-5.png'), profiles.win.avatarStr());
 
   section('Camp v1.1 catalogue and first-visit setup');
   ok('catalogue has 41 buyable build entries', fev('CAMP_BUILD_PIECES.length') === 41);
@@ -186,11 +211,15 @@ async function boot(saveObj) {
   };
   const realmCharacters=Object.fromEntries(Array.from({length:13},(_,f)=>[`pet-${f}.png`,[512,512]]));
   const bossCharacters=Object.fromEntries(Array.from({length:13},(_,f)=>[`boss-${f}.png`,[512,512]]));
+  const archivedHats={
+    'archive/hat-upgrades/cap.png':[256,256], 'archive/hat-upgrades/tophat.png':[256,256],
+    'archive/hat-upgrades/helmet.png':[256,256], 'archive/hat-upgrades/cowboy.png':[256,256],
+    'archive/hat-upgrades/grad.png':[256,256], 'archive/hat-upgrades/crown.png':[256,256],
+  };
   const avatarGear={
-    'hat/cap.png':[256,256], 'hat/tophat.png':[256,256], 'hat/helmet.png':[256,256],
-    'hat/cowboy.png':[256,256], 'hat/grad.png':[256,256], 'hat/crown.png':[256,256],
     'buddy/cat.png':[256,256], 'buddy/dog.png':[256,256], 'buddy/unicorn.png':[256,256],
   };
+  const profileAvatars=Object.fromEntries(Array.from({length:12},(_,i)=>[`avatar/profile-${i+1}.png`,[512,512]]));
   const pngInfo=name=>{
     const buf=fs.readFileSync(require('path').join(PUBLIC,'art','camp',name));
     return {w:buf.readUInt32BE(16),h:buf.readUInt32BE(20),colorType:buf[25]};
@@ -269,14 +298,26 @@ async function boot(saveObj) {
     const buf=fs.readFileSync(require('path').join(PUBLIC,'art',name));
     return {w:buf.readUInt32BE(16),h:buf.readUInt32BE(20),colorType:buf[25]};
   };
-  ok('all six hats and three shop buddies exist at 256×256',
+  ok('all three shop buddies exist at 256×256',
      Object.entries(avatarGear).every(([name,size])=>{
        const p=require('path').join(PUBLIC,'art',name);
        if(!fs.existsSync(p)) return false;
        const info=avatarPngInfo(name); return info.w===size[0] && info.h===size[1];
      }));
-  ok('all hats and shop buddies are transparent RGBA PNGs',
+  ok('all shop buddies are transparent RGBA PNGs',
      Object.keys(avatarGear).every(n=>avatarPngInfo(n).colorType===6));
+  ok('all twelve profile explorers exist as transparent 512×512 PNGs',
+     Object.entries(profileAvatars).every(([name,size])=>{
+       const p=require('path').join(PUBLIC,'art',name);
+       if(!fs.existsSync(p)) return false;
+       const info=avatarPngInfo(name); return info.w===size[0] && info.h===size[1] && info.colorType===6;
+     }));
+  ok('retired hat art is preserved in the archive',
+     Object.entries(archivedHats).every(([name,size])=>{
+       const p=require('path').join(PUBLIC,'art',name);
+       if(!fs.existsSync(p)) return false;
+       const info=avatarPngInfo(name); return info.w===size[0] && info.h===size[1] && info.colorType===6;
+     }));
   const swSource=fs.readFileSync(require('path').join(PUBLIC,'sw.js'),'utf8');
   ok('offline shell pre-caches every Batch 1 asset', Object.keys(batch1).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('offline shell pre-caches every Batch 2 asset', Object.keys(batch2).every(n=>swSource.includes(`./art/camp/${n}`)));
@@ -287,6 +328,8 @@ async function boot(saveObj) {
   ok('offline shell pre-caches every boss portrait', Object.keys(bossCharacters).every(n=>swSource.includes(`./art/boss/${n}`)));
   ok('offline shell pre-caches the climber sprite', swSource.includes('./art/climber.png'));
   ok('offline shell pre-caches all avatar gear', Object.keys(avatarGear).every(n=>swSource.includes(`./art/${n}`)));
+  ok('offline shell pre-caches all twelve profile explorers', Object.keys(profileAvatars).every(n=>swSource.includes(`./art/${n}`)));
+  ok('retired hats are not loaded into the live offline shell', !swSource.includes('./art/hat/') && !swSource.includes('./art/archive/hat-upgrades/'));
   ok('runtime cache never stores missing future-batch art', swSource.includes('if (res.ok)'));
   ok('offline shell pre-caches the scrolling adventure map', swSource.includes('./art/map/bg-adventure-map.png'));
   fresh.win.showScreen('screen-camp');
@@ -562,6 +605,11 @@ async function boot(saveObj) {
   ok('bedroll is immediately held', ev('heldPiece') === 'shelter-1');
   ok('bedroll footprint is 2×1',
      ev("pieceSize('shelter-1').w") === 2 && ev("pieceSize('shelter-1').h") === 1);
+  ok('late shelter upgrades require meaningfully larger camp plots',
+     ev("pieceSize('shelter-4').w") === 3 && ev("pieceSize('shelter-4').h") === 2 &&
+     ev("pieceSize('shelter-5').w") === 3 && ev("pieceSize('shelter-5').h") === 3);
+  ok('a lodge cannot fit where its full 3×3 footprint crosses the clearing edge',
+     !win.canPlaceAt('shelter-5',10,5));
 
   win.document.querySelector('.camp-cell[data-x="0"][data-y="0"]')
     .dispatchEvent(new win.MouseEvent('click', {bubbles:true}));
@@ -574,6 +622,14 @@ async function boot(saveObj) {
   const farBedrollWidth=parseFloat(bedrollEl.style.width);
   const nearBedrollWidth=parseFloat(ev("campItemPresentation({t:'shelter-1',x:2,y:6}).style").match(/width:([\d.]+)/)[1]);
   ok('same piece scales wider near the camera', nearBedrollWidth > farBedrollWidth, `${farBedrollWidth}% → ${nearBedrollWidth}%`);
+  const farScale=parseFloat(ev("campItemPresentation({t:'shelter-2',x:2,y:0}).style").match(/--depth-scale:([\d.]+)/)[1]);
+  const nearScale=parseFloat(ev("campItemPresentation({t:'shelter-2',x:2,y:6}).style").match(/--depth-scale:([\d.]+)/)[1]);
+  ok('camera perspective is dramatically stronger near the foreground', nearScale > farScale*2, `${farScale} → ${nearScale}`);
+  const nearLanternWidth=parseFloat(ev("campItemPresentation({t:'light-1',x:2,y:6}).style").match(/width:([\d.]+)/)[1]);
+  const nearTentWidth=parseFloat(ev("campItemPresentation({t:'shelter-2',x:2,y:6}).style").match(/width:([\d.]+)/)[1]);
+  ok('physical sizing keeps a lantern much smaller than a tent at equal depth', nearLanternWidth < nearTentWidth*.65, `${nearLanternWidth}% vs ${nearTentWidth}%`);
+  ok('full clearing plane reaches farther to both foreground edges',
+     ev('CAMP_PLANE.leftBottom') <= .06 && ev('CAMP_PLANE.rightBottom') >= .94);
 
   ev("state.bought['ground-stone-path']=1; state.placed.push({t:'ground-stone-path',x:0,y:1,k:false,legacy:false})");
   const blockedGems = ev('state').gems;
@@ -632,12 +688,13 @@ async function boot(saveObj) {
   ok('realm character markup points at the stable semantic PNG', poofVisual.includes('art/realm/pet-0.png'));
   ev("state.equipped.buddy='pet1'");
   ok('equipped realm buddy uses its PNG-backed character markup', ev('avatarStr()').includes('art/realm/pet-1.png'));
-  ok('map and camp avatar markup use the illustrated climber', ev('avatarStr()').includes('art/climber.png'));
+  ok('map and camp avatar markup use the selected illustrated profile', ev('avatarStr()').includes('art/avatar/profile-1.png'));
   ev("state.equipped.hat='cap'; state.equipped.buddy='cat'");
-  ok('equipped hat and shop buddy use PNG-backed avatar layers',
-     ev('avatarStr()').includes('art/hat/cap.png') && ev('avatarStr()').includes('art/buddy/cat.png'));
-  ok('shop art keeps emoji fallback beneath each new PNG',
-     ev("shopArt(SHOP.find(i=>i.id==='helmet'))").includes('🪖') && ev("shopArt(SHOP.find(i=>i.id==='helmet'))").includes('art/hat/helmet.png'));
+  ok('legacy hat preference is ignored while the selected explorer and buddy still render',
+     !ev('avatarStr()').includes('art/hat/') && ev('avatarStr()').includes('art/avatar/profile-1.png') && ev('avatarStr()').includes('art/buddy/cat.png'));
+  ok('hat upgrades are retired from the live shop', !ev("SHOP.some(i=>i.type==='hat')"));
+  ok('shop art keeps an emoji fallback beneath each live PNG',
+     ev("shopArt(SHOP.find(i=>i.id==='cat'))").includes('🐱') && ev("shopArt(SHOP.find(i=>i.id==='cat'))").includes('art/buddy/cat.png'));
 
   ev("state.placed=[{t:'shelter-2',x:0,y:0,k:false},{t:'ground-stone-path',x:5,y:4,k:false},{t:'fire-2',x:1,y:2,k:false},{t:'light-1',x:0,y:4,k:false}]");
   win.renderCamp();
