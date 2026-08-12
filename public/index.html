@@ -158,6 +158,12 @@ body{
 .realm-hero .realm-character.big{width:132px;height:132px;margin:0 auto;display:flex;font-size:54px}
 .shop-item .em .realm-character{width:54px;height:54px;font-size:28px}
 .avatar-line .realm-character,.citem.deco .realm-character{width:44px;height:44px;font-size:28px}
+.shop-art{width:54px;height:54px;display:inline-flex;align-items:center;justify-content:center;position:relative;isolation:isolate;vertical-align:middle}
+.shop-art-emoji{position:absolute;inset:0;z-index:0;display:flex;align-items:center;justify-content:center;font-size:28px;line-height:1}
+.shop-art-image{position:absolute;inset:0;z-index:1;opacity:0;background-image:var(--shop-art);background-repeat:no-repeat;background-position:center;background-size:contain;transition:opacity .12s}
+.shop-art.art-ready .shop-art-image{opacity:1}
+.shop-art.art-ready .shop-art-emoji{visibility:hidden}
+.shop-art-probe{display:none}
 .realm-hero h2{font-family:var(--display);font-size:26px;font-weight:800;margin:4px 0 2px}
 .realm-hero .fam{font-weight:800;opacity:.9}
 .strategy-box{
@@ -324,10 +330,19 @@ body{
 .piece-visual.sway .piece-image{transform-origin:50% 90%;animation:campSway var(--motion,5s) ease-in-out infinite alternate;animation-delay:var(--delay,0s)}
 .piece-visual.swing .piece-image{transform-origin:50% 10%;animation:campSwing var(--motion,3s) ease-in-out infinite alternate;animation-delay:var(--delay,0s)}
 .piece-visual.breathe .piece-image{transform-origin:50% 100%;animation:campBreathe var(--motion,4s) ease-in-out infinite alternate;animation-delay:var(--delay,0s)}
+.avatar-render{display:inline-flex;align-items:flex-end;justify-content:center;vertical-align:middle}
 .avatar-composite{position:relative;display:inline-flex;align-items:flex-end;justify-content:center;vertical-align:middle;min-width:48px;min-height:48px}
 .avatar-composite>.piece-visual{width:48px;height:48px}
-.avatar-hat{position:absolute;z-index:3;top:-3px;left:50%;transform:translateX(-50%);font-size:19px;line-height:1}
+.avatar-hat{position:absolute;z-index:3;top:2px;left:50%;width:12px;height:12px;transform:translateX(-50%);pointer-events:none}
+.avatar-hat .shop-art{width:100%;height:100%}
 .avatar-buddy{display:inline-flex;align-items:flex-end;margin-left:3px}
+.avatar-buddy .shop-art{width:48px;height:48px}
+.citem.placed .avatar-render{position:relative;width:100%;height:100%}
+.citem.placed .avatar-composite{width:74%;height:100%;min-width:0;min-height:0}
+.citem.placed .avatar-composite>.piece-visual{width:100%;height:100%}
+.citem.placed .avatar-hat{top:2%;width:22%;height:22%}
+.citem.placed .avatar-buddy{position:absolute;right:-10%;bottom:0;width:48%;height:62%;margin:0}
+.citem.placed .avatar-buddy .shop-art,.citem.placed .avatar-buddy .realm-character{width:100%;height:100%}
 .camp-chain-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}
 .camp-chain{background:var(--cream);border-radius:14px;padding:10px;box-shadow:0 4px 0 rgba(0,0,0,.25);min-width:0}
 .camp-chain-top{display:flex;gap:8px;align-items:center;margin-bottom:7px}
@@ -1655,15 +1670,15 @@ function importSave(){
    BASE CAMP & SHOP
    ===================================================== */
 const SHOP = [
-  {id:'cap',type:'hat',em:'🧢',name:'Trail Cap',price:25},
-  {id:'tophat',type:'hat',em:'🎩',name:'Top Hat',price:40},
-  {id:'helmet',type:'hat',em:'🪖',name:'Climb Helmet',price:50},
-  {id:'cowboy',type:'hat',em:'🤠',name:'Cowboy Hat',price:60},
-  {id:'grad',type:'hat',em:'🎓',name:'Math Master',price:80},
-  {id:'crown',type:'hat',em:'👑',name:'Summit Crown',price:150},
-  {id:'cat',type:'buddy',em:'🐱',name:'Camp Cat',price:40},
-  {id:'dog',type:'buddy',em:'🐶',name:'Trail Dog',price:40},
-  {id:'unicorn',type:'buddy',em:'🦄',name:'Unicorn',price:200},
+  {id:'cap',type:'hat',em:'🧢',art:'art/hat/cap.png',name:'Trail Cap',price:25},
+  {id:'tophat',type:'hat',em:'🎩',art:'art/hat/tophat.png',name:'Top Hat',price:40},
+  {id:'helmet',type:'hat',em:'🪖',art:'art/hat/helmet.png',name:'Climb Helmet',price:50},
+  {id:'cowboy',type:'hat',em:'🤠',art:'art/hat/cowboy.png',name:'Cowboy Hat',price:60},
+  {id:'grad',type:'hat',em:'🎓',art:'art/hat/grad.png',name:'Math Master',price:80},
+  {id:'crown',type:'hat',em:'👑',art:'art/hat/crown.png',name:'Summit Crown',price:150},
+  {id:'cat',type:'buddy',em:'🐱',art:'art/buddy/cat.png',name:'Camp Cat',price:40},
+  {id:'dog',type:'buddy',em:'🐶',art:'art/buddy/dog.png',name:'Trail Dog',price:40},
+  {id:'unicorn',type:'buddy',em:'🦄',art:'art/buddy/unicorn.png',name:'Unicorn',price:200},
   {id:'flag',type:'camp',em:'🚩',name:'Flag',price:15,x:80,y:16},
   {id:'log',type:'camp',em:'🪵',name:'Log Bench',price:20,x:22,y:66},
   {id:'lantern',type:'camp',em:'🏮',name:'Lantern',price:25,x:60,y:50},
@@ -1676,14 +1691,20 @@ const SHOP = [
 function realmBuddies(){
   return REALM_ORDER.map(f=>({id:'pet'+f,type:'buddy',em:REALMS[f].pet,art:`art/realm/pet-${f}.png`,name:REALMS[f].petName.split(' the ')[0],price:0,fam:f,locked:!state.realms[f].conquered}));
 }
+function shopArt(item){
+  if(!item) return '';
+  if(item.fam!==undefined) return realmCharacter(item.fam);
+  if(!item.art) return item.em;
+  return `<span class="shop-art" role="img" aria-label="${item.name}" style="--shop-art:url('${item.art}')"><span class="shop-art-emoji" aria-hidden="true">${item.em}</span><span class="shop-art-image" aria-hidden="true"></span><img class="shop-art-probe" src="${item.art}" alt="" onload="this.parentElement.classList.add('art-ready')" onerror="this.remove()"></span>`;
+}
 function avatarStr(){
   const hat=SHOP.find(i=>i.id===state.equipped.hat);
   let buddy=SHOP.find(i=>i.id===state.equipped.buddy);
   if(!buddy && state.equipped.buddy && state.equipped.buddy.startsWith('pet')){
     const f=+state.equipped.buddy.slice(3); if(REALMS[f]) buddy={em:REALMS[f].pet,fam:f};
   }
-  const buddyVisual=buddy?(buddy.fam!==undefined?realmCharacter(buddy.fam):buddy.em):'';
-  return `<span class="avatar-composite">${hat?`<span class="avatar-hat">${hat.em}</span>`:''}${pieceVisual(CAMP_CLIMBER_PIECE.id)}</span>${buddyVisual?`<span class="avatar-buddy">${buddyVisual}</span>`:''}`;
+  const buddyVisual=buddy?shopArt(buddy):'';
+  return `<span class="avatar-render"><span class="avatar-composite">${hat?`<span class="avatar-hat">${shopArt(hat)}</span>`:''}${pieceVisual(CAMP_CLIMBER_PIECE.id)}</span>${buddyVisual?`<span class="avatar-buddy">${buddyVisual}</span>`:''}</span>`;
 }
 /* ---------- placeable pieces ---------- */
 function allPieces(){
@@ -1969,7 +1990,7 @@ function renderCamp(){
     const pr = i.locked ? '🔒 Conquer realm' : isOwned ? (equipped?'Equipped ✓':'Tap to equip') : `💎 ${i.price}`;
     return `<button class="shop-item ${isOwned?'owned':''} ${equipped?'equipped':''} ${cant?'cant':''}"
       onclick="shopTap('${i.id}','${i.type}',${i.price},${!!i.locked})">
-      <span class="em">${i.fam!==undefined?realmCharacter(i.fam):i.em}</span><span class="nm">${i.name}</span><span class="pr">${pr}</span></button>`;
+      <span class="em">${shopArt(i)}</span><span class="nm">${i.name}</span><span class="pr">${pr}</span></button>`;
   };
   const renderPiece=(p)=>{
     const free=pieceFree(p.id), out=piecePlaced(p.id);
@@ -2025,7 +2046,7 @@ function renderCamp(){
     const info=pieceById(p.t);
     const presentation=campItemPresentation(p);
     items+=`<div class="citem placed ${presentation.ground?'ground-piece':''} ${p.k?'knocked':''}" data-idx="${i}"
-      role="button" aria-label="Move ${info?info.name:'camp item'}" style="${presentation.style};z-index:${2+depth}">${pieceVisual(p.t)}</div>`;
+      role="button" aria-label="Move ${info?info.name:'camp item'}" style="${presentation.style};z-index:${2+depth}">${p.t===CAMP_CLIMBER_PIECE.id?avatarStr():pieceVisual(p.t)}</div>`;
   });
 
   const pieces=allPieces();

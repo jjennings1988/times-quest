@@ -169,6 +169,11 @@ async function boot(saveObj) {
   };
   const realmCharacters=Object.fromEntries(Array.from({length:13},(_,f)=>[`pet-${f}.png`,[512,512]]));
   const bossCharacters=Object.fromEntries(Array.from({length:13},(_,f)=>[`boss-${f}.png`,[512,512]]));
+  const avatarGear={
+    'hat/cap.png':[256,256], 'hat/tophat.png':[256,256], 'hat/helmet.png':[256,256],
+    'hat/cowboy.png':[256,256], 'hat/grad.png':[256,256], 'hat/crown.png':[256,256],
+    'buddy/cat.png':[256,256], 'buddy/dog.png':[256,256], 'buddy/unicorn.png':[256,256],
+  };
   const pngInfo=name=>{
     const buf=fs.readFileSync(require('path').join(PUBLIC,'art','camp',name));
     return {w:buf.readUInt32BE(16),h:buf.readUInt32BE(20),colorType:buf[25]};
@@ -243,6 +248,18 @@ async function boot(saveObj) {
   })();
   ok('climber is a transparent three-frame 768×256 sprite strip',
      climberInfo.w===768 && climberInfo.h===256 && climberInfo.colorType===6);
+  const avatarPngInfo=name=>{
+    const buf=fs.readFileSync(require('path').join(PUBLIC,'art',name));
+    return {w:buf.readUInt32BE(16),h:buf.readUInt32BE(20),colorType:buf[25]};
+  };
+  ok('all six hats and three shop buddies exist at 256×256',
+     Object.entries(avatarGear).every(([name,size])=>{
+       const p=require('path').join(PUBLIC,'art',name);
+       if(!fs.existsSync(p)) return false;
+       const info=avatarPngInfo(name); return info.w===size[0] && info.h===size[1];
+     }));
+  ok('all hats and shop buddies are transparent RGBA PNGs',
+     Object.keys(avatarGear).every(n=>avatarPngInfo(n).colorType===6));
   const swSource=fs.readFileSync(require('path').join(PUBLIC,'sw.js'),'utf8');
   ok('offline shell pre-caches every Batch 1 asset', Object.keys(batch1).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('offline shell pre-caches every Batch 2 asset', Object.keys(batch2).every(n=>swSource.includes(`./art/camp/${n}`)));
@@ -252,6 +269,7 @@ async function boot(saveObj) {
   ok('offline shell pre-caches every realm character', Object.keys(realmCharacters).every(n=>swSource.includes(`./art/realm/${n}`)));
   ok('offline shell pre-caches every boss portrait', Object.keys(bossCharacters).every(n=>swSource.includes(`./art/boss/${n}`)));
   ok('offline shell pre-caches the climber sprite', swSource.includes('./art/climber.png'));
+  ok('offline shell pre-caches all avatar gear', Object.keys(avatarGear).every(n=>swSource.includes(`./art/${n}`)));
   ok('runtime cache never stores missing future-batch art', swSource.includes('if (res.ok)'));
   fresh.win.showScreen('screen-camp');
   ok('first camp visit grants the free starter pair',
@@ -534,6 +552,11 @@ async function boot(saveObj) {
   ev("state.equipped.buddy='pet1'");
   ok('equipped realm buddy uses its PNG-backed character markup', ev('avatarStr()').includes('art/realm/pet-1.png'));
   ok('map and camp avatar markup use the illustrated climber', ev('avatarStr()').includes('art/climber.png'));
+  ev("state.equipped.hat='cap'; state.equipped.buddy='cat'");
+  ok('equipped hat and shop buddy use PNG-backed avatar layers',
+     ev('avatarStr()').includes('art/hat/cap.png') && ev('avatarStr()').includes('art/buddy/cat.png'));
+  ok('shop art keeps emoji fallback beneath each new PNG',
+     ev("shopArt(SHOP.find(i=>i.id==='helmet'))").includes('🪖') && ev("shopArt(SHOP.find(i=>i.id==='helmet'))").includes('art/hat/helmet.png'));
 
   ev("state.placed=[{t:'shelter-2',x:0,y:0,k:false},{t:'ground-stone-path',x:5,y:4,k:false},{t:'fire-2',x:1,y:2,k:false},{t:'light-1',x:0,y:4,k:false}]");
   win.renderCamp();
