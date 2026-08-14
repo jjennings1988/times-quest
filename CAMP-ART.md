@@ -93,10 +93,11 @@ and it animates in pure CSS with no JavaScript at all:
 
 The service worker already caches same-origin requests on first fetch, so art
 files self-cache the first time the camp is opened even if they aren't in the
-`SHELL` array. Two things follow:
+`CORE` list. Two things follow:
 
-- Add **only the background and the tier-1 pieces** to `SHELL` in `sw.js`. Everything
-  else self-caches on first view. Keeps the install fast.
+- Keep first-screen essentials in `CORE` and add other shipped art to `OPTIONAL`
+  in `sw.js`. Optional failures never block installation, and missing art
+  self-caches on a later successful visit.
 - **Keep the emoji as a fallback layer underneath the image.** If a PNG is missing
   or hasn't cached yet, he sees 🔥 instead of a broken image icon. Costs nothing
   and makes the whole art pipeline safe to ship incrementally.

@@ -337,4 +337,4 @@ Carried forward from the code review. Everything above should preserve them.
 - [ ] Load an existing save — his progress, gems, camp, and monsters all intact
 - [ ] Load with `localStorage` cleared — `defaultState()` path still works
 - [ ] Test on the actual iPad, portrait, installed to home screen, airplane mode
-- [ ] Confirm no new file needs adding to `SHELL` in `sw.js`
+- [ ] Confirm no new file needs adding to `CORE` or `OPTIONAL` in `sw.js`

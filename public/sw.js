@@ -1,6 +1,18 @@
 /* Times Quest service worker — offline-first app shell */
-const CACHE = 'times-quest-v29';
-const SHELL = [
+const CACHE = 'times-quest-v30';
+const CORE = [
+  './',
+  './index.html',
+  './manifest.webmanifest',
+  './icons/icon-192.png',
+  './icons/icon-512.png',
+  './icons/icon-maskable-512.png',
+  './icons/apple-touch-icon.png',
+  './art/climber.png',
+  './art/map/bg-adventure-map.png',
+  './art/camp/bg-camp-dusk.png',
+];
+const OPTIONAL = [
   './',
   './index.html',
   './manifest.webmanifest',
@@ -117,10 +129,15 @@ const SHELL = [
   './art/camp/camp-trophy-x11.png',
   './art/camp/camp-trophy-x12.png',
   './art/camp/camp-trophy-summit.png',
-];
+].filter((path) => !CORE.includes(path));
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)));
+  e.waitUntil(
+    caches.open(CACHE).then(async (c) => {
+      await c.addAll(CORE);
+      await Promise.allSettled(OPTIONAL.map((path) => c.add(path)));
+    })
+  );
   self.skipWaiting();
 });
 
@@ -148,7 +165,7 @@ self.addEventListener('fetch', (e) => {
             caches.open(CACHE).then((c) => c.put(e.request, copy));
           }
           return res;
-        }).catch(() => (e.request.mode === 'navigate' ? caches.match('./index.html') : undefined))
+        }).catch(() => (e.request.mode === 'navigate' ? caches.match('./index.html') : Response.error()))
       )
     );
     return;
@@ -159,8 +176,10 @@ self.addEventListener('fetch', (e) => {
     e.respondWith(
       caches.match(e.request).then((hit) => {
         const net = fetch(e.request).then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(e.request, copy));
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE).then((c) => c.put(e.request, copy));
+          }
           return res;
         }).catch(() => hit);
         return hit || net;
