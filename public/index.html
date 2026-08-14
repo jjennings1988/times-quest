@@ -196,6 +196,24 @@ body{
 .map-notice-close{width:100%;border:0;background:transparent;color:#DCC9A5;font-family:var(--body);font-size:11px;font-weight:900;padding:2px 4px 6px;cursor:pointer;text-align:right}
 @keyframes mapMarch{to{stroke-dashoffset:-24}}
 @keyframes mapBeacon{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@media(max-width:520px){
+  /* Keep every landmark on its map coordinate, but show a wider slice of the
+     world and use compact pins so the edge realms remain tappable on phones. */
+  .map-world{width:clamp(480px,132vw,600px)}
+  .realm-node{width:100px}
+  .realm-bubble{width:64px;height:64px;min-width:64px;border-width:3px;font-size:27px}
+  .realm-node .meta{min-width:100px;max-width:100px;padding:4px 5px 5px}
+  .realm-node .meta .nm{font-size:11.5px}
+  .realm-node .meta .fam{font-size:8.5px}
+  .realm-node .stars-row{font-size:8px}
+  .realm-number{top:-13px;min-width:38px;padding:2px 6px;font-size:12px}
+  .realm-bubble .badge{right:-5px;width:23px;height:23px;font-size:12px}
+  .map-you{top:36px;left:calc(50% + 36px)}
+  .summit-node{width:128px}
+  .summit-node .realm-bubble{width:72px;height:72px;font-size:34px}
+  .summit-node .meta{max-width:128px;padding:5px 7px}
+  .summit-node .nm{font-size:12.5px}
+}
 @media(min-width:700px){
   .realm-node{width:164px}.realm-node .meta{min-width:142px}.realm-node .meta .nm{font-size:14px}
   .realm-bubble{width:78px;height:78px}.map-you{left:calc(50% + 48px)}
@@ -296,12 +314,21 @@ body{
 .hearts{color:#FF6B6B;font-size:16px;letter-spacing:2px;padding:0 16px}
 
 /* ---------- cinematic realm showdown ---------- */
-#screen-quiz.boss-active{--battle-accent:#5BA8FF;--battle-shadow:#163E66;background:#100D27;overflow-y:auto}
+#screen-quiz.boss-active{
+  --battle-accent:#5BA8FF;--battle-shadow:#163E66;
+  --battle-arena-top:calc(134px + env(safe-area-inset-top));
+  --battle-arena-height:clamp(178px,23dvh,220px);
+  background:#100D27;overflow:hidden;isolation:isolate;
+}
 #screen-quiz.boss-active .quiz-top{position:absolute;inset:0 0 auto;z-index:30;background:linear-gradient(180deg,rgba(10,7,26,.92),rgba(10,7,26,.5),transparent);backdrop-filter:none}
 #screen-quiz.boss-active .quiz-top .hp-track{display:none}
 #screen-quiz.boss-active .quiz-top .qcount{color:#FFF4C2;text-shadow:0 2px 4px rgba(0,0,0,.65)}
 .battle-stage{display:none;position:relative;isolation:isolate;flex:0 0 clamp(254px,34dvh,330px);min-height:254px;overflow:hidden;color:#fff;background:#18223A;border-bottom:2px solid rgba(255,255,255,.16);box-shadow:0 12px 32px rgba(0,0,0,.28)}
 .battle-stage.on{display:block}
+#screen-quiz.boss-active .battle-stage{
+  position:absolute;z-index:0;inset:0;display:block;width:100%;height:100%;min-height:100%;
+  flex:none;border:0;box-shadow:none;
+}
 .battle-backdrop{position:absolute;inset:-18px;background-image:linear-gradient(180deg,rgba(10,10,28,.08),rgba(10,8,24,.2) 47%,rgba(9,7,22,.9)),var(--battle-bg,url('art/map/bg-adventure-map.png'));background-size:auto,var(--battle-bg-size,132% auto);background-repeat:no-repeat;background-position:center,var(--battle-bg-position,50% 50%);filter:saturate(1.2) contrast(1.04);transform:scale(1.035)}
 .battle-atmosphere{position:absolute;inset:0;background:radial-gradient(circle at 78% 44%,color-mix(in srgb,var(--battle-accent) 44%,transparent),transparent 30%),linear-gradient(90deg,rgba(10,8,30,.5),transparent 45%,rgba(10,8,30,.22));pointer-events:none}
 .battle-atmosphere::before,.battle-atmosphere::after{content:"";position:absolute;pointer-events:none}
@@ -323,9 +350,11 @@ body{
 .battle-health .hp-fill{height:100%;background:linear-gradient(90deg,#FF5A64,#FF9A65);box-shadow:0 0 12px rgba(255,90,100,.7);transition:width .45s cubic-bezier(.2,.8,.2,1)}
 .battle-health::after{content:"";position:absolute;inset:3px;background:repeating-linear-gradient(90deg,transparent 0 calc(25% - 1px),rgba(20,8,18,.55) calc(25% - 1px) 25%);pointer-events:none}
 .battle-arena{position:absolute;z-index:4;left:0;right:0;bottom:32px;height:172px}
+#screen-quiz.boss-active .battle-arena{top:var(--battle-arena-top);bottom:auto;height:var(--battle-arena-height)}
 .battle-climber{position:absolute;z-index:4;left:var(--climber-x,4%);bottom:5px;width:88px;height:116px;display:flex;align-items:flex-end;justify-content:center;filter:drop-shadow(0 8px 5px rgba(0,0,0,.7));transition:left .55s cubic-bezier(.2,.8,.2,1),transform .2s}
 .battle-climber img{width:100%;height:100%;object-fit:contain;object-position:center bottom}
 .battle-boss{position:absolute;z-index:3;right:var(--boss-x,1%);bottom:0;width:clamp(166px,43vw,220px);height:clamp(166px,43vw,220px);display:flex;align-items:flex-end;justify-content:center;filter:drop-shadow(0 9px 7px rgba(0,0,0,.68));transition:right .55s cubic-bezier(.2,.8,.2,1)}
+#screen-quiz.boss-active .battle-boss{width:clamp(190px,51vw,242px);height:clamp(190px,51vw,242px)}
 .battle-boss .boss-visual{width:100%;height:100%;font-size:110px;animation:bossFloat 2.5s infinite ease-in-out}
 .battle-lane{position:absolute;z-index:2;left:18%;right:34%;bottom:15px;height:24px;display:flex;align-items:center;justify-content:space-between}
 .battle-lane::before{content:"";position:absolute;left:5%;right:5%;top:50%;height:3px;background:linear-gradient(90deg,var(--battle-accent),rgba(255,255,255,.26));box-shadow:0 2px 5px rgba(0,0,0,.65)}
@@ -335,6 +364,7 @@ body{
 .effect-river .battle-step:nth-child(even){transform:rotate(7deg) translateY(-5px)}
 .effect-river .battle-step.on{background:#FFE48B;box-shadow:0 0 16px #FFF1A5;transform:scale(1.16)}
 .battle-mechanic{position:absolute;z-index:7;left:50%;bottom:8px;transform:translateX(-50%);display:flex;align-items:center;gap:6px;max-width:82%;padding:5px 10px;border:1px solid rgba(255,255,255,.3);border-radius:999px;background:rgba(15,11,34,.78);backdrop-filter:blur(7px);font-size:9px;font-weight:900;letter-spacing:.8px;text-transform:uppercase;white-space:nowrap}
+#screen-quiz.boss-active .battle-mechanic{top:calc(var(--battle-arena-top) + var(--battle-arena-height) - 8px);bottom:auto}
 .battle-mechanic .ui-icon{width:14px;height:14px;color:#FFE170}
 .battle-charge{display:flex;gap:3px}.battle-charge i{display:block;width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.22)}.battle-charge i.on{background:#FFE170;box-shadow:0 0 7px #FFE170}
 .battle-announcement{position:absolute;z-index:15;left:50%;top:54%;width:min(330px,82%);transform:translate(-50%,-50%) scale(.92);padding:13px 18px;border-radius:18px;border:1.5px solid rgba(255,255,255,.38);background:linear-gradient(135deg,rgba(31,23,68,.95),rgba(14,10,33,.94));box-shadow:0 14px 36px rgba(0,0,0,.55);text-align:center;opacity:0;visibility:hidden;transition:opacity .2s,transform .2s}
@@ -357,13 +387,40 @@ body{
 @keyframes stageShake{20%,60%{transform:translateX(-4px)}40%,80%{transform:translateX(4px)}}
 @keyframes impactFlash{0%{opacity:0;transform:scale(.2)}28%{opacity:1;transform:scale(2.4)}100%{opacity:0;transform:scale(4)}}
 #screen-quiz.boss-active>.hearts{display:none}
-#screen-quiz.boss-active .question-zone{flex:0 0 auto;min-height:132px;padding:9px 16px 4px;background:linear-gradient(180deg,#211A4B,#181331);gap:5px}
+#screen-quiz.boss-active .question-zone{
+  z-index:5;flex:0 0 auto;width:min(360px,calc(100% - 24px));min-height:120px;
+  margin:calc(var(--battle-arena-top) + var(--battle-arena-height) + 26px) auto 0;
+  padding:9px 16px 8px;gap:5px;border:1.5px solid rgba(255,255,255,.22);border-radius:20px;
+  background:linear-gradient(180deg,rgba(28,22,66,.78),rgba(17,13,43,.72));
+  box-shadow:0 10px 28px rgba(5,3,18,.32);backdrop-filter:blur(9px);
+}
 #screen-quiz.boss-active .q-text{font-size:clamp(39px,10vw,58px)}
 #screen-quiz.boss-active .answer-box{font-size:clamp(28px,7vw,42px);min-height:49px;padding:4px 16px}
-#screen-quiz.boss-active .keypad{background:#181331;padding-top:10px}
-#screen-quiz.boss-active .key{padding:clamp(10px,2.4vw,15px) 0}
-@media(max-height:740px){.battle-stage{flex-basis:238px;min-height:238px}.battle-arena{height:153px}.battle-boss{width:158px;height:158px}.battle-climber{width:76px;height:100px}.battle-hud{top:calc(43px + env(safe-area-inset-top))}#screen-quiz.boss-active .question-zone{min-height:116px}#screen-quiz.boss-active .key{padding:9px 0}.battle-mechanic{display:none}}
-@media(min-width:700px){.battle-stage{flex-basis:390px}.battle-arena{height:255px}.battle-boss{width:280px;height:280px}.battle-climber{width:126px;height:166px}.battle-hud{left:28px;right:28px}.battle-lane{left:20%;right:35%}}
+#screen-quiz.boss-active .keypad{
+  position:relative;z-index:5;flex:0 0 auto;padding-top:10px;
+  background:linear-gradient(180deg,rgba(16,12,39,.08),rgba(16,12,39,.76) 44%,rgba(16,12,39,.94));
+}
+#screen-quiz.boss-active .key{padding:clamp(9px,2.2vw,13px) 0;background:rgba(47,42,77,.8);backdrop-filter:blur(7px)}
+#screen-quiz.boss-active .key.enter{background:rgba(74,222,128,.92)}
+#screen-quiz.boss-active .key.back{background:rgba(201,80,91,.88)}
+#screen-quiz.boss-active .hint-card{position:relative;z-index:8;margin-top:10px;background:rgba(255,243,214,.96);backdrop-filter:blur(10px)}
+#screen-quiz.boss-active .battle-announcement{top:31%}
+#screen-quiz.boss-active .battle-stage.boss-hit .battle-announcement{top:31%;bottom:auto}
+@media(max-height:740px){
+  #screen-quiz.boss-active{--battle-arena-top:calc(126px + env(safe-area-inset-top));--battle-arena-height:164px}
+  .battle-stage{flex-basis:238px;min-height:238px}.battle-boss{width:158px;height:158px}.battle-climber{width:76px;height:100px}.battle-hud{top:calc(43px + env(safe-area-inset-top))}
+  #screen-quiz.boss-active .battle-stage{min-height:100%}
+  #screen-quiz.boss-active .battle-boss{width:160px;height:160px}
+  #screen-quiz.boss-active .question-zone{min-height:108px;margin-top:calc(var(--battle-arena-top) + var(--battle-arena-height) + 22px)}
+  #screen-quiz.boss-active .key{padding:7px 0}
+  .battle-mechanic{display:none}
+}
+@media(min-width:700px){
+  #screen-quiz.boss-active{--battle-arena-top:calc(150px + env(safe-area-inset-top));--battle-arena-height:260px}
+  .battle-stage{flex-basis:390px}.battle-boss{width:280px;height:280px}.battle-climber{width:126px;height:166px}.battle-hud{left:28px;right:28px}.battle-lane{left:20%;right:35%}
+  #screen-quiz.boss-active .battle-boss{width:270px;height:270px}
+  #screen-quiz.boss-active .question-zone{width:min(420px,calc(100% - 36px))}
+}
 .question-zone{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:0 16px;min-height:170px;position:relative}
 .timer-row{display:flex;align-items:center;gap:8px}
 .timer-bolt{font-size:15px;transition:opacity .2s;opacity:1}
@@ -396,6 +453,7 @@ body{
   font-weight:700;font-size:15px;text-align:center;box-shadow:0 4px 0 rgba(0,0,0,.25);
 }
 .hint-card .hint-title{font-family:var(--display);font-weight:800;font-size:16px;margin-bottom:4px}
+.hint-strategy-label{display:inline-block;margin:1px 0 7px;padding:3px 8px;border-radius:999px;background:#E8D7A9;color:#604812;font-size:9px;font-weight:900;letter-spacing:.7px;text-transform:uppercase}
 .keypad{
   display:grid;grid-template-columns:repeat(3,1fr);gap:9px;padding:14px 16px calc(22px + env(safe-area-inset-bottom));
   width:100%;max-width:480px;margin:0 auto;
@@ -810,7 +868,7 @@ body.calm .stars{display:none}
       <div class="answer-box" id="answer-box">&nbsp;</div>
       <div class="timer-row" id="timer-track"><span class="timer-bolt" id="timer-bolt">⚡</span><div class="timer-track"><div class="timer-fill" id="timer-fill"></div></div></div>
     </div>
-    <div class="hint-card" id="hint-card">
+    <div class="hint-card" id="hint-card" role="status" aria-live="polite">
       <div class="hint-title" id="hint-title">💡 Let's build it!</div>
       <div id="hint-body"></div>
       <button class="btn gold small" id="hint-btn" style="margin-top:10px" onclick="dismissHint()">Got it — try again!</button>
@@ -1957,15 +2015,22 @@ function checkAnswer(){
     setTimeout(()=>showHint(q), 450);
   }
 }
-function showHint(q){
+function strategyHintFor(q){
   const lo=Math.min(q.a,q.b), hi=Math.max(q.a,q.b);
-  let fam = (lo===0||lo===1||lo===10||lo===2) ? lo : hi; // easiest rule wins
+  const fam = (lo===0||lo===1||lo===10||lo===2) ? lo : hi; // easiest rule wins
   const r=REALMS[fam]||REALMS[hi]||REALMS[lo];
+  return {
+    label:r ? `${r.name} strategy` : 'Multiplication strategy',
+    body:r ? r.hint(q.a,q.b) : `${q.a} × ${q.b} = <b>${q.a*q.b}</b>`
+  };
+}
+function showHint(q){
+  const strategy=strategyHintFor(q);
   const canRetry = state.settings.retry && !quiz.retry;
   $('hint-title').textContent = canRetry
     ? `💡 That one's tricky — let's build it!`
     : `The answer is ${q.ans}`;
-  $('hint-body').innerHTML = r ? r.hint(q.a,q.b) : `${q.a} × ${q.b} = <b>${q.a*q.b}</b>`;
+  $('hint-body').innerHTML = `<div class="hint-strategy-label">${strategy.label}</div><div>${strategy.body}</div>`;
   $('hint-btn').textContent = canRetry ? 'Got it — try again!' : 'Next question →';
   $('hint-card').style.display='block';
   $('keypad').style.display='none';
