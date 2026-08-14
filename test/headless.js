@@ -563,8 +563,13 @@ async function boot(saveObj, seededStorage={}) {
   ok('strategy coach explains how to build the answer', $('hint-body').querySelectorAll('b').length > 0, $('hint-body').textContent);
   ok('button offers a retry', $('hint-btn').textContent.includes('try again'), $('hint-btn').textContent);
   ok('title is the coaching one, not the answer', $('hint-title').textContent.includes('tricky'));
-  ok('round did NOT get longer (requeue removed)', ev('quiz').total === totalAtMiss,
+  ok('missed fact is added to the end of the round', ev('quiz').total === totalAtMiss + 1 &&
+     ev('quiz').queue.at(-1).a === q3.a && ev('quiz').queue.at(-1).b === q3.b,
      `${totalAtMiss} → ${ev('quiz').total}`);
+  ok('hint explains that the fact will return', $('hint-body').textContent.includes('added to the end'));
+  ok('learn, practice, and mastery trials use the review queue',
+     ev("['learn','practice','trial'].every(mode=>REVIEW_QUEUE_MODES.has(mode))") &&
+     ev("!['boss','siege','summit'].some(mode=>REVIEW_QUEUE_MODES.has(mode))"));
   ok('first miss costs a rating point', ev('state').facts[k3].rating < r3before || r3before <= 1);
   ok('first miss counted as wrong once', ev('quiz').wrong === 1);
 
@@ -578,9 +583,10 @@ async function boot(saveObj, seededStorage={}) {
   const ratingAtRetry = ev('state').facts[k3].rating;
   answer(q3.ans, true);                                   // correct on second go
   ok('retry-correct counted as recovered', ev('quiz').recovered === 1);
+  ok('retry-correct still leaves the later review in the queue', ev('quiz').total === totalAtMiss + 1);
   ok('retry-correct does NOT raise mastery', ev('state').facts[k3].rating === ratingAtRetry,
      `${ratingAtRetry} → ${ev('state').facts[k3].rating}`);
-  ok('retry-correct does NOT count toward the pass threshold', ev('quiz').correct === 2);
+  ok('retry-correct does NOT count toward the pass threshold', ev('quiz').passCorrect === 2);
   await new Promise(r => setTimeout(r, 700));
 
   section('Quiz — missing twice reveals and advances');
@@ -608,10 +614,11 @@ async function boot(saveObj, seededStorage={}) {
   ok('boss battle markup points at the stable semantic PNG', $('battle-boss').innerHTML.includes('art/boss/boss-2.png'));
   ok('selected profile climber enters the battle', $('battle-climber').innerHTML.includes('art/avatar/profile-1.png'));
   ok('River Serpent uses the stepping-stone prototype', $('battle-stage').classList.contains('effect-river') && $('battle-mechanic-name').textContent.includes('Stepping-stone'));
-  ok('River Serpent loads its dedicated realm battlefield', $('battle-stage').style.getPropertyValue('--battle-bg').includes('art/battle/bg-battle-x2.webp'));
+  ok('River Serpent loads its dedicated portrait battlefield', $('battle-stage').style.getPropertyValue('--battle-bg').includes('art/battle/bg-battle-x2-portrait.webp'));
   ok('River Serpent has a distinct counterattack pose', $('battle-stage').style.getPropertyValue('--boss-attack-art').includes('art/boss/boss-2-attack.webp'));
   ok('showdown renders a five-position battle lane', $('battle-lane').children.length === 5);
   ok('all thirteen guardians have configurable battle mechanics', ev('REALM_ORDER').every(f=>ev(`BOSS_BATTLE_CONFIGS[${f}]`) && ev(`BOSS_BATTLE_CONFIGS[${f}].phases.length`)===3));
+  ok('all thirteen guardians use dedicated portrait battlefield art', ev('REALM_ORDER').every(f=>ev(`BOSS_BATTLE_CONFIGS[${f}].art`).includes(`bg-battle-x${f}-portrait.webp`) && fs.existsSync(require('path').join(PUBLIC,ev(`BOSS_BATTLE_CONFIGS[${f}].art`)))));
   ok('needCorrect matches the hearts rule', ev('quiz').needCorrect === ev('quiz').queue.length - 3,
      `need ${ev('quiz').needCorrect} of ${ev('quiz').queue.length}`);
   for (let i = 0; i < 3; i++) {
@@ -626,6 +633,16 @@ async function boot(saveObj, seededStorage={}) {
   ok('three misses ends the fight', ev('quiz') === null, 'quiz still running');
   ok('boss result keeps the illustrated portrait', $('results-body').innerHTML.includes('art/boss/boss-2.png'));
   ok('failure headline shown', $('results-body').innerHTML.includes('blocked you'));
+
+  section('Camp Siege — replayable mixed-fact bonus round');
+  const siegeWinsBefore=ev('state').siegeWins;
+  win.startCampSiege();
+  ok('Camp Siege launches through the cinematic battle engine', ev('quiz').mode==='siege' && $('screen-quiz').classList.contains('boss-active'));
+  ok('Camp Siege uses its dedicated portrait battlefield', $('battle-stage').style.getPropertyValue('--battle-bg').includes('bg-battle-camp-siege-portrait.webp'));
+  ok('Camp Siege mixes conquered families', ev('quiz').fams.length>1 && new Set(ev('quiz').queue.map(q=>q.a)).size>1);
+  ok('Camp Siege is a bonus and does not increment wins merely by launching', ev('state').siegeWins===siegeWinsBefore);
+  win.quitQuiz();
+  ok('quitting Camp Siege returns to camp', $('screen-camp').classList.contains('active'));
 
   /* ---------------------------------------------------------------- */
   section('Camp — tap-tap placement');

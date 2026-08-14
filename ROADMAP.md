@@ -73,14 +73,15 @@ that says try again, and gets shown 3 × 7.
 - Re-present the same question: clear `quiz.answer`, `quiz.locked = false`,
   restore the keypad, reset `qStart`, suppress the timer for the retry.
 - Cap at one retry. Second miss reveals the answer plainly and advances.
-- Drop the requeue at L876–881, or stop counting requeued corrects toward
-  `needCorrect`.
+- In Learn, Practice, and Mastery Trial, also put each missed fact at the end of
+  the round until it is answered correctly there.
 
-### 1c. Close the requeue exploit
+### 1c. Keep review honest
 
-`needCorrect` is fixed from `queue.length` at launch, but requeues grow
-`quiz.total`. Two wrong answers in a 10-question boss can still yield 10 correct
-and pass. Evaluate `passed` at L912 against the original queue length.
+End-of-round reviews do not repair the Mastery Trial's original first-attempt
+score, and review reps use the reduced Learn/retry gem rate. This keeps the
+Duolingo-style reinforcement loop without making misses a shortcut through the
+trial or a gem-farming strategy. Boss, Summit, and Camp Siege queues stay fixed.
 
 **Touches:** L194, L487, L819–827, L851–856, L876–899, L912
 **How you'd know it worked:** rating 4/5 counts climb and `f.slow` counts drop in
@@ -222,6 +223,11 @@ because monsters left.
 ---
 
 ## Release 6 — Lane defense boss `v8`
+
+> **Implemented direction:** the cinematic guardian engine now has thirteen
+> realm-specific portrait battlefields. Camp Siege is a replayable, non-destructive
+> mixed-fact bonus round reached from Base Camp; conquered guardians rotate as
+> raiders, and no placed camp item is deleted or knocked out of the player's layout.
 
 **Goal:** the boss fight defends the camp he built instead of an abstraction.
 
