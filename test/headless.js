@@ -601,8 +601,15 @@ async function boot(saveObj, seededStorage={}) {
   ev('state').realms[2].trial = true;
   win.startBoss(2);
   ok('boss has 3 hearts', ev('quiz').hearts === 3);
-  ok('boss battle markup keeps its emoji fallback', $('boss-em').innerHTML.includes('🌊'));
-  ok('boss battle markup points at the stable semantic PNG', $('boss-em').innerHTML.includes('art/boss/boss-2.png'));
+  ok('realm showdown replaces the compact boss strip', $('screen-quiz').classList.contains('boss-active') && $('battle-stage').classList.contains('on'));
+  ok('boss battle markup keeps its emoji fallback', $('battle-boss').innerHTML.includes('🌊'));
+  ok('boss battle markup points at the stable semantic PNG', $('battle-boss').innerHTML.includes('art/boss/boss-2.png'));
+  ok('selected profile climber enters the battle', $('battle-climber').innerHTML.includes('art/avatar/profile-1.png'));
+  ok('River Serpent uses the stepping-stone prototype', $('battle-stage').classList.contains('effect-river') && $('battle-mechanic-name').textContent.includes('Stepping-stone'));
+  ok('River Serpent loads its dedicated realm battlefield', $('battle-stage').style.getPropertyValue('--battle-bg').includes('art/battle/bg-battle-x2.webp'));
+  ok('River Serpent has a distinct counterattack pose', $('battle-stage').style.getPropertyValue('--boss-attack-art').includes('art/boss/boss-2-attack.webp'));
+  ok('showdown renders a five-position battle lane', $('battle-lane').children.length === 5);
+  ok('all thirteen guardians have configurable battle mechanics', ev('REALM_ORDER').every(f=>ev(`BOSS_BATTLE_CONFIGS[${f}]`) && ev(`BOSS_BATTLE_CONFIGS[${f}].phases.length`)===3));
   ok('needCorrect matches the hearts rule', ev('quiz').needCorrect === ev('quiz').queue.length - 3,
      `need ${ev('quiz').needCorrect} of ${ev('quiz').queue.length}`);
   for (let i = 0; i < 3; i++) {

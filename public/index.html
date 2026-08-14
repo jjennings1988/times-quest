@@ -294,6 +294,76 @@ body{
 @keyframes bossFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
 .boss-bar .hp-fill{background:linear-gradient(90deg,var(--coral),#FF9A6B)}
 .hearts{color:#FF6B6B;font-size:16px;letter-spacing:2px;padding:0 16px}
+
+/* ---------- cinematic realm showdown ---------- */
+#screen-quiz.boss-active{--battle-accent:#5BA8FF;--battle-shadow:#163E66;background:#100D27;overflow-y:auto}
+#screen-quiz.boss-active .quiz-top{position:absolute;inset:0 0 auto;z-index:30;background:linear-gradient(180deg,rgba(10,7,26,.92),rgba(10,7,26,.5),transparent);backdrop-filter:none}
+#screen-quiz.boss-active .quiz-top .hp-track{display:none}
+#screen-quiz.boss-active .quiz-top .qcount{color:#FFF4C2;text-shadow:0 2px 4px rgba(0,0,0,.65)}
+.battle-stage{display:none;position:relative;isolation:isolate;flex:0 0 clamp(254px,34dvh,330px);min-height:254px;overflow:hidden;color:#fff;background:#18223A;border-bottom:2px solid rgba(255,255,255,.16);box-shadow:0 12px 32px rgba(0,0,0,.28)}
+.battle-stage.on{display:block}
+.battle-backdrop{position:absolute;inset:-18px;background-image:linear-gradient(180deg,rgba(10,10,28,.08),rgba(10,8,24,.2) 47%,rgba(9,7,22,.9)),var(--battle-bg,url('art/map/bg-adventure-map.png'));background-size:auto,var(--battle-bg-size,132% auto);background-repeat:no-repeat;background-position:center,var(--battle-bg-position,50% 50%);filter:saturate(1.2) contrast(1.04);transform:scale(1.035)}
+.battle-atmosphere{position:absolute;inset:0;background:radial-gradient(circle at 78% 44%,color-mix(in srgb,var(--battle-accent) 44%,transparent),transparent 30%),linear-gradient(90deg,rgba(10,8,30,.5),transparent 45%,rgba(10,8,30,.22));pointer-events:none}
+.battle-atmosphere::before,.battle-atmosphere::after{content:"";position:absolute;pointer-events:none}
+.battle-stage.effect-river .battle-atmosphere::before{left:-10%;right:-10%;bottom:0;height:41%;opacity:.74;background:repeating-radial-gradient(ellipse at 50% 110%,transparent 0 23px,rgba(89,213,255,.28) 25px 28px,transparent 30px 49px);animation:riverFlow 4s linear infinite}
+.battle-stage.has-battle-art.effect-river .battle-atmosphere::before{opacity:.3}
+.battle-stage.effect-fog .battle-atmosphere::before{inset:42% -30% -8%;background:radial-gradient(ellipse at center,rgba(235,255,244,.66),transparent 66%);animation:fogDrift 5s ease-in-out infinite alternate}
+.battle-stage.effect-storm .battle-atmosphere::before{inset:0;background:linear-gradient(112deg,transparent 48%,rgba(255,255,255,.5) 49%,transparent 50%);opacity:.2;animation:stormFlash 4.7s infinite}
+.battle-stage.effect-ice .battle-atmosphere::before{inset:0;background:linear-gradient(130deg,transparent 20%,rgba(194,244,255,.22) 21%,transparent 23% 66%,rgba(255,255,255,.18) 67%,transparent 69%)}
+@keyframes riverFlow{to{transform:translateX(49px)}}
+@keyframes fogDrift{to{transform:translateX(14%) scale(1.08)}}
+@keyframes stormFlash{0%,88%,93%,100%{opacity:.06}90%{opacity:.7}}
+.battle-hud{position:absolute;z-index:6;left:16px;right:16px;top:calc(48px + env(safe-area-inset-top));display:grid;grid-template-columns:minmax(0,1fr) minmax(130px,44%);gap:12px;align-items:start}
+.battle-kicker{font-size:9px;font-weight:900;letter-spacing:1.5px;color:#FFF0A8;text-transform:uppercase}
+.battle-name{font:800 clamp(17px,4.8vw,23px)/1 var(--display);text-shadow:0 3px 5px rgba(0,0,0,.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.battle-phase{font-size:10px;font-weight:900;margin-top:3px;color:#E4E0FF;text-shadow:0 2px 3px #000}
+.battle-lives{height:15px;margin-top:2px;color:#FF7884;font-size:12px;letter-spacing:1px;filter:drop-shadow(0 2px 2px #000)}
+.battle-health-label{display:flex;justify-content:space-between;gap:6px;font-size:9px;font-weight:900;letter-spacing:.7px;text-transform:uppercase;margin-bottom:4px;text-shadow:0 2px 3px #000}
+.battle-health{height:16px;padding:3px;border-radius:999px;background:rgba(10,7,23,.72);border:1px solid rgba(255,255,255,.44);box-shadow:0 3px 7px rgba(0,0,0,.42);overflow:hidden;position:relative}
+.battle-health .hp-fill{height:100%;background:linear-gradient(90deg,#FF5A64,#FF9A65);box-shadow:0 0 12px rgba(255,90,100,.7);transition:width .45s cubic-bezier(.2,.8,.2,1)}
+.battle-health::after{content:"";position:absolute;inset:3px;background:repeating-linear-gradient(90deg,transparent 0 calc(25% - 1px),rgba(20,8,18,.55) calc(25% - 1px) 25%);pointer-events:none}
+.battle-arena{position:absolute;z-index:4;left:0;right:0;bottom:32px;height:172px}
+.battle-climber{position:absolute;z-index:4;left:var(--climber-x,4%);bottom:5px;width:88px;height:116px;display:flex;align-items:flex-end;justify-content:center;filter:drop-shadow(0 8px 5px rgba(0,0,0,.7));transition:left .55s cubic-bezier(.2,.8,.2,1),transform .2s}
+.battle-climber img{width:100%;height:100%;object-fit:contain;object-position:center bottom}
+.battle-boss{position:absolute;z-index:3;right:var(--boss-x,1%);bottom:0;width:clamp(166px,43vw,220px);height:clamp(166px,43vw,220px);display:flex;align-items:flex-end;justify-content:center;filter:drop-shadow(0 9px 7px rgba(0,0,0,.68));transition:right .55s cubic-bezier(.2,.8,.2,1)}
+.battle-boss .boss-visual{width:100%;height:100%;font-size:110px;animation:bossFloat 2.5s infinite ease-in-out}
+.battle-lane{position:absolute;z-index:2;left:18%;right:34%;bottom:15px;height:24px;display:flex;align-items:center;justify-content:space-between}
+.battle-lane::before{content:"";position:absolute;left:5%;right:5%;top:50%;height:3px;background:linear-gradient(90deg,var(--battle-accent),rgba(255,255,255,.26));box-shadow:0 2px 5px rgba(0,0,0,.65)}
+.battle-step{position:relative;width:13px;height:13px;border-radius:50%;border:2px solid rgba(255,255,255,.78);background:#262143;box-shadow:0 3px 5px rgba(0,0,0,.5);transition:transform .3s,background .3s}
+.battle-step.on{background:var(--battle-accent);transform:scale(1.22);box-shadow:0 0 13px var(--battle-accent),0 3px 5px rgba(0,0,0,.5)}
+.effect-river .battle-step{width:24px;height:12px;border-radius:50%;background:#8B8A85;border-color:#D9D4C6;transform:rotate(-5deg)}
+.effect-river .battle-step:nth-child(even){transform:rotate(7deg) translateY(-5px)}
+.effect-river .battle-step.on{background:#FFE48B;box-shadow:0 0 16px #FFF1A5;transform:scale(1.16)}
+.battle-mechanic{position:absolute;z-index:7;left:50%;bottom:8px;transform:translateX(-50%);display:flex;align-items:center;gap:6px;max-width:82%;padding:5px 10px;border:1px solid rgba(255,255,255,.3);border-radius:999px;background:rgba(15,11,34,.78);backdrop-filter:blur(7px);font-size:9px;font-weight:900;letter-spacing:.8px;text-transform:uppercase;white-space:nowrap}
+.battle-mechanic .ui-icon{width:14px;height:14px;color:#FFE170}
+.battle-charge{display:flex;gap:3px}.battle-charge i{display:block;width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.22)}.battle-charge i.on{background:#FFE170;box-shadow:0 0 7px #FFE170}
+.battle-announcement{position:absolute;z-index:15;left:50%;top:54%;width:min(330px,82%);transform:translate(-50%,-50%) scale(.92);padding:13px 18px;border-radius:18px;border:1.5px solid rgba(255,255,255,.38);background:linear-gradient(135deg,rgba(31,23,68,.95),rgba(14,10,33,.94));box-shadow:0 14px 36px rgba(0,0,0,.55);text-align:center;opacity:0;visibility:hidden;transition:opacity .2s,transform .2s}
+.battle-announcement.show{opacity:1;visibility:visible;transform:translate(-50%,-50%) scale(1)}
+.battle-announcement strong{display:block;font:800 20px/1.05 var(--display);color:#FFE170}.battle-announcement span{display:block;margin-top:3px;font-size:10px;font-weight:800;color:#E1DCF9}
+.battle-stage.boss-hit .battle-announcement{left:34%;top:auto;bottom:43px;width:58%;padding:8px 10px;transform:translateX(-50%) scale(.92)}
+.battle-stage.boss-hit .battle-announcement.show{transform:translateX(-50%) scale(1)}
+.battle-stage.boss-hit .battle-announcement strong{font-size:16px}.battle-stage.boss-hit .battle-announcement span{font-size:9px}
+.battle-impact{position:absolute;z-index:10;left:64%;top:48%;width:16px;height:16px;border-radius:50%;opacity:0;background:#fff;box-shadow:0 0 18px 8px var(--battle-accent),0 0 45px 18px rgba(255,230,106,.5)}
+.battle-stage.hero-hit .battle-climber{animation:heroStrike .52s ease-out}
+.battle-stage.hero-hit .battle-boss{animation:bossHit .55s ease-out}
+.battle-stage.special-hit .battle-climber{animation:heroSpecial .8s ease-out}.battle-stage.special-hit .battle-boss{animation:bossHit .8s ease-out}.battle-stage.special-hit .battle-impact{animation:impactFlash .7s ease-out}
+.battle-stage.boss-hit{animation:stageShake .42s ease-out}.battle-stage.boss-hit .battle-boss{animation:bossLunge .48s ease-out}.battle-stage.boss-hit .battle-climber{animation:heroRecoil .48s ease-out}
+.battle-stage.boss-hit .battle-boss .boss-visual-image{background-image:var(--boss-attack-art,var(--boss-art))}
+@keyframes heroStrike{0%,100%{transform:translateX(0)}48%{transform:translateX(34px) scale(1.06)}}
+@keyframes heroSpecial{0%,100%{transform:translateX(0)}35%{transform:translateX(54px) scale(1.12);filter:drop-shadow(0 0 18px #FFE170)}55%{transform:translateX(42px)}}
+@keyframes bossHit{0%,100%{transform:translateX(0) rotate(0)}35%{transform:translateX(18px) rotate(4deg);filter:brightness(1.8)}}
+@keyframes bossLunge{0%,100%{transform:translateX(0)}48%{transform:translateX(-32px) scale(1.08)}}
+@keyframes heroRecoil{0%,100%{transform:translateX(0)}45%{transform:translateX(-18px) rotate(-4deg)}}
+@keyframes stageShake{20%,60%{transform:translateX(-4px)}40%,80%{transform:translateX(4px)}}
+@keyframes impactFlash{0%{opacity:0;transform:scale(.2)}28%{opacity:1;transform:scale(2.4)}100%{opacity:0;transform:scale(4)}}
+#screen-quiz.boss-active>.hearts{display:none}
+#screen-quiz.boss-active .question-zone{flex:0 0 auto;min-height:132px;padding:9px 16px 4px;background:linear-gradient(180deg,#211A4B,#181331);gap:5px}
+#screen-quiz.boss-active .q-text{font-size:clamp(39px,10vw,58px)}
+#screen-quiz.boss-active .answer-box{font-size:clamp(28px,7vw,42px);min-height:49px;padding:4px 16px}
+#screen-quiz.boss-active .keypad{background:#181331;padding-top:10px}
+#screen-quiz.boss-active .key{padding:clamp(10px,2.4vw,15px) 0}
+@media(max-height:740px){.battle-stage{flex-basis:238px;min-height:238px}.battle-arena{height:153px}.battle-boss{width:158px;height:158px}.battle-climber{width:76px;height:100px}.battle-hud{top:calc(43px + env(safe-area-inset-top))}#screen-quiz.boss-active .question-zone{min-height:116px}#screen-quiz.boss-active .key{padding:9px 0}.battle-mechanic{display:none}}
+@media(min-width:700px){.battle-stage{flex-basis:390px}.battle-arena{height:255px}.battle-boss{width:280px;height:280px}.battle-climber{width:126px;height:166px}.battle-hud{left:28px;right:28px}.battle-lane{left:20%;right:35%}}
 .question-zone{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:0 16px;min-height:170px;position:relative}
 .timer-row{display:flex;align-items:center;gap:8px}
 .timer-bolt{font-size:15px;transition:opacity .2s;opacity:1}
@@ -709,6 +779,30 @@ body.calm .stars{display:none}
       <span class="boss-em" id="boss-em">🐲</span>
       <div class="hp-track"><div class="hp-fill" id="boss-hp" style="width:100%"></div></div>
     </div>
+    <section class="battle-stage" id="battle-stage" aria-label="Realm boss battle">
+      <div class="battle-backdrop" aria-hidden="true"></div>
+      <div class="battle-atmosphere" aria-hidden="true"></div>
+      <div class="battle-hud">
+        <div>
+          <div class="battle-kicker" id="battle-kicker">REALM SHOWDOWN</div>
+          <div class="battle-name" id="battle-name">Realm Guardian</div>
+          <div class="battle-phase" id="battle-phase">Phase 1</div>
+          <div class="battle-lives" id="battle-lives" aria-label="Hearts remaining"></div>
+        </div>
+        <div>
+          <div class="battle-health-label"><span>Guardian power</span><span id="battle-hp-copy">100%</span></div>
+          <div class="battle-health"><div class="hp-fill" id="battle-hp" style="width:100%"></div></div>
+        </div>
+      </div>
+      <div class="battle-arena">
+        <div class="battle-lane" id="battle-lane" aria-hidden="true"></div>
+        <div class="battle-climber" id="battle-climber"></div>
+        <div class="battle-boss" id="battle-boss"></div>
+        <div class="battle-impact" aria-hidden="true"></div>
+      </div>
+      <div class="battle-mechanic"><span data-icon="spark"></span><span id="battle-mechanic-name">Power strike</span><span class="battle-charge" id="battle-charge" aria-label="Special move charge"><i></i><i></i><i></i></span></div>
+      <div class="battle-announcement" id="battle-announcement"><strong id="battle-callout-title"></strong><span id="battle-callout-copy"></span></div>
+    </section>
     <div class="hearts" id="hearts"></div>
     <div class="question-zone">
       <div class="streak-flame" id="streak-flame">FAST STREAK · BONUS GEM</div>
@@ -1734,12 +1828,18 @@ function startQuiz(cfg){
     correct:0, wrong:0, gems:0, fastStreak:0, rewardProgress:0, hearts:cfg.hearts||0,
     needCorrect:cfg.needCorrect||0, timed:cfg.timed && state.settings.timer,
     boss:cfg.boss||null, bossHP:cfg.queue.length, title:cfg.title,
+    battle:cfg.battle?createBossBattle(cfg.fams[0],cfg.queue.length,cfg.needCorrect):null,
     caughtThis:[], answer:"", locked:false, learn:cfg.mode==='learn',
     recovered:0, retry:false,
   };
-  $('boss-bar').style.display = quiz.boss?'flex':'none';
-  if(quiz.boss){ $('boss-em').innerHTML=bossVisual(cfg.fams[0]); $('boss-hp').style.width='100%'; }
+  const showdown=!!quiz.battle;
+  $('screen-quiz').classList.toggle('boss-active',showdown);
+  $('battle-stage').classList.toggle('on',showdown);
+  $('boss-bar').style.display = quiz.boss&&!showdown?'flex':'none';
+  if(showdown) renderBossBattle();
+  else if(quiz.boss){ $('boss-em').innerHTML=bossVisual(cfg.fams[0]); $('boss-hp').style.width='100%'; }
   $('hearts').textContent = quiz.hearts?'❤️'.repeat(quiz.hearts):'';
+  $('battle-lives').textContent = showdown?'♥'.repeat(quiz.hearts):'';
   $('timer-track').style.visibility = quiz.timed?'visible':'hidden';
   $('hint-card').style.display='none';
   $('keypad').style.display='grid';
@@ -1829,7 +1929,8 @@ function checkAnswer(){
       if(before<4 && f.rating>=4) quiz.caughtThis.push({a:q.a,b:q.b,shiny:false});
       else if(before<5 && f.rating===5) quiz.caughtThis.push({a:q.a,b:q.b,shiny:true});
     }
-    if(quiz.boss){
+    if(quiz.battle) resolveBossTurn('correct',fast,quiz.retry);
+    else if(quiz.boss){
       quiz.bossHP--; $('boss-hp').style.width=`${(quiz.bossHP/quiz.total)*100}%`;
       $('boss-em').style.transform='scale(.85)'; setTimeout(()=>$('boss-em').style.transform='',150);
     }
@@ -1847,7 +1948,9 @@ function checkAnswer(){
       if(quiz.hearts>0){
         quiz.hearts--;
         $('hearts').textContent='❤️'.repeat(quiz.hearts);
-        if(quiz.hearts===0){ saveState(); setTimeout(()=>finishQuiz(true),600); return; }
+        $('battle-lives').textContent='♥'.repeat(quiz.hearts);
+        if(quiz.battle) resolveBossTurn('wrong',false,false);
+        if(quiz.hearts===0){ saveState(); setTimeout(()=>finishQuiz(true),quiz.battle?850:600); return; }
       }
     }
     saveState();
@@ -1990,6 +2093,120 @@ function startTrial(fam){
   startQuiz({mode:'trial',fams:[fam],queue,timed:true,needCorrect:trialNeeds(),title:'Mastery Trial'});
   toast(`🏅 Get ${trialNeeds()} of ${roundLen()} right to pass!`);
 }
+
+/* Every guardian uses the same readable turn-based battle engine, while this
+   table supplies its realm art crop, signature mechanic, and three-act story. */
+const BOSS_BATTLE_CONFIGS={
+  0:{effect:'fog',accent:'#8FE4C8',shadow:'#244A43',mechanic:'Clear the vanishing fog',intro:'Light the path before it disappears.',phases:['Find the Trail','Break the Mist','Reveal the Guardian']},
+  1:{effect:'mirror',accent:'#A8EF9C',shadow:'#264F35',mechanic:'Shatter the mirror decoys',intro:'Only the true reflection stays the same.',phases:['Spot the Copy','Crack the Mirror','True Reflection']},
+ 10:{effect:'machine',accent:'#75C6FF',shadow:'#193B69',mechanic:'Overload the power cells',intro:'Charge Ten City one zero at a time.',phases:['Start the Engines','Break the Circuit','System Overload']},
+  2:{effect:'river',accent:'#58D8FF',shadow:'#13496A',art:'art/battle/bg-battle-x2.webp',attackArt:'art/boss/boss-2-attack.webp',mechanic:'Stepping-stone surge',intro:'Double each answer to cross the raging river.',phases:['Cross the Rapids','Break the Current','Final Surge']},
+  5:{effect:'harbor',accent:'#88E06B',shadow:'#275B3A',mechanic:'Free the harbor from its grip',intro:'Every high five loosens a kraken tentacle.',phases:['Cut the Ropes','Free the Fleet','Last Tentacle']},
+ 11:{effect:'twin',accent:'#F49AE0',shadow:'#63335D',mechanic:'Strike the matching tower',intro:'Keep both twins in perfect balance.',phases:['Face the First Twin','Balance the Towers','Twin Echo']},
+  3:{effect:'jungle',accent:'#63DF91',shadow:'#19553C',mechanic:'Break the three vine shields',intro:'Swing through three layers of jungle defense.',phases:['Part the Vines','Break the Canopy','Triple Swing']},
+  4:{effect:'stone',accent:'#FFD66D',shadow:'#694817',mechanic:'Double-double armor break',intro:'Crack the golem’s armor one layer at a time.',phases:['Chip the Stone','Crack the Armor','Shatter the Core']},
+  9:{effect:'ninja',accent:'#FF8A82',shadow:'#6A222C',mechanic:'Expose the shadow decoys',intro:'Use the pattern to find the true ninja.',phases:['Read the Shadows','Clear the Decoys','Final Strike']},
+  6:{effect:'circuit',accent:'#FFE25D',shadow:'#5B4D0B',mechanic:'Complete all six circuits',intro:'Correct answers send power down the line.',phases:['Power the Grid','Close the Circuit','Maximum Charge']},
+ 12:{effect:'clock',accent:'#FFB36B',shadow:'#6B3C20',mechanic:'Complete the clock face',intro:'Race around twelve marks before time strikes.',phases:['Wind the Clock','Turn the Hands','Final Chime']},
+  8:{effect:'ice',accent:'#9BEAFF',shadow:'#24566A',mechanic:'Triple-double icebreaker',intro:'Break three frozen shields around the titan.',phases:['Crack the Ice','Break the Glacier','Shatter the Crown']},
+  7:{effect:'storm',accent:'#C0A9FF',shadow:'#3B2B70',mechanic:'Charge the lightning rods',intro:'Split the storm and turn its power around.',phases:['Climb the Gale','Charge the Sky','Call the Lightning']},
+};
+function bossBattleConfig(fam){
+  const base=BOSS_BATTLE_CONFIGS[fam]||BOSS_BATTLE_CONFIGS[2];
+  const mapIndex=Math.max(0,REALM_ORDER.indexOf(fam)),point=MAP_POSITIONS[mapIndex]||{x:50,y:50};
+  return {...base,fam,name:bossName(fam),realm:REALMS[fam].name,mapX:point.x,mapY:point.y};
+}
+function createBossBattle(fam,total,needCorrect){
+  const config=bossBattleConfig(fam),maxHP=Math.max(1,needCorrect||total);
+  return {config,maxHP,hp:maxHP,position:0,phase:0,charge:0,lastAction:'intro'};
+}
+function battleProgress(battle=quiz&&quiz.battle){ return battle?1-(battle.hp/battle.maxHP):0; }
+function battlePhaseIndex(battle=quiz&&quiz.battle){
+  const progress=battleProgress(battle);
+  return progress>=.68?2:progress>=.34?1:0;
+}
+function battleLaneMarkup(battle){
+  const active=Math.round(battleProgress(battle)*4);
+  return Array.from({length:5},(_,i)=>`<span class="battle-step ${i<=active?'on':''}"></span>`).join('');
+}
+function renderBossBattle(){
+  if(!quiz||!quiz.battle) return;
+  const battle=quiz.battle,c=battle.config,stage=$('battle-stage');
+  stage.className=`battle-stage on effect-${c.effect}${c.art?' has-battle-art':''}`;
+  stage.style.setProperty('--battle-accent',c.accent);
+  stage.style.setProperty('--battle-shadow',c.shadow);
+  stage.style.setProperty('--battle-bg',`url('${c.art||'art/map/bg-adventure-map.png'}')`);
+  stage.style.setProperty('--battle-bg-size',c.art?'cover':'132% auto');
+  stage.style.setProperty('--battle-bg-position',c.art?'center center':`${c.mapX}% ${c.mapY}%`);
+  stage.style.setProperty('--boss-attack-art',c.attackArt?`url('${c.attackArt}')`:'var(--boss-art)');
+  $('battle-kicker').textContent=`×${c.fam} REALM SHOWDOWN · ${c.realm}`;
+  $('battle-name').textContent=c.name;
+  $('battle-mechanic-name').textContent=c.mechanic;
+  $('battle-climber').innerHTML=`<img src="${profileAvatar()}" alt="${escapeHtml((profileById()&&profileById().name)||'Your climber')}">`;
+  $('battle-boss').innerHTML=bossVisual(c.fam);
+  updateBossBattleUI();
+  announceBattle(c.name,c.intro,1550);
+}
+function updateBossBattleUI(){
+  if(!quiz||!quiz.battle) return;
+  const battle=quiz.battle,phase=battlePhaseIndex(battle),c=battle.config;
+  battle.phase=phase;
+  const hpPct=Math.max(0,Math.round(battle.hp/battle.maxHP*100));
+  $('battle-hp').style.width=`${hpPct}%`;
+  $('battle-hp-copy').textContent=`${hpPct}%`;
+  $('battle-phase').textContent=`PHASE ${phase+1} · ${c.phases[phase]}`;
+  $('battle-lane').innerHTML=battleLaneMarkup(battle);
+  const progress=battleProgress(battle);
+  $('battle-stage').style.setProperty('--climber-x',`${4+progress*18}%`);
+  $('battle-stage').style.setProperty('--boss-x',`${1+Math.max(0,2-phase)*1.5}%`);
+  [...$('battle-charge').children].forEach((pip,i)=>pip.classList.toggle('on',i<battle.charge));
+  $('battle-charge').setAttribute('aria-label',`Special move ${battle.charge} of 3 charged`);
+}
+let battleAnnouncementTimer=0,battleActionTimer=0;
+function announceBattle(title,copy,duration=1000){
+  const panel=$('battle-announcement'); if(!panel) return;
+  clearTimeout(battleAnnouncementTimer);
+  $('battle-callout-title').textContent=title;
+  $('battle-callout-copy').textContent=copy;
+  panel.classList.add('show');
+  battleAnnouncementTimer=setTimeout(()=>panel.classList.remove('show'),duration);
+}
+function animateBattle(action){
+  if(state.settings.calm) return;
+  const stage=$('battle-stage');
+  clearTimeout(battleActionTimer);
+  stage.classList.remove('hero-hit','special-hit','boss-hit');
+  void stage.offsetWidth;
+  stage.classList.add(action);
+  battleActionTimer=setTimeout(()=>stage.classList.remove(action),850);
+}
+function resolveBossTurn(outcome,fast=false,retry=false){
+  if(!quiz||!quiz.battle) return;
+  const battle=quiz.battle,oldPhase=battle.phase;
+  if(outcome==='correct'&&retry){
+    battle.charge=0; battle.lastAction='parry';
+    announceBattle('Attack blocked','A retry holds your ground. First-try answers deal damage.');
+    animateBattle('hero-hit');
+  } else if(outcome==='correct'){
+    battle.hp=Math.max(0,battle.hp-1);
+    battle.position=Math.min(4,battle.position+1);
+    battle.charge=fast?Math.min(3,battle.charge+1):0;
+    const special=battle.charge>=3;
+    battle.lastAction=special?'special':'strike';
+    if(special){ announceBattle(battle.config.phases[battlePhaseIndex(battle)],'SPECIAL MOVE! Three fast answers unleash a power strike.'); battle.charge=0; }
+    animateBattle(special?'special-hit':'hero-hit');
+  } else {
+    battle.position=Math.max(0,battle.position-1); battle.charge=0; battle.lastAction='boss';
+    announceBattle(`${battle.config.name} attacks!`,'Use the strategy hint, then block it on the retry.');
+    animateBattle('boss-hit');
+  }
+  quiz.bossHP=battle.hp;
+  updateBossBattleUI();
+  const newPhase=battlePhaseIndex(battle);
+  if(outcome==='correct'&&!retry&&!battle.lastAction.includes('special')&&newPhase!==oldPhase){
+    announceBattle(battle.config.phases[newPhase],newPhase===2?'The guardian is weakening. Finish the showdown!':'The battle has changed. Keep climbing!');
+  }
+}
 function startBoss(fam){
   lastConfig={fn:startBoss,args:[fam]};
   // boss mixes hardest facts of this family + previously conquered hard facts
@@ -2001,8 +2218,8 @@ function startBoss(fam){
   }
   // Hearts are the gate — needCorrect is set to match so there is exactly one
   // rule to understand: run out of hearts and the boss wins.
-  startQuiz({mode:'boss',fams:[fam],queue:queue.sort(()=>Math.random()-.5),timed:true,hearts:heartCt(),needCorrect:queue.length-heartCt(),boss:bossEmoji(fam),title:'Boss Battle'});
-  toast(`⚔️ ${bossName(fam)} appears! You have ${heartCt()} hearts.`);
+  startQuiz({mode:'boss',fams:[fam],queue:queue.sort(()=>Math.random()-.5),timed:true,hearts:heartCt(),needCorrect:queue.length-heartCt(),boss:bossEmoji(fam),battle:true,title:'Realm Showdown'});
+  toast(`${bossName(fam)} guards the path. Win the showdown!`);
 }
 function bossEmoji(fam){ return {0:'🌫️',1:'🪞',10:'🏗️',2:'🌊',5:'🦑',11:'🗼',3:'🦍',4:'🗿',9:'🥷',6:'⚙️',12:'🐲',8:'🧊',7:'⛈️'}[fam]||'👹'; }
 function bossName(fam){ return {0:'The Vanishing Fog',1:'The Mirror Spirit',10:'The Mega Machine',2:'The River Serpent',5:'The Harbor Kraken',11:'The Tower Twins',3:'The Jungle King',4:'The Stone Golem',9:'The Ninja Master',6:'The Circuit Breaker',12:'The Clock Dragon',8:'The Ice Titan',7:'The Storm Lord'}[fam]||'The Boss'; }
