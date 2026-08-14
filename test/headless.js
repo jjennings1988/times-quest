@@ -559,6 +559,8 @@ async function boot(saveObj, seededStorage={}) {
   answer(q3.ans + 1, true);                              // deliberate miss
   await new Promise(r => setTimeout(r, 600));
   ok('hint card shown', $('hint-card').style.display === 'block');
+  ok('every miss includes a named realm strategy', !!$('hint-body').querySelector('.hint-strategy-label') && $('hint-body').textContent.includes('strategy'));
+  ok('strategy coach explains how to build the answer', $('hint-body').querySelectorAll('b').length > 0, $('hint-body').textContent);
   ok('button offers a retry', $('hint-btn').textContent.includes('try again'), $('hint-btn').textContent);
   ok('title is the coaching one, not the answer', $('hint-title').textContent.includes('tricky'));
   ok('round did NOT get longer (requeue removed)', ev('quiz').total === totalAtMiss,
