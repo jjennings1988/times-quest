@@ -10,6 +10,7 @@ climber, and the interface icons.
 |---|---|
 | 13 realm characters | Complete — transparent 512×512 PNGs |
 | 13 bosses | Complete — transparent 512×512 PNGs |
+| 13 realm battlefields + Camp Siege | Complete — portrait 1024×1536 WebP, PNG masters archived |
 | Climber | Complete — transparent 3-frame 768×256 strip |
 | 6 hats | Complete — transparent 256×256 PNGs, layered on the climber |
 | 3 shop buddies | Complete — transparent 256×256 PNGs |
@@ -138,6 +139,7 @@ Apart from those, no letters, no words and no other digits anywhere.
 |---|---|---|
 | Realm characters | 512 × 512 | 66px in map bubble, ~110px in realm hero |
 | Boss portraits | 512 × 512 | 36px in the boss bar, ~90px on results |
+| Battle environments | 1024 × 1536 | Full-screen portrait backdrop behind battle UI |
 | Fact monsters | 256 × 256 | 26px today — **worth enlarging to ~56px** |
 | Hats | 256 × 256 | 28px in shop, overlaid on the climber |
 | Buddies | 256 × 256 | 28px in shop, beside the climber |
@@ -147,6 +149,8 @@ Apart from those, no letters, no words and no other digits anywhere.
 public/art/
 ├── realm/pet-0.png … pet-12.png      (keyed by family number)
 ├── boss/boss-0.png … boss-12.png
+├── battle/bg-battle-x0-portrait.webp … bg-battle-x12-portrait.webp
+├── battle/bg-battle-camp-siege-portrait.webp
 ├── mon/mon-00.png … mon-39.png       (index MUST match MON_POOL order)
 ├── hat/cap.png, tophat.png, …
 └── climber.png                        (3-frame idle strip)

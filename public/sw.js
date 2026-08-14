@@ -1,5 +1,5 @@
 /* Times Quest service worker — offline-first app shell */
-const CACHE = 'times-quest-v36';
+const CACHE = 'times-quest-v38';
 const CORE = [
   './',
   './index.html',
@@ -71,7 +71,20 @@ const OPTIONAL = [
   './art/boss/boss-10.png',
   './art/boss/boss-11.png',
   './art/boss/boss-12.png',
-  './art/battle/bg-battle-x2.webp',
+  './art/battle/bg-battle-x0-portrait.webp',
+  './art/battle/bg-battle-x1-portrait.webp',
+  './art/battle/bg-battle-x2-portrait.webp',
+  './art/battle/bg-battle-x3-portrait.webp',
+  './art/battle/bg-battle-x4-portrait.webp',
+  './art/battle/bg-battle-x5-portrait.webp',
+  './art/battle/bg-battle-x6-portrait.webp',
+  './art/battle/bg-battle-x7-portrait.webp',
+  './art/battle/bg-battle-x8-portrait.webp',
+  './art/battle/bg-battle-x9-portrait.webp',
+  './art/battle/bg-battle-x10-portrait.webp',
+  './art/battle/bg-battle-x11-portrait.webp',
+  './art/battle/bg-battle-x12-portrait.webp',
+  './art/battle/bg-battle-camp-siege-portrait.webp',
   './art/camp/bg-camp-dusk.png',
   './art/camp/bg-camp-morning.png',
   './art/camp/bg-camp-autumn.png',

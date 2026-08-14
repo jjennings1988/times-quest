@@ -337,9 +337,22 @@ body{
 .battle-stage.effect-fog .battle-atmosphere::before{inset:42% -30% -8%;background:radial-gradient(ellipse at center,rgba(235,255,244,.66),transparent 66%);animation:fogDrift 5s ease-in-out infinite alternate}
 .battle-stage.effect-storm .battle-atmosphere::before{inset:0;background:linear-gradient(112deg,transparent 48%,rgba(255,255,255,.5) 49%,transparent 50%);opacity:.2;animation:stormFlash 4.7s infinite}
 .battle-stage.effect-ice .battle-atmosphere::before{inset:0;background:linear-gradient(130deg,transparent 20%,rgba(194,244,255,.22) 21%,transparent 23% 66%,rgba(255,255,255,.18) 67%,transparent 69%)}
+.battle-stage.effect-mirror .battle-atmosphere::before{inset:8% 5% 53%;opacity:.4;background:linear-gradient(118deg,transparent 24%,rgba(255,255,255,.5) 25%,transparent 27% 65%,rgba(190,255,214,.46) 66%,transparent 68%);animation:battlePulse 3.2s ease-in-out infinite alternate}
+.battle-stage.effect-machine .battle-atmosphere::before,.battle-stage.effect-circuit .battle-atmosphere::before{inset:8% 0 55%;opacity:.28;background:repeating-linear-gradient(90deg,transparent 0 42px,var(--battle-accent) 44px 46px,transparent 48px 88px);animation:circuitFlow 5s linear infinite}
+.battle-stage.effect-harbor .battle-atmosphere::before{left:-10%;right:-10%;top:25%;height:22%;opacity:.3;background:repeating-radial-gradient(ellipse at 65% 90%,transparent 0 27px,rgba(116,228,255,.42) 29px 32px,transparent 34px 58px);animation:riverFlow 5s linear infinite}
+.battle-stage.effect-twin .battle-atmosphere::before{inset:7% 9% 53%;opacity:.24;background:linear-gradient(90deg,transparent 9%,var(--battle-accent) 10%,transparent 17% 72%,var(--battle-accent) 80%,transparent 88%);animation:battlePulse 2.8s ease-in-out infinite alternate}
+.battle-stage.effect-jungle .battle-atmosphere::before{inset:0;opacity:.38;background:radial-gradient(ellipse at 50% 30%,transparent 18%,rgba(5,53,27,.72) 76%)}
+.battle-stage.effect-stone .battle-atmosphere::before{inset:25% 0 48%;opacity:.26;background:radial-gradient(ellipse at 65% 60%,rgba(255,220,145,.55),transparent 58%);animation:battlePulse 3.4s ease-in-out infinite alternate}
+.battle-stage.effect-ninja .battle-atmosphere::before{inset:0;opacity:.2;background:conic-gradient(from 20deg at 72% 28%,transparent 0 14%,rgba(5,5,18,.8) 17% 24%,transparent 28% 100%);animation:shadowSweep 6s ease-in-out infinite alternate}
+.battle-stage.effect-clock .battle-atmosphere::before{right:4%;top:14%;width:190px;height:190px;border-radius:50%;opacity:.2;background:repeating-conic-gradient(var(--battle-accent) 0 2deg,transparent 2deg 30deg);animation:clockTurn 18s linear infinite}
+.battle-stage.effect-siege .battle-atmosphere::before{inset:12% 0 53%;opacity:.34;background:radial-gradient(circle at 25% 72%,rgba(255,190,82,.62),transparent 24%),radial-gradient(circle at 82% 54%,var(--battle-accent),transparent 28%);animation:battlePulse 2.7s ease-in-out infinite alternate}
 @keyframes riverFlow{to{transform:translateX(49px)}}
 @keyframes fogDrift{to{transform:translateX(14%) scale(1.08)}}
 @keyframes stormFlash{0%,88%,93%,100%{opacity:.06}90%{opacity:.7}}
+@keyframes battlePulse{to{opacity:.12;filter:brightness(1.22)}}
+@keyframes circuitFlow{to{transform:translateX(88px)}}
+@keyframes shadowSweep{to{transform:translateX(-9%) rotate(-5deg)}}
+@keyframes clockTurn{to{transform:rotate(360deg)}}
 .battle-hud{position:absolute;z-index:6;left:16px;right:16px;top:calc(48px + env(safe-area-inset-top));display:grid;grid-template-columns:minmax(0,1fr) minmax(130px,44%);gap:12px;align-items:start}
 .battle-kicker{font-size:9px;font-weight:900;letter-spacing:1.5px;color:#FFF0A8;text-transform:uppercase}
 .battle-name{font:800 clamp(17px,4.8vw,23px)/1 var(--display);text-shadow:0 3px 5px rgba(0,0,0,.7);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -396,11 +409,13 @@ body{
 }
 #screen-quiz.boss-active .q-text{font-size:clamp(39px,10vw,58px)}
 #screen-quiz.boss-active .answer-box{font-size:clamp(28px,7vw,42px);min-height:49px;padding:4px 16px}
+#screen-quiz.boss-active .streak-flame{height:14px;font-size:10px}
 #screen-quiz.boss-active .keypad{
-  position:relative;z-index:5;flex:0 0 auto;padding-top:10px;
+  position:relative;z-index:5;flex:1 1 auto;min-height:0;max-height:330px;
+  grid-template-rows:repeat(4,minmax(0,1fr));gap:7px;padding:10px 16px calc(10px + env(safe-area-inset-bottom));
   background:linear-gradient(180deg,rgba(16,12,39,.08),rgba(16,12,39,.76) 44%,rgba(16,12,39,.94));
 }
-#screen-quiz.boss-active .key{padding:clamp(9px,2.2vw,13px) 0;background:rgba(47,42,77,.8);backdrop-filter:blur(7px)}
+#screen-quiz.boss-active .key{min-height:0;padding:0;background:rgba(47,42,77,.8);backdrop-filter:blur(7px)}
 #screen-quiz.boss-active .key.enter{background:rgba(74,222,128,.92)}
 #screen-quiz.boss-active .key.back{background:rgba(201,80,91,.88)}
 #screen-quiz.boss-active .hint-card{position:relative;z-index:8;margin-top:10px;background:rgba(255,243,214,.96);backdrop-filter:blur(10px)}
@@ -412,7 +427,7 @@ body{
   #screen-quiz.boss-active .battle-stage{min-height:100%}
   #screen-quiz.boss-active .battle-boss{width:160px;height:160px}
   #screen-quiz.boss-active .question-zone{min-height:108px;margin-top:calc(var(--battle-arena-top) + var(--battle-arena-height) + 22px)}
-  #screen-quiz.boss-active .key{padding:7px 0}
+  #screen-quiz.boss-active .keypad{padding-top:7px;gap:6px}
   .battle-mechanic{display:none}
 }
 @media(min-width:700px){
@@ -454,6 +469,7 @@ body{
 }
 .hint-card .hint-title{font-family:var(--display);font-weight:800;font-size:16px;margin-bottom:4px}
 .hint-strategy-label{display:inline-block;margin:1px 0 7px;padding:3px 8px;border-radius:999px;background:#E8D7A9;color:#604812;font-size:9px;font-weight:900;letter-spacing:.7px;text-transform:uppercase}
+.hint-review-note{margin-top:9px;padding:8px 10px;border-radius:11px;background:#FFF0B8;color:#624A10;font-size:11px;font-weight:900;line-height:1.3}
 .keypad{
   display:grid;grid-template-columns:repeat(3,1fr);gap:9px;padding:14px 16px calc(22px + env(safe-area-inset-bottom));
   width:100%;max-width:480px;margin:0 auto;
@@ -848,7 +864,7 @@ body.calm .stars{display:none}
           <div class="battle-lives" id="battle-lives" aria-label="Hearts remaining"></div>
         </div>
         <div>
-          <div class="battle-health-label"><span>Guardian power</span><span id="battle-hp-copy">100%</span></div>
+          <div class="battle-health-label"><span id="battle-health-title">Guardian power</span><span id="battle-hp-copy">100%</span></div>
           <div class="battle-health"><div class="hp-fill" id="battle-hp" style="width:100%"></div></div>
         </div>
       </div>
@@ -1321,6 +1337,7 @@ const defaultState = () => ({
   campSeen: null,  // toDateString() of last camp visit
   campBackground: 'dusk',
   campCameras: {}, // environment id -> normalized horizontal camera position
+  siegeWins: 0,
   climberIntroduced: false,
 });
 function allAccessState(){
@@ -1425,6 +1442,7 @@ function migrateState(){
   if(state.campSeen===undefined) state.campSeen=null;
   if(!CAMP_BACKGROUNDS.some(background=>background.id===state.campBackground)) state.campBackground='dusk';
   if(!state.campCameras || typeof state.campCameras!=='object') state.campCameras={};
+  if(typeof state.siegeWins!=='number') state.siegeWins=0;
   // One-time: seed the camp arrangement from the old hardcoded SHOP coordinates
   // so an existing camp loads looking identical — and is suddenly movable.
   if(!Array.isArray(state.placed)){
@@ -1883,12 +1901,12 @@ function warmupQs(excludeFam){
 function startQuiz(cfg){
   quiz={
     mode:cfg.mode, fams:cfg.fams, queue:cfg.queue, idx:0, total:cfg.queue.length,
-    correct:0, wrong:0, gems:0, fastStreak:0, rewardProgress:0, hearts:cfg.hearts||0,
+    correct:0, passCorrect:0, wrong:0, gems:0, fastStreak:0, rewardProgress:0, hearts:cfg.hearts||0,
     needCorrect:cfg.needCorrect||0, timed:cfg.timed && state.settings.timer,
     boss:cfg.boss||null, bossHP:cfg.queue.length, title:cfg.title,
-    battle:cfg.battle?createBossBattle(cfg.fams[0],cfg.queue.length,cfg.needCorrect):null,
+    battle:cfg.battle?createBossBattle(cfg.battleFam??cfg.fams[0],cfg.queue.length,cfg.needCorrect,cfg.battleConfig||null):null,
     caughtThis:[], answer:"", locked:false, learn:cfg.mode==='learn',
-    recovered:0, retry:false,
+    recovered:0, retry:false, reviewAdded:0,
   };
   const showdown=!!quiz.battle;
   $('screen-quiz').classList.toggle('boss-active',showdown);
@@ -1917,6 +1935,19 @@ function nextQ(){
   qStart=performance.now();
   $('timer-track').style.visibility = quiz.timed?'visible':'hidden';
   if(quiz.timed) runTimer();
+}
+const REVIEW_QUEUE_MODES=new Set(['learn','practice','trial']);
+function queueMissedFactForReview(q){
+  if(!quiz||!REVIEW_QUEUE_MODES.has(quiz.mode)) return false;
+  const review={...q,reviewRound:(q.reviewRound||0)+1};
+  delete review.reviewQueued;
+  q.reviewQueued=true;
+  quiz.queue.push(review);
+  quiz.total=quiz.queue.length;
+  quiz.reviewAdded++;
+  $('q-count').textContent=`${quiz.idx+1} / ${quiz.total}`;
+  $('progress-fill').style.width=`${(quiz.idx/quiz.queue.length)*100}%`;
+  return true;
 }
 /* The bar IS the bonus window — it drains over FAST_MS and then sits empty.
    Answering after it empties costs a rating point, never the round. */
@@ -1971,6 +2002,7 @@ function checkAnswer(){
       if(quiz.rewardProgress%4===0){ quiz.gems++; state.gems++; }
     } else {
       quiz.correct++;
+      if(!q.reviewRound) quiz.passCorrect++;
       const before=f.rating;
       if(fast){ f.rating=Math.min(5,f.rating+1); f.slow=Math.max(0,f.slow-1); quiz.fastStreak++; zap(); }
       else { if(f.rating<3) f.rating++; f.slow++; quiz.fastStreak=0; }
@@ -1978,10 +2010,11 @@ function checkAnswer(){
       const boost=quiz.fastStreak>=3;
       $('streak-flame').classList.toggle('show',boost);
       // One gem for a correct answer; a fast three-answer streak adds one bonus.
-      // Learn and retry reps pay every four correct responses instead.
+      // Learn, retry, and end-of-round review reps pay every four correct
+      // responses instead, so review practice cannot be farmed for gems.
       const gemBoost=fast && quiz.fastStreak>0 && quiz.fastStreak%3===0;
       let g=0;
-      if(quiz.learn){ quiz.rewardProgress++; if(quiz.rewardProgress%4===0) g=1; }
+      if(quiz.learn||q.reviewRound){ quiz.rewardProgress++; if(quiz.rewardProgress%4===0) g=1; }
       else g=1+(gemBoost?1:0);
       quiz.gems+=g; state.gems+=g;
       if(before<4 && f.rating>=4) quiz.caughtThis.push({a:q.a,b:q.b,shiny:false});
@@ -2003,6 +2036,7 @@ function checkAnswer(){
     // not for a second helping of punishment.
     if(!quiz.retry){
       quiz.wrong++; f.w++; f.rating=Math.max(1,f.rating-1);
+      queueMissedFactForReview(q);
       if(quiz.hearts>0){
         quiz.hearts--;
         $('hearts').textContent='❤️'.repeat(quiz.hearts);
@@ -2030,7 +2064,10 @@ function showHint(q){
   $('hint-title').textContent = canRetry
     ? `💡 That one's tricky — let's build it!`
     : `The answer is ${q.ans}`;
-  $('hint-body').innerHTML = `<div class="hint-strategy-label">${strategy.label}</div><div>${strategy.body}</div>`;
+  const reviewNote=q.reviewQueued
+    ? `<div class="hint-review-note">↻ This fact was added to the end. Get it right there to finish the round!</div>`
+    : '';
+  $('hint-body').innerHTML = `<div class="hint-strategy-label">${strategy.label}</div><div>${strategy.body}</div>${reviewNote}`;
   $('hint-btn').textContent = canRetry ? 'Got it — try again!' : 'Next question →';
   $('hint-card').style.display='block';
   $('keypad').style.display='none';
@@ -2053,7 +2090,9 @@ function retryQ(){
 }
 function quitQuiz(){
   cancelAnimationFrame(qTimerRAF);
+  const returnToCamp=quiz&&quiz.mode==='siege';
   quiz=null;
+  if(returnToCamp){ showScreen('screen-camp'); return; }
   showScreen(activeRealm!==null?'screen-realm':'screen-map');
   if(activeRealm!==null) openRealm(activeRealm);
 }
@@ -2063,7 +2102,8 @@ function finishQuiz(failed=false){
   cancelAnimationFrame(qTimerRAF);
   const qz=quiz; quiz=null;
   const acc = qz.correct+qz.wrong>0 ? qz.correct/(qz.correct+qz.wrong) : 0;
-  const passed = !failed && (qz.needCorrect===0 || qz.correct>=qz.needCorrect);
+  const passCorrect=qz.mode==='trial'?qz.passCorrect:qz.correct;
+  const passed = !failed && (qz.needCorrect===0 || passCorrect>=qz.needCorrect);
   let headline="", em="🎉", sub="", newPiece=null, newBlueprints=[], starReward={gems:0,stars:[]};
 
   if(qz.mode==='trial' && passed){
@@ -2084,6 +2124,11 @@ function finishQuiz(failed=false){
     }
   } else if(qz.mode==='boss'){
     headline="The boss blocked you!"; em="🛡️"; sub="Heal up in the Training Hall, then rematch!";
+  } else if(qz.mode==='siege' && passed){
+    state.siegeWins++;
+    headline="Camp Defended!"; em="🛡️"; sub=`Siege victory ${state.siegeWins}! Your camp is safe and the bonus round is ready for another rematch.`;
+  } else if(qz.mode==='siege'){
+    headline="The raider broke through!"; em="🏕️"; sub="Nothing at camp was lost. Train your mixed facts and defend it again!";
   } else if(qz.mode==='summit' && passed){
     const firstSummit=!state.summitDone;
     state.summitDone=true; headline="YOU CONQUERED MOUNT TWELVE!"; em="🏆"; sub="Every fact family mastered. Legendary!";
@@ -2097,12 +2142,15 @@ function finishQuiz(failed=false){
   }
   const stars = passed&&acc>=0.99?3 : acc>=0.85?2 : acc>=0.6?1:0;
   if(qz.fams.length===1 && REALMS[qz.fams[0]]) starReward=claimRealmStarRewards(qz.fams[0]);
-  if(passed && (qz.mode==='boss'||qz.mode==='summit'||stars===3)){ confetti(); sfx.win(); }
+  if(passed && (qz.mode==='boss'||qz.mode==='summit'||qz.mode==='siege'||stars===3)){ confetti(); sfx.win(); }
   else if(stars>=1) sfx.win();
 
   completeRound(qz.correct+qz.recovered, qz.fams);
 
-  const resultVisual=qz.mode==='boss'?bossVisual(qz.fams[0],'result'):em;
+  const resultVisual=(qz.mode==='boss'||qz.mode==='siege')?bossVisual(qz.battle?qz.battle.config.fam:qz.fams[0],'result'):em;
+  const returnButton=qz.mode==='siege'
+    ? `<button class="btn ghost" onclick="showScreen('screen-camp')">${icon('camp')} Camp</button>`
+    : `<button class="btn ghost" onclick="showScreen('screen-map')">${icon('map')} Map</button>`;
   $('results-body').innerHTML=`
     <div class="big-em">${resultVisual}</div>
     <h2>${headline}</h2>
@@ -2124,12 +2172,13 @@ function finishQuiz(failed=false){
       ${starReward.gems?`<div class="reward-pill">⭐ +${starReward.gems} realm mastery gems</div>`:''}
       <div class="reward-pill">✅ ${qz.correct} first try</div>
       ${qz.recovered?`<div class="reward-pill">💡 ${qz.recovered} on the retry</div>`:''}
+      ${qz.reviewAdded?`<div class="reward-pill">↻ ${qz.reviewAdded} review${qz.reviewAdded===1?'':'s'} completed</div>`:''}
       ${qz.wrong?`<div class="reward-pill">🩹 ${qz.wrong} to train</div>`:''}
     </div>
     ${qz.caughtThis.length?`<div class="sub" style="margin-bottom:6px">Monsters ${qz.caughtThis.some(c=>c.shiny)?'caught & shined':'caught'}!</div>
     <div class="caught-list">${qz.caughtThis.slice(0,6).map(c=>`<div class="caught-monster ${c.shiny?'shiny':''}"><span class="em">${c.shiny?'✨':''}${monsterFor(c.a,c.b)}</span>${Math.min(c.a,c.b)}×${Math.max(c.a,c.b)}</div>`).join('')}</div>`:''}
     <div class="btn-row" style="width:100%;max-width:330px">
-      <button class="btn ghost" onclick="showScreen('screen-map')">${icon('map')} Map</button>
+      ${returnButton}
       <button class="btn gold" onclick="repeatLast()">${icon('repeat')} Again</button>
     </div>`;
   lastConfig._repeat=true;
@@ -2162,27 +2211,27 @@ function startTrial(fam){
 /* Every guardian uses the same readable turn-based battle engine, while this
    table supplies its realm art crop, signature mechanic, and three-act story. */
 const BOSS_BATTLE_CONFIGS={
-  0:{effect:'fog',accent:'#8FE4C8',shadow:'#244A43',mechanic:'Clear the vanishing fog',intro:'Light the path before it disappears.',phases:['Find the Trail','Break the Mist','Reveal the Guardian']},
-  1:{effect:'mirror',accent:'#A8EF9C',shadow:'#264F35',mechanic:'Shatter the mirror decoys',intro:'Only the true reflection stays the same.',phases:['Spot the Copy','Crack the Mirror','True Reflection']},
- 10:{effect:'machine',accent:'#75C6FF',shadow:'#193B69',mechanic:'Overload the power cells',intro:'Charge Ten City one zero at a time.',phases:['Start the Engines','Break the Circuit','System Overload']},
-  2:{effect:'river',accent:'#58D8FF',shadow:'#13496A',art:'art/battle/bg-battle-x2.webp',attackArt:'art/boss/boss-2-attack.webp',mechanic:'Stepping-stone surge',intro:'Double each answer to cross the raging river.',phases:['Cross the Rapids','Break the Current','Final Surge']},
-  5:{effect:'harbor',accent:'#88E06B',shadow:'#275B3A',mechanic:'Free the harbor from its grip',intro:'Every high five loosens a kraken tentacle.',phases:['Cut the Ropes','Free the Fleet','Last Tentacle']},
- 11:{effect:'twin',accent:'#F49AE0',shadow:'#63335D',mechanic:'Strike the matching tower',intro:'Keep both twins in perfect balance.',phases:['Face the First Twin','Balance the Towers','Twin Echo']},
-  3:{effect:'jungle',accent:'#63DF91',shadow:'#19553C',mechanic:'Break the three vine shields',intro:'Swing through three layers of jungle defense.',phases:['Part the Vines','Break the Canopy','Triple Swing']},
-  4:{effect:'stone',accent:'#FFD66D',shadow:'#694817',mechanic:'Double-double armor break',intro:'Crack the golem’s armor one layer at a time.',phases:['Chip the Stone','Crack the Armor','Shatter the Core']},
-  9:{effect:'ninja',accent:'#FF8A82',shadow:'#6A222C',mechanic:'Expose the shadow decoys',intro:'Use the pattern to find the true ninja.',phases:['Read the Shadows','Clear the Decoys','Final Strike']},
-  6:{effect:'circuit',accent:'#FFE25D',shadow:'#5B4D0B',mechanic:'Complete all six circuits',intro:'Correct answers send power down the line.',phases:['Power the Grid','Close the Circuit','Maximum Charge']},
- 12:{effect:'clock',accent:'#FFB36B',shadow:'#6B3C20',mechanic:'Complete the clock face',intro:'Race around twelve marks before time strikes.',phases:['Wind the Clock','Turn the Hands','Final Chime']},
-  8:{effect:'ice',accent:'#9BEAFF',shadow:'#24566A',mechanic:'Triple-double icebreaker',intro:'Break three frozen shields around the titan.',phases:['Crack the Ice','Break the Glacier','Shatter the Crown']},
-  7:{effect:'storm',accent:'#C0A9FF',shadow:'#3B2B70',mechanic:'Charge the lightning rods',intro:'Split the storm and turn its power around.',phases:['Climb the Gale','Charge the Sky','Call the Lightning']},
+  0:{effect:'fog',accent:'#8FE4C8',shadow:'#244A43',art:'art/battle/bg-battle-x0-portrait.webp',mechanic:'Clear the vanishing fog',intro:'Light the path before it disappears.',phases:['Find the Trail','Break the Mist','Reveal the Guardian']},
+  1:{effect:'mirror',accent:'#A8EF9C',shadow:'#264F35',art:'art/battle/bg-battle-x1-portrait.webp',mechanic:'Shatter the mirror decoys',intro:'Only the true reflection stays the same.',phases:['Spot the Copy','Crack the Mirror','True Reflection']},
+ 10:{effect:'machine',accent:'#75C6FF',shadow:'#193B69',art:'art/battle/bg-battle-x10-portrait.webp',mechanic:'Overload the power cells',intro:'Charge Ten City one zero at a time.',phases:['Start the Engines','Break the Circuit','System Overload']},
+  2:{effect:'river',accent:'#58D8FF',shadow:'#13496A',art:'art/battle/bg-battle-x2-portrait.webp',attackArt:'art/boss/boss-2-attack.webp',mechanic:'Stepping-stone surge',intro:'Double each answer to cross the raging river.',phases:['Cross the Rapids','Break the Current','Final Surge']},
+  5:{effect:'harbor',accent:'#88E06B',shadow:'#275B3A',art:'art/battle/bg-battle-x5-portrait.webp',mechanic:'Free the harbor from its grip',intro:'Every high five loosens a kraken tentacle.',phases:['Cut the Ropes','Free the Fleet','Last Tentacle']},
+ 11:{effect:'twin',accent:'#F49AE0',shadow:'#63335D',art:'art/battle/bg-battle-x11-portrait.webp',mechanic:'Strike the matching tower',intro:'Keep both twins in perfect balance.',phases:['Face the First Twin','Balance the Towers','Twin Echo']},
+  3:{effect:'jungle',accent:'#63DF91',shadow:'#19553C',art:'art/battle/bg-battle-x3-portrait.webp',mechanic:'Break the three vine shields',intro:'Swing through three layers of jungle defense.',phases:['Part the Vines','Break the Canopy','Triple Swing']},
+  4:{effect:'stone',accent:'#FFD66D',shadow:'#694817',art:'art/battle/bg-battle-x4-portrait.webp',mechanic:'Double-double armor break',intro:'Crack the golem’s armor one layer at a time.',phases:['Chip the Stone','Crack the Armor','Shatter the Core']},
+  9:{effect:'ninja',accent:'#FF8A82',shadow:'#6A222C',art:'art/battle/bg-battle-x9-portrait.webp',mechanic:'Expose the shadow decoys',intro:'Use the pattern to find the true ninja.',phases:['Read the Shadows','Clear the Decoys','Final Strike']},
+  6:{effect:'circuit',accent:'#FFE25D',shadow:'#5B4D0B',art:'art/battle/bg-battle-x6-portrait.webp',mechanic:'Complete all six circuits',intro:'Correct answers send power down the line.',phases:['Power the Grid','Close the Circuit','Maximum Charge']},
+ 12:{effect:'clock',accent:'#FFB36B',shadow:'#6B3C20',art:'art/battle/bg-battle-x12-portrait.webp',mechanic:'Complete the clock face',intro:'Race around twelve marks before time strikes.',phases:['Wind the Clock','Turn the Hands','Final Chime']},
+  8:{effect:'ice',accent:'#9BEAFF',shadow:'#24566A',art:'art/battle/bg-battle-x8-portrait.webp',mechanic:'Triple-double icebreaker',intro:'Break three frozen shields around the titan.',phases:['Crack the Ice','Break the Glacier','Shatter the Crown']},
+  7:{effect:'storm',accent:'#C0A9FF',shadow:'#3B2B70',art:'art/battle/bg-battle-x7-portrait.webp',mechanic:'Charge the lightning rods',intro:'Split the storm and turn its power around.',phases:['Climb the Gale','Charge the Sky','Call the Lightning']},
 };
 function bossBattleConfig(fam){
   const base=BOSS_BATTLE_CONFIGS[fam]||BOSS_BATTLE_CONFIGS[2];
   const mapIndex=Math.max(0,REALM_ORDER.indexOf(fam)),point=MAP_POSITIONS[mapIndex]||{x:50,y:50};
   return {...base,fam,name:bossName(fam),realm:REALMS[fam].name,mapX:point.x,mapY:point.y};
 }
-function createBossBattle(fam,total,needCorrect){
-  const config=bossBattleConfig(fam),maxHP=Math.max(1,needCorrect||total);
+function createBossBattle(fam,total,needCorrect,configOverride=null){
+  const config=configOverride||bossBattleConfig(fam),maxHP=Math.max(1,needCorrect||total);
   return {config,maxHP,hp:maxHP,position:0,phase:0,charge:0,lastAction:'intro'};
 }
 function battleProgress(battle=quiz&&quiz.battle){ return battle?1-(battle.hp/battle.maxHP):0; }
@@ -2202,10 +2251,11 @@ function renderBossBattle(){
   stage.style.setProperty('--battle-shadow',c.shadow);
   stage.style.setProperty('--battle-bg',`url('${c.art||'art/map/bg-adventure-map.png'}')`);
   stage.style.setProperty('--battle-bg-size',c.art?'cover':'132% auto');
-  stage.style.setProperty('--battle-bg-position',c.art?'center center':`${c.mapX}% ${c.mapY}%`);
+  stage.style.setProperty('--battle-bg-position',c.art?(c.bgPosition||'center top'):`${c.mapX}% ${c.mapY}%`);
   stage.style.setProperty('--boss-attack-art',c.attackArt?`url('${c.attackArt}')`:'var(--boss-art)');
-  $('battle-kicker').textContent=`×${c.fam} REALM SHOWDOWN · ${c.realm}`;
+  $('battle-kicker').textContent=c.kicker||`×${c.fam} REALM SHOWDOWN · ${c.realm}`;
   $('battle-name').textContent=c.name;
+  $('battle-health-title').textContent=c.healthLabel||'Guardian power';
   $('battle-mechanic-name').textContent=c.mechanic;
   $('battle-climber').innerHTML=`<img src="${profileAvatar()}" alt="${escapeHtml((profileById()&&profileById().name)||'Your climber')}">`;
   $('battle-boss').innerHTML=bossVisual(c.fam);
@@ -2285,6 +2335,27 @@ function startBoss(fam){
   // rule to understand: run out of hearts and the boss wins.
   startQuiz({mode:'boss',fams:[fam],queue:queue.sort(()=>Math.random()-.5),timed:true,hearts:heartCt(),needCorrect:queue.length-heartCt(),boss:bossEmoji(fam),battle:true,title:'Realm Showdown'});
   toast(`${bossName(fam)} guards the path. Win the showdown!`);
+}
+function startCampSiege(){
+  const fams=conqueredFamilies();
+  if(!fams.length){ toast('Conquer your first realm to unlock Camp Siege'); return; }
+  const attacker=fams[state.siegeWins%fams.length];
+  const total=Math.max(8,roundLen()),queue=[];
+  for(let i=0;i<total;i++){
+    const fam=fams[i%fams.length];
+    const pick=weightedFamilyFacts(fam,1)[0]||makeQ(fam,1+Math.floor(Math.random()*12));
+    queue.push(pick);
+  }
+  const config={
+    ...bossBattleConfig(attacker),effect:'siege',art:'art/battle/bg-battle-camp-siege-portrait.webp',
+    kicker:'BONUS ROUND · CAMP SIEGE',realm:'Base Camp',healthLabel:'Raider strength',
+    mechanic:'Hold the camp shield',intro:`${bossName(attacker)} is testing the camp defenses. Protect all three barricades!`,
+    phases:['Raise the Barricade','Hold the Campfire','Protect the Lodge']
+  };
+  lastConfig={fn:startCampSiege,args:[]};
+  activeRealm=null;
+  startQuiz({mode:'siege',fams,queue:queue.sort(()=>Math.random()-.5),timed:true,hearts:heartCt(),needCorrect:queue.length-heartCt(),boss:bossEmoji(attacker),battle:true,battleFam:attacker,battleConfig:config,title:'Camp Siege'});
+  toast(`${bossName(attacker)} is raiding Base Camp. Defend it!`);
 }
 function bossEmoji(fam){ return {0:'🌫️',1:'🪞',10:'🏗️',2:'🌊',5:'🦑',11:'🗼',3:'🦍',4:'🗿',9:'🥷',6:'⚙️',12:'🐲',8:'🧊',7:'⛈️'}[fam]||'👹'; }
 function bossName(fam){ return {0:'The Vanishing Fog',1:'The Mirror Spirit',10:'The Mega Machine',2:'The River Serpent',5:'The Harbor Kraken',11:'The Tower Twins',3:'The Jungle King',4:'The Stone Golem',9:'The Ninja Master',6:'The Circuit Breaker',12:'The Clock Dragon',8:'The Ice Titan',7:'The Storm Lord'}[fam]||'The Boss'; }
@@ -3179,6 +3250,7 @@ function renderCamp(preserveCamera=true){
         <button class="${campPanel==='treasures'?'on':''}" onclick="setCampPanel('treasures')" aria-pressed="${campPanel==='treasures'}" ${heldPiece?'disabled':''}>${icon('treasure')}<span>Treasures</span></button>
         <button class="${campPanel==='avatar'?'on':''}" onclick="setCampPanel('avatar')" aria-pressed="${campPanel==='avatar'}" ${heldPiece?'disabled':''}>${icon('climber')}<span>Climber</span></button>
         <button class="${campPanel==='scenery'?'on':''}" onclick="setCampPanel('scenery')" aria-pressed="${campPanel==='scenery'}" ${heldPiece?'disabled':''}>${icon('scenery')}<span>Scenery</span></button>
+        <button onclick="startCampSiege()" aria-label="Camp Siege bonus round${state.siegeWins?`, ${state.siegeWins} wins`:''}" title="${conquestCount()?'Replay a mixed-fact camp defense':'Conquer one realm to unlock'}" ${heldPiece||!conquestCount()?'disabled':''}>${icon('boss')}<span>Siege${state.siegeWins?` · ${state.siegeWins}`:''}</span></button>
       </nav>
     </div>`;
   $('camp-scene').addEventListener('click', campTap);
