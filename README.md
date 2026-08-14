@@ -53,8 +53,9 @@ const CACHE = 'times-quest-v2';   // → 'times-quest-v3'
 That single line is what triggers installed devices to fetch the new files.
 Forgetting it is the most common reason a deploy appears to do nothing.
 
-If you add a new file to the app shell, also add it to the `SHELL` array in
-`sw.js` so it's available offline.
+If a new file is required for the first offline screen, add it to `CORE` in
+`sw.js`. Add other artwork to `OPTIONAL`; optional files cache best-effort during
+installation and fill in from the network when first visited.
 
 ## Where progress is saved
 
@@ -62,8 +63,9 @@ Progress lives in the device's `localStorage`. It survives closing the app and
 going offline, but it is per-device and per-browser — a different tablet starts
 fresh. Clearing site data erases progress. The Parents tab has a manual reset.
 
-Because progress is keyed by name in `localStorage`, renaming those keys in a
-future version will orphan existing saved progress.
+Each child has a stable profile ID and a separate `localStorage` save. The app
+can rebuild a damaged profile index from those save slots, but clearing site
+data still erases all local progress, so use the Parents-tab backup for safety.
 
 ## Installing on a device
 

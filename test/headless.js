@@ -37,11 +37,12 @@ function legacySave() {
   };
 }
 
-async function boot(saveObj) {
+async function boot(saveObj, seededStorage={}) {
   const dom = new JSDOM(fs.readFileSync(HTML,'utf8'), {
     runScripts:'dangerously', pretendToBeVisual:true, url:'https://example.test/',
     beforeParse(win){
-      win.localStorage.setItem('timesquest-save', JSON.stringify(saveObj));
+      if(saveObj!==undefined) win.localStorage.setItem('timesquest-save', JSON.stringify(saveObj));
+      Object.entries(seededStorage).forEach(([key,value])=>win.localStorage.setItem(key,typeof value==='string'?value:JSON.stringify(value)));
       win.HTMLElement.prototype.scrollIntoView = () => {};
       win.confirm = () => true;
       win.alert = () => {};
@@ -136,6 +137,7 @@ async function boot(saveObj) {
   const pev = expr => profiles.win.eval(expr);
   ok('legacy progress migrates into the first profile without resetting',
      pev("profileBook.profiles.length===1 && profileById().name==='Climber' && state.gems===137"));
+  const migratedProfileId=pev('activeProfileId');
   profiles.win.renderProfileGate('create');
   ok('profile creator offers nineteen inclusive explorer choices',
      profiles.win.document.querySelectorAll('.avatar-pick button').length===19 && pev('PROFILE_AVATARS.length')===19);
@@ -143,7 +145,7 @@ async function boot(saveObj) {
   profiles.$('profile-name').value='Jordan';
   await profiles.win.createProfile();
   pev('state.gems=77'); profiles.win.saveState(); await new Promise(r=>setTimeout(r,500));
-  await profiles.win.switchProfile('legacy');
+  await profiles.win.switchProfile(migratedProfileId);
   ok('switching children restores the original progress', pev('state.gems')===137);
   await profiles.win.switchProfile(pev("profileBook.profiles.find(p=>p.name==='Jordan').id"));
   ok('switching back restores the second child progress', pev('state.gems')===77);
@@ -158,6 +160,48 @@ async function boot(saveObj) {
      pev('allConquered() && state.summitDone===true && mapStarCount()===39 && state.gems===99999'));
   ok('secret Summit Tester profile exposes every camp blueprint and repeatable inventory',
      pev('CAMP_BUILD_PIECES.every(p=>pieceUnlocked(p))') && pev("state.bought['ground-stone-path']===40"));
+
+  section('Profile recovery and compact metadata');
+  const alice=legacySave(),bruno=legacySave(); alice.gems=111;bruno.gems=222;
+  alice.realms[2].conquered=true; bruno.realms[5].conquered=true;
+  const recovered=await boot(undefined,{
+    'timesquest-profiles':'{oops not json',
+    'timesquest-save-pa':alice,
+    'timesquest-save-pb':bruno,
+  });
+  const rpev=expr=>recovered.win.eval(expr);
+  ok('a corrupted profile book recovers every intact child save',
+     rpev('profileBook.profiles.length')===2 && rpev("profileBook.profiles.every(p=>p.name.startsWith('Recovered Climber'))"));
+  await recovered.win.switchProfile('pa'); const aliceGems=rpev('state.gems');
+  await recovered.win.switchProfile('pb'); const brunoGems=rpev('state.gems');
+  ok('recovered children retain separate balances and realm progress',
+     aliceGems===111 && brunoGems===222 && rpev('state.realms[5].conquered===true'));
+  const reachable=rpev("profileBook.profiles.every(p=>!!localStorage.getItem(profileSaveKey(p.id)))");
+  ok('no recovered profile save is unreachable from the rebuilt book',reachable);
+  const missingBook=await boot(undefined,{'timesquest-save-pc':alice,'timesquest-save-pd':bruno});
+  ok('a missing profile book also recovers all profile save slots',missingBook.win.eval('profileBook.profiles.length')===2);
+  const compactSeed={};
+  for(let i=0;i<4;i++){ const save=legacySave();save.gems=300+i;compactSeed[`timesquest-save-p${i}`]=save; }
+  const compact=await boot(undefined,compactSeed);
+  ok('four-profile metadata stays compact without embedded state snapshots',
+     compact.win.localStorage.getItem('timesquest-profiles').length<1024 && compact.win.eval('profileBook.profiles.every(p=>p.snapshot===undefined)'));
+  const compactGems=[];
+  for(let i=0;i<4;i++){ await compact.win.switchProfile(`p${i}`);compactGems.push(compact.win.eval('state.gems')); }
+  ok('compact profile metadata still switches among exact authoritative saves',JSON.stringify(compactGems)===JSON.stringify([300,301,302,303]));
+
+  section('Camp migration returns pieces that cannot fit');
+  const crowded=legacySave();
+  crowded.v=4; crowded.climberIntroduced=true; crowded.placed=[]; crowded.bought={'shelter-5':40};
+  for(let i=0;i<40;i++) crowded.placed.push({t:'shelter-5',x:i%12,y:Math.floor(i/12),k:false});
+  const crowdedBoot=await boot(crowded);
+  const cev=expr=>crowdedBoot.win.eval(expr);
+  ok('dense migrated camps account for every placed or returned piece',
+     cev('state.placed.length+state.campReturned.length')===40 && cev('state.campReturned.length')>0);
+  ok('returned camp pieces remain owned and available to place again',
+     cev("state.bought['shelter-5']")>=40 && cev("pieceFree('shelter-5')")===cev('state.campReturned.length'));
+  crowdedBoot.win.enterCamp();
+  ok('the camp explains exactly how many pieces were returned',
+     crowdedBoot.$('camp-body').textContent.includes(`${cev('state.campReturned.length')} pieces were returned to your backpack`));
 
   section('Camp v1.1 catalogue and first-visit setup');
   ok('catalogue has 41 buyable build entries', fev('CAMP_BUILD_PIECES.length') === 41);
@@ -341,6 +385,18 @@ async function boot(saveObj) {
        const info=avatarPngInfo(name); return info.w===size[0] && info.h===size[1] && info.colorType===6;
      }));
   const swSource=fs.readFileSync(require('path').join(PUBLIC,'sw.js'),'utf8');
+  const coreMatch=swSource.match(/const CORE = \[([\s\S]*?)\];/);
+  const corePaths=coreMatch?[...coreMatch[1].matchAll(/'([^']+)'/g)].map(m=>m[1]):[];
+  const coreBytes=corePaths.reduce((sum,entry)=>{
+    const relative=entry==='./'?'index.html':entry.replace(/^\.\//,'');
+    const file=require('path').join(PUBLIC,relative);
+    return sum+(fs.existsSync(file)?fs.statSync(file).size:0);
+  },0);
+  ok('offline core lists only real files and stays under 6 MB',
+     corePaths.length>0 && corePaths.every(entry=>fs.existsSync(require('path').join(PUBLIC,entry==='./'?'index.html':entry.replace(/^\.\//,'')))) && coreBytes<6*1024*1024,
+     `${coreBytes} bytes across ${corePaths.length} entries`);
+  ok('optional art failures cannot cancel service-worker installation',
+     swSource.includes('Promise.allSettled(OPTIONAL.map'));
   ok('offline shell pre-caches every Batch 1 asset', Object.keys(batch1).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('offline shell pre-caches every Batch 2 asset', Object.keys(batch2).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('offline shell pre-caches every Batch 3 asset', Object.keys(batch3).every(n=>swSource.includes(`./art/camp/${n}`)));
@@ -354,6 +410,7 @@ async function boot(saveObj) {
   ok('offline shell pre-caches every selectable camp background', Object.keys(campBackgrounds).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('retired hats are not loaded into the live offline shell', !swSource.includes('./art/hat/') && !swSource.includes('./art/archive/hat-upgrades/'));
   ok('runtime cache never stores missing future-batch art', swSource.includes('if (res.ok)'));
+  ok('offline misses return a valid error response',swSource.includes('Response.error()'));
   ok('offline shell pre-caches the scrolling adventure map', swSource.includes('./art/map/bg-adventure-map.png'));
   fresh.win.showScreen('screen-camp');
   ok('camp opens as a scene-first experience with collapsed menus',
@@ -404,6 +461,11 @@ async function boot(saveObj) {
      win.document.querySelectorAll('#map-trail .realm-node').length === 13 && !!win.document.querySelector('#map-trail .summit-node'));
   ok('adventure route has one curved segment between every destination',
      win.document.querySelectorAll('#map-trail .map-route-segment').length === 13);
+  ok('map artwork, route, and destinations share one responsive coordinate world',
+     !!win.document.querySelector('#map-trail .map-world>.map-art') &&
+     !!win.document.querySelector('#map-trail .map-world>.map-route') &&
+     win.document.querySelectorAll('#map-trail .map-world>.realm-node').length===13 &&
+     ev("mapRouteSvg(0).includes('viewBox=\"0 0 864 1821\"')"));
   const landmarkStops = ev('MAP_POSITIONS').slice(5,10);
   ok('middle adventure realms align with their illustrated landmarks',
      JSON.stringify(landmarkStops) === JSON.stringify([
@@ -431,7 +493,11 @@ async function boot(saveObj) {
   ok('guardian Quest Card opens with lore, ability, and live stats',
      $('card-modal').classList.contains('on') && $('card-modal-body').textContent.includes('River Double') &&
      $('card-modal-body').textContent.includes('Map stars') && $('card-modal-body').textContent.includes('Caught'));
+  ok('Quest Card modal exposes accessible dialog semantics',
+     $('card-modal').getAttribute('role')==='dialog' && $('card-modal').getAttribute('aria-modal')==='true');
   win.closeQuestCard();
+  ok('viewport permits child and parent accessibility zoom',
+     !win.document.querySelector('meta[name="viewport"]').content.includes('user-scalable=no'));
 
   section('Training and collectible field guide');
   win.showScreen('screen-hall');
@@ -933,7 +999,8 @@ async function boot(saveObj) {
   win.toggleSetting('calm');
   win.saveState();
   await new Promise(r => setTimeout(r, 600));
-  const savedPrefs = JSON.parse(win.localStorage.getItem('timesquest-save')).settings;
+  const activeSaveKey=ev('profileSaveKey(activeProfileId)');
+  const savedPrefs = JSON.parse(win.localStorage.getItem(activeSaveKey)).settings;
   ok('window persisted', savedPrefs.window === 6000);
   ok('round length persisted', savedPrefs.roundLen === 16);
   ok('hearts persisted', savedPrefs.hearts === 5);
@@ -963,11 +1030,13 @@ async function boot(saveObj) {
   section('Persistence');
   win.saveState();
   await new Promise(r => setTimeout(r, 600));
-  const raw = win.localStorage.getItem('timesquest-save');
-  ok('save written to the original key', !!raw);
+  const raw = win.localStorage.getItem(ev('profileSaveKey(activeProfileId)'));
+  ok('save written to the active child profile key', !!raw);
   const reparsed = JSON.parse(raw);
   ok('placed persisted', Array.isArray(reparsed.placed));
   ok('legacy fields still present', reparsed.owned && reparsed.equipped && reparsed.facts && reparsed.realms);
+  ok('profile saves no longer overwrite the ambiguous legacy mirror',
+     JSON.parse(win.localStorage.getItem('timesquest-save')).gems===137);
 
   console.log(`\n${'='.repeat(46)}\n  ${pass} passed, ${fail} failed\n${'='.repeat(46)}`);
   process.exit(fail ? 1 : 0);

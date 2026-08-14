@@ -281,4 +281,4 @@ direction. Every reward here traces back to a correct answer.
 - [ ] Load an existing save — progress, gems, camp, monsters all intact
 - [ ] Load with `localStorage` cleared — `defaultState()` path still works
 - [ ] Test on the actual iPad, portrait, installed to home screen, airplane mode
-- [ ] Any new file added to the `SHELL` array in `sw.js`
+- [ ] Any new file added to `CORE` or `OPTIONAL` in `sw.js`
