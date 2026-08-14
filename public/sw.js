@@ -1,5 +1,5 @@
 /* Times Quest service worker — offline-first app shell */
-const CACHE = 'times-quest-v30';
+const CACHE = 'times-quest-v35';
 const CORE = [
   './',
   './index.html',
@@ -60,6 +60,7 @@ const OPTIONAL = [
   './art/boss/boss-0.png',
   './art/boss/boss-1.png',
   './art/boss/boss-2.png',
+  './art/boss/boss-2-attack.webp',
   './art/boss/boss-3.png',
   './art/boss/boss-4.png',
   './art/boss/boss-5.png',
@@ -70,6 +71,7 @@ const OPTIONAL = [
   './art/boss/boss-10.png',
   './art/boss/boss-11.png',
   './art/boss/boss-12.png',
+  './art/battle/bg-battle-x2.webp',
   './art/camp/bg-camp-dusk.png',
   './art/camp/bg-camp-morning.png',
   './art/camp/bg-camp-autumn.png',
