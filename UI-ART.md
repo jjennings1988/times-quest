@@ -14,7 +14,7 @@ climber, and the interface icons.
 | Climber | Complete — transparent 3-frame 768×256 strip |
 | 6 hats | Complete — transparent 256×256 PNGs, layered on the climber |
 | 3 shop buddies | Complete — transparent 256×256 PNGs |
-| 40 fact monsters | Deferred for the dedicated collectible-monster pass |
+| 40 fact monsters | Complete — named transparent 256×256 PNGs, high-resolution masters archived |
 | Tier B interface icons | Still emoji; planned as inline SVG rather than PNG |
 
 **Inventory: 137 distinct emoji, 223 uses.** They do not all want the same
@@ -348,6 +348,14 @@ THE IMP (fallback)       a wiry purple imp with short horns, arms folded,
 ---
 
 ## 6. The 40 fact-monsters
+
+> **Production update — August 18, 2026:** all 40 identities have shipped in
+> locked order at `public/art/mon/mon-01.png` through `mon-40.png`; full-resolution
+> sources are preserved under `art-raw/mon/`. They were produced as individual
+> transparent cutouts for stronger silhouette and edge control. The Field Guide
+> now renders them at 58px, and the same stable identity follows a fact into its
+> Quest Card and optional Base Camp resident slot. The sheet workflow below is
+> retained as the original art direction and index contract.
 
 **This is the highest-value art in the game.** It's the collection — 91 facts
 mapping into 40 creatures, the thing he'll page through and want to complete.

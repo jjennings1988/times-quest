@@ -1,10 +1,231 @@
-# Times Quest — Upgrade Roadmap
+# Times Quest — Product Roadmap
 
-Six releases over about a month. Ordered so every release ships on its own, and
-each one either fixes something the app currently gets wrong or unlocks the next.
+> **Active roadmap updated August 18, 2026.** Times Quest has now grown well
+> beyond the original six-release plan. The current product assessment and next
+> five releases below are the active sequence. The original plan remains later in
+> this document as useful design history.
 
-`BUILD-PLAN.md` holds the deep implementation spec for releases 3–6.
-This file is the sequence, the reasoning, and the decision gates.
+## Where the app is now
+
+Times Quest is a substantial local-first multiplication PWA, not an early
+prototype. Its strongest quality is that learning, progression, collecting, and
+camp building all use one shared fact-mastery system instead of separate reward
+games.
+
+| Product area | Current state |
+|---|---|
+| Learning | 13 fact families; Learn, Practice, Mastery Trial, Weak Facts, Mixed Mayhem, Division, custom quizzes; adaptive weighting; worked strategy hints; immediate retry; missed-fact end review |
+| Adventure | Large illustrated scrolling map; 13 realms; guardian lore/cards; three-star mastery path; Mount Twelve finale |
+| Boss play | 13 guardian configurations and portrait battlefields; phased cinematic battle UI; replayable Camp Siege bonus round |
+| Camp | Immersive panoramic 24 × 8 perspective world; four environments; camera persistence; multi-cell footprints; upgrades; motion; undo; bottom-sheet tools; calibrated object scaling |
+| Identity | Separate local child profiles; 19 inclusive climbers; selected climber appears throughout the game; isolated Summit Tester QA profile |
+| Collection | 40 named painted Fact Monsters; art-backed field guide/cards; caught favorites can be invited into six anchored Base Camp resident slots |
+| Parent tools | Per-fact mastery heatmap, slow/weak fact summaries, controls, separate-profile saves, manual backup/restore with a visible last-export reminder |
+| Platform | Installable offline PWA on Netlify; service-worker cache migrations; responsive iPhone/iPad layouts; new creature art included in the offline manifest |
+| Engineering | Static single-page application plus a declared, locked `jsdom` regression dependency; one-command local QA and GitHub Actions on branches/pull requests |
+
+## Product judgment
+
+The app does **not** need more realms, currencies, menus, or unrelated mini-games
+right now. Its path to a superior product is to make the existing loop more
+cohesive, more educationally trustworthy, more delightful, and much harder to
+break.
+
+The differentiating loop should be:
+
+```text
+retrieve a fact → receive useful coaching → master its creature
+→ see that creature inhabit the camp → return later for spaced review
+```
+
+The app already owns the first half of that loop. The next releases finish the
+second half and prepare it for use beyond one device and one family.
+
+---
+
+## Active next roadmap
+
+### Release 9 — Beta hardening and evidence
+
+**Goal:** make the current feature set dependable enough that playtest findings
+describe the product, not incidental bugs.
+
+**Implemented in the current beta branch:** reproducible `pnpm test`, locked
+development dependency, GitHub CI, visible build/schema label, last-backup
+timestamp, expanded progression/art/offline regression coverage, and the
+`BETA-QA.md` real-device plus five-session evidence checklist. Still required
+before the release exit gate: module extraction, measured load optimization,
+and completion of the physical-device/offline/update evidence matrix.
+
+- Make the regression suite runnable from a clean checkout with documented
+  development-only dependencies and one command. Add GitHub CI for every branch
+  and pull request; keep production dependency-free.
+- Break the monolithic file into clearly owned static modules (state/migrations,
+  learning engine, adventure, camp, profiles/parent tools, and presentation)
+  without adding a production build step.
+- Add migration fixtures for old profiles and camps, plus end-to-end coverage for
+  a first-time child, a returning child, a full Mastery Trial, every boss launch,
+  Camp Siege, backup/restore, offline reload, and app update.
+- Run a real-device matrix at 390 × 844, 430 × 932, 768 × 1024, and 1024 × 768;
+  include installed iPhone/iPad PWA, browser mode, rotation recovery, airplane
+  mode, and a service-worker update from the previous cache.
+- Measure and reduce first-load cost. Keep a small app shell immediately offline,
+  then cache realm/camp art predictably instead of making first installation
+  depend on downloading every runtime asset at once.
+- Add a visible version/build label and a parent-facing backup reminder before
+  migrations or large releases.
+- Observe at least five real sessions. Record first-try accuracy, response time,
+  repeat-review count, where navigation stalls, accidental taps, voluntary camp
+  visits, and what the child chooses without prompting. Keep this local/manual;
+  do not add child analytics yet.
+
+**Exit gate:** no data loss, no blocking console errors, no clipped core controls,
+all automated checks green, offline launch and update verified, and five sessions
+produce actionable learning/usability notes.
+
+### Release 10 — Fact Monsters become the signature collection
+
+**Goal:** finish the largest remaining visual inconsistency and connect mastery
+to the camp world.
+
+**Implemented in the current beta branch:** all 40 locked identities now have
+named 256×256 transparent production PNGs and archived high-resolution masters;
+the Field Guide, detail cards, filters, and undiscovered silhouettes use the new
+art. Up to six caught favorites can be invited to anchored, gently animated camp
+slots. Still required before the release exit gate: child observation, a gentle
+due-review state, and the last utility/reward glyph cleanup.
+
+- Produce the 40 final transparent Fact Monster assets in the locked `MON_POOL`
+  order. Never reorder that array; its indices are persistent creature identity.
+- Enlarge field-guide creatures to card-readable size and finish caught, shiny,
+  sleepy, wild, and undiscovered presentation using the existing one-asset-plus-
+  CSS-state model.
+- Let the child choose a small group of favorite caught monsters to inhabit camp.
+  Give them anchored idle motion and tappable Quest Cards; do not let them wander
+  far enough to look detached from the ground plane.
+- Turn due/weak facts into a gentle “wants training” state. Never remove a caught
+  monster or lower mastery as punishment.
+- Finish the remaining utility/reward glyphs with the existing inline-SVG system
+  so emoji remain personality/fallback content rather than the interface style.
+
+**Exit gate:** every collectible has approved art, a mastered creature visibly
+connects field guide to camp, and the child voluntarily opens at least one
+monster card or training prompt during observation.
+
+### Release 11 — Retention engine v2
+
+**Goal:** prove facts remain retrievable across days, not merely within one
+session.
+
+- Add a due-review scheduler using last-seen date, first-try accuracy, retrieval
+  speed, and recent misses. Space reviews across days and interleave old facts
+  with the active realm.
+- Keep the new end-of-round miss queue for same-session correction; use the due
+  queue for long-term retention. These solve different problems.
+- Add visual worked examples for the strategies that benefit from them: arrays,
+  equal groups, number lines, doubling, and ten-minus-one. Preserve the concise
+  computed text explanation alongside them.
+- Require evidence on more than one day before the highest mastery state. Never
+  erase an earned collectible; show “ready to polish” or “needs a quick review”
+  rather than taking status away.
+- Upgrade the Parent view with retention trends: newly secure facts, due facts,
+  first-try accuracy, median response time, and strategy/review history. Avoid a
+  single reductive child score.
+
+**Exit gate:** a fact mastered on day one is intentionally sampled again on later
+days, parent summaries explain why it was selected, and the child can recover a
+miss using the supplied strategy rather than guessing repeatedly.
+
+### Release 12 — Sensory polish, accessibility, and PWA finish
+
+**Goal:** make the app feel authored and calm at every touchpoint.
+
+- Add restrained realm and camp ambience, battle cues, and music only where it
+  helps pacing. Keep reward sounds, interface clicks, music, and ambience as
+  separate parent controls; all gameplay remains understandable muted.
+- Complete animation anchoring and atmosphere passes, including reduced-motion
+  behavior, contrast checks, focus visibility, keyboard navigation, screen-reader
+  names, and no focus hidden behind bottom sheets.
+- Audit to WCAG 2.2 AA. Keep the app's child-friendly 44 × 44 CSS-pixel target
+  standard even where the formal minimum permits smaller controls.
+- Finish install/update UX: richer manifest metadata and screenshots, an “update
+  ready” prompt, predictable offline fallbacks, and a parent-visible way to
+  refresh without risking progress.
+- Run Lighthouse/Core Web Vitals and profile actual Safari panning, battle
+  animation, memory use, and cold launch—not only desktop emulation.
+
+**Exit gate:** the whole app is usable muted, with reduced motion, by keyboard,
+at 200% zoom, and offline; no primary interaction depends on emoji meaning,
+animation, color alone, or precise dragging.
+
+### Release 13 — Family-ready accounts and optional sync
+
+**Decision gate:** build this only after the local beta is being used on multiple
+devices or by multiple families. A backend is valuable for recovery and sync,
+not as a prerequisite for the game.
+
+- Make the account parent-owned. Child profiles should need only a nickname and
+  chosen avatar; do not ask children for email, age, photo, voice, location, or
+  other unnecessary personal information.
+- Add opt-in encrypted cloud backup/sync while preserving offline play. Define
+  conflict behavior before implementation; a newer device must never silently
+  erase a more advanced camp or mastery record.
+- Provide parent access, export, deletion, consent, and privacy controls before
+  collecting any online child data. No behavioral ads, social feed, public child
+  profiles, or child-targeted push notifications.
+- If anonymous product telemetry is needed, design the event/data-retention plan
+  first and gate it through the parent experience. Prefer aggregate operational
+  metrics over per-child behavior histories.
+- Pilot account recovery and two-device sync with a few consenting families
+  before any broad launch.
+
+**Exit gate:** documented privacy/data map, reviewed parental-consent flow where
+required, tested export/deletion/recovery, deterministic sync conflicts, and no
+loss of local/offline access when the network or backend is unavailable.
+
+---
+
+## Immediate next build slice
+
+1. Run the new automated suite and repair every regression from the progression
+   and collection integration.
+2. Complete the `BETA-QA.md` iPhone/iPad/offline/update matrix and fix only issues
+   found in that evidence pass.
+3. Observe five child sessions, especially whether the new 1★ / 2★ / 3★ ladder
+   and the next action are understood without adult coaching.
+4. Measure cold-load and installed-update behavior, then reduce service-worker
+   install cost without weakening predictable offline play.
+5. Extract the monolithic app into owned static modules before beginning the
+   due-review/retention scheduler.
+
+## Deliberately not next
+
+- More realms or another currency.
+- A second combat system or unrelated mini-game.
+- Competitive leaderboards, chat, social profiles, or ads.
+- Cloud accounts before the local beta proves a real multi-device need.
+- More collectible art before the completed 40-creature set is tested with a child.
+
+## Decision anchors
+
+- Retrieval practice and spacing remain the learning foundation; the U.S.
+  Department of Education practice guide recommends spacing learning over time
+  and active-retrieval quizzing.
+- The PWA should start fast, remain fast, and provide a complete offline
+  experience, following the current web.dev PWA checklist.
+- Accessibility targets WCAG 2.2 AA, including target sizing, alternatives to
+  dragging, and focus that is not obscured.
+- Remaining local-only avoids online child-data collection. Any future backend
+  must be designed around the current COPPA rule, data minimization, parent
+  notice/consent, access, and deletion—not retrofitted afterward.
+
+---
+
+## Original six-release plan — retained for history
+
+`BUILD-PLAN.md` holds the original deep implementation spec for releases 3–6.
+It remains useful for why earlier decisions were made, but it is no longer the
+active delivery queue.
 
 ---
 

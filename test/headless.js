@@ -7,6 +7,7 @@ const { JSDOM } = require('jsdom');
 
 const HTML = require('path').join(__dirname,'..','public','index.html');
 const PUBLIC = require('path').join(__dirname,'..','public');
+const ROOT = require('path').join(__dirname,'..');
 let pass = 0, fail = 0;
 const ok = (name, cond, extra='') => {
   if (cond) { pass++; console.log(`  ok   ${name}`); }
@@ -75,7 +76,7 @@ async function boot(saveObj, seededStorage={}) {
   ok('every fact record preserved',
      Object.keys(before.facts).every(k =>
        S().facts[k] && S().facts[k].c === before.facts[k].c && S().facts[k].rating === before.facts[k].rating));
-  ok('schema version stamped', S().v === 5);
+  ok('schema version stamped', S().v === 6);
   ok('existing stars are marked claimed without changing the saved gem balance',
      ev('REALM_ORDER').every(f=>S().realmRewardStars[f]===ev(`realmStars(${f}).stars`)) && S().gems===137,
      JSON.stringify(S().realmRewardStars));
@@ -214,8 +215,18 @@ async function boot(saveObj, seededStorage={}) {
      fev('Object.values(REALM_GEM_REWARDS).flat().reduce((sum,n)=>sum+n,0)') === 2639);
   ok('the final lodge requires every realm to reach three stars',
      fev("pieceById('shelter-5').unlockAfterStars") === 39);
+  const progressBefore=fev('JSON.stringify(state)');
+  fev("state.realms[2]={trial:false,conquered:false}; for(let b=0;b<=12;b++) fact(2,b).rating=b<10?4:0");
+  ok('catching ten unlocks the Trial but does not award a star', fev('realmProgress(2).stars')===0 && fev('realmProgress(2).trialReady'));
+  fev('state.realms[2].trial=true');
+  ok('passing the Mastery Trial awards star one', fev('realmProgress(2).stars')===1);
+  fev('state.realms[2].conquered=true');
+  ok('defeating the guardian awards star two', fev('realmProgress(2).stars')===2);
+  fev('for(let b=0;b<=12;b++) fact(2,b).rating=4');
+  ok('catching all thirteen after victory awards star three', fev('realmProgress(2).stars')===3);
+  fev(`state=${progressBefore}`);
   const economyBefore=fev('JSON.stringify(state)');
-  fev("state.realms[0].conquered=true; for(let b=0;b<=12;b++) fact(0,b).rating=4");
+  fev("state.realms[0].trial=true; state.realms[0].conquered=true; for(let b=0;b<=12;b++) fact(0,b).rating=4");
   const firstStarClaim=fev('claimRealmStarRewards(0)');
   const repeatedStarClaim=fev('claimRealmStarRewards(0)');
   ok('a three-star realm pays its three incremental rewards once',
@@ -280,6 +291,7 @@ async function boot(saveObj, seededStorage={}) {
     'bg-camp-dusk.png':[1180,640], 'bg-camp-morning.png':[1180,640],
     'bg-camp-autumn.png':[1180,640], 'bg-camp-moonlit.png':[1180,640],
   };
+  const factMonsters=Object.fromEntries(Array.from({length:40},(_,i)=>[`mon-${String(i+1).padStart(2,'0')}.png`,[256,256]]));
   const pngInfo=name=>{
     const buf=fs.readFileSync(require('path').join(PUBLIC,'art','camp',name));
     return {w:buf.readUInt32BE(16),h:buf.readUInt32BE(20),colorType:buf[25]};
@@ -354,6 +366,19 @@ async function boot(saveObj, seededStorage={}) {
   })();
   ok('climber is a transparent three-frame 768×256 sprite strip',
      climberInfo.w===768 && climberInfo.h===256 && climberInfo.colorType===6);
+  const animatedCampPieces=fev("CAMP_BUILD_PIECES.filter(p=>p.motion).map(p=>[p.id,p.motion])");
+  ok('only true frame strips animate in the camp catalogue',
+     animatedCampPieces.every(([,motion])=>motion==='sprite3') && animatedCampPieces.length===9,
+     JSON.stringify(animatedCampPieces));
+  ok('static structures never rotate, skew, or stretch as a whole',
+     !['sway','swing','breathe'].some(motion=>fev(`CAMP_BUILD_PIECES.some(p=>p.motion==='${motion}')`)));
+  const anchorTool=fs.readFileSync(require('path').join(ROOT,'tools','lock_camp_animation_anchors.py'),'utf8');
+  const lockedAnimationAssets=[...Object.keys(batch1),...Object.keys(batch2),...Object.keys(batch3),...Object.keys(batch4)]
+    .filter(name=>name.includes('-strip3'));
+  ok('the reproducible anchor-lock tool covers every animated camp strip plus the climber',
+     lockedAnimationAssets.every(name=>anchorTool.includes(name)) && anchorTool.includes('art/climber.png'));
+  ok('immutable source frames are preserved for every corrected animation',
+     [...lockedAnimationAssets,'climber.png'].every(name=>fs.existsSync(require('path').join(ROOT,'art-raw','camp-animation-originals',name))));
   const avatarPngInfo=name=>{
     const buf=fs.readFileSync(require('path').join(PUBLIC,'art',name));
     return {w:buf.readUInt32BE(16),h:buf.readUInt32BE(20),colorType:buf[25]};
@@ -377,6 +402,12 @@ async function boot(saveObj, seededStorage={}) {
        const p=require('path').join(PUBLIC,'art','camp',name);
        if(!fs.existsSync(p)) return false;
        const info=pngInfo(name); return info.w===size[0] && info.h===size[1];
+     }));
+  ok('all forty Fact Monsters exist as optimized transparent 256×256 PNGs',
+     Object.entries(factMonsters).every(([name,size])=>{
+       const p=require('path').join(PUBLIC,'art','mon',name);
+       if(!fs.existsSync(p)) return false;
+       const info=avatarPngInfo(`mon/${name}`); return info.w===size[0] && info.h===size[1] && info.colorType===6;
      }));
   ok('retired hat art is preserved in the archive',
      Object.entries(archivedHats).every(([name,size])=>{
@@ -408,6 +439,7 @@ async function boot(saveObj, seededStorage={}) {
   ok('offline shell pre-caches all avatar gear', Object.keys(avatarGear).every(n=>swSource.includes(`./art/${n}`)));
   ok('offline shell pre-caches all nineteen profile explorers', Object.keys(profileAvatars).every(n=>swSource.includes(`./art/${n}`)));
   ok('offline shell pre-caches every selectable camp background', Object.keys(campBackgrounds).every(n=>swSource.includes(`./art/camp/${n}`)));
+  ok('offline shell pre-caches all forty Fact Monsters', Object.keys(factMonsters).every(n=>swSource.includes(`./art/mon/${n}`)));
   ok('retired hats are not loaded into the live offline shell', !swSource.includes('./art/hat/') && !swSource.includes('./art/archive/hat-upgrades/'));
   ok('runtime cache never stores missing future-batch art', swSource.includes('if (res.ok)'));
   ok('offline misses return a valid error response',swSource.includes('Response.error()'));
@@ -415,8 +447,8 @@ async function boot(saveObj, seededStorage={}) {
   fresh.win.showScreen('screen-camp');
   ok('camp opens as a scene-first experience with collapsed menus',
      !!fresh.$('camp-experience') && !fresh.win.document.querySelector('.camp-sheet'));
-  ok('camp dock exposes five focused decorating tools',
-     fresh.win.document.querySelectorAll('.camp-dock button').length === 5);
+  ok('camp dock exposes six focused tools including Siege',
+     fresh.win.document.querySelectorAll('.camp-dock button').length === 6 && fresh.$('camp-body').textContent.includes('Siege'));
   ok('scene-first camp uses a 24 × 8 placement plane', fev('CAMP_COLS')===24 && fev('CAMP_ROWS')===8);
   fresh.win.setCampPanel('build');
   ok('build catalog opens as a collapsible sheet',
@@ -482,6 +514,13 @@ async function boot(saveObj, seededStorage={}) {
   win.openRealm(2);
   ok('realm opens', $('realm-title-top').textContent === 'Double River');
   ok('boss card locked before trial', $('realm-body').innerHTML.includes('Pass the Trial first'));
+  ok('realm progress explains all three star goals and the current catch gate',
+     ['Pass the Mastery Trial','Defeat the realm guardian','Catch all 13','Catch 10 to unlock the Trial'].every(text=>$('realm-body').textContent.includes(text)),
+     $('realm-body').textContent);
+  ok('realm progress exposes three visible milestone steps and an x/3 total',
+     win.document.querySelectorAll('#realm-body .realm-star-step').length===3 && $('realm-body').textContent.includes('/3'));
+  win.startTrial(2);
+  ok('Mastery Trial cannot be bypassed before ten monsters are caught', ev('quiz')===null);
   ok('all 13 guardians have introductions and signature abilities',
      ev('REALM_ORDER.every(f => REALM_LORE[f] && REALM_LORE[f].intro && REALM_LORE[f].ability && REALM_LORE[f].example)'));
   ok('realm introduces its guardian before the activity choices',
@@ -510,11 +549,19 @@ async function boot(saveObj, seededStorage={}) {
      win.document.querySelectorAll('#monster-grid .monster-realm-section').length === ev('unlockedFamilies().length'));
   ok('each unlocked realm exposes all 13 collectible fact cards',
      Array.from(win.document.querySelectorAll('#monster-grid .monster-realm-section .monster-grid')).every(g => g.querySelectorAll('.monster-cell').length === 13));
+  ok('zero-based monster identities map to one-based art filenames without drift',
+     ev("monsterIdentity(0,1).name==='Bramble Hedgehog' && monsterIdentity(0,1).art.endsWith('mon-02.png')"));
   const firstMonsterCard = win.document.querySelector('#monster-grid .monster-cell');
   firstMonsterCard.click();
   ok('fact monster card opens with fact, strategy, and performance stats',
      $('card-modal').classList.contains('on') && $('card-modal-body').textContent.includes('Accuracy') &&
      $('card-modal-body').textContent.includes('Best time') && $('card-modal-body').textContent.includes('Status'));
+  ok('Fact Monster cards use stable named PNG artwork',
+     $('card-modal-body').querySelector('.fact-monster-image') && $('card-modal-body').textContent.includes('Base Camp'));
+  const favoriteBefore=ev('state.campMonsterFavorites.length');
+  const favoriteButton=$('card-modal-body').querySelector('.monster-favorite-btn');
+  if(favoriteButton) favoriteButton.click();
+  ok('a caught Fact Monster can be invited to Base Camp', ev('state.campMonsterFavorites.length')===favoriteBefore+1);
   win.closeQuestCard();
   ok('main navigation uses the shared five-icon system',
      win.document.querySelectorAll('#nav button .ui-icon').length === 5);
@@ -939,6 +986,7 @@ async function boot(saveObj, seededStorage={}) {
   win.setPref('window', 4000);
 
   section('Preference: round length drives every queue builder');
+  ev('for(let b=0;b<10;b++) fact(2,b).rating=Math.max(4,factRating(2,b))');
   for (const n of [8, 16]) {
     win.setPref('roundLen', n);
     win.startPractice(2);
