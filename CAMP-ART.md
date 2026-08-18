@@ -86,8 +86,19 @@ and it animates in pure CSS with no JavaScript at all:
   background-size:300% 100%;          /* 3 frames */
   animation:sprite3 .9s steps(3) infinite;
 }
-@keyframes sprite3{ from{background-position:0 0} to{background-position:-300% 0} }
+@keyframes sprite3{ from{background-position:0 0} to{background-position:150% 0} }
 ```
+
+Each frame must share one immovable physical anchor. Stakes, poles, stone rings,
+support posts, masonry, and feet stay on the same pixels while only cloth, flame,
+water, bulbs, or character details move. Do not rotate, skew, or stretch a complete
+single-frame camp PNG to simulate motion; that also moves its base and reads as a
+jump on the perspective ground plane.
+
+The shipped strips and climber can be rebuilt reproducibly from their preserved
+source frames with `python tools/lock_camp_animation_anchors.py`. The originals live
+in `art-raw/camp-animation-originals/`; never use an already-corrected output as the
+script's input.
 
 ### Offline and fallbacks
 

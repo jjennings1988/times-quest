@@ -4,7 +4,8 @@ A multiplication fact-family game built as an installable Progressive Web App.
 Spaced repetition, realm-based progression, boss battles, a gem economy, and a
 parent dashboard with a per-fact heatmap.
 
-No build step, no dependencies, no API keys. The entire game is one HTML file.
+No build step, runtime dependencies, or API keys. The game is a static PWA;
+`jsdom` is used only by the development regression suite.
 
 ## Structure
 
@@ -15,6 +16,9 @@ public/
 ├── sw.js                   Service worker — offline caching
 └── icons/                  Android, iOS, and maskable icons
 netlify.toml                Publish config + service worker cache headers
+package.json                Local and CI test command
+test/headless.js            State, progression, art, offline and flow checks
+BETA-QA.md                  Real-device and child-observation release gate
 ```
 
 All paths inside the app are relative, so it works at any URL depth.
@@ -29,6 +33,13 @@ npx serve public
 ```
 
 The game itself plays fine from `file://`; only the PWA features are affected.
+
+Run the regression suite before a pull request or deployment:
+
+```powershell
+pnpm install
+pnpm test
+```
 
 ## Deployment
 
@@ -88,10 +99,14 @@ Deleting or resetting that profile does not affect the other child profiles.
 
 Base Camp opens as a scene-first panoramic world on phones and tablets. Swipe
 left or right to explore, use the target button to return to the climber, and use
-the five-action bottom dock for Build, Paths, Treasures, Climber, and Scenery.
+the six-action bottom dock for Build, Paths, Treasures, Climber, Scenery, and
+the replayable Siege.
 Decorating tools rise over the world as compact trays instead of shrinking it.
 
 The **Scenery** tray includes four compatible environments: Mountain Dusk,
 Alpine Morning, Autumn Ridge, and Moonlit Meadow. They all share the same 24 × 8
 placement plane, so changing scenery never moves camp items. Existing 12 × 8
 camps migrate into the center of the wider clearing automatically.
+
+The Field Guide contains 40 stable Fact Monster designs. A caught creature can
+be invited to Base Camp, with up to six favorites living in the scene at once.
