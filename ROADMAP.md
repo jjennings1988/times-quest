@@ -19,7 +19,7 @@ games.
 | Boss play | 13 guardian configurations and portrait battlefields; phased cinematic battle UI; replayable Camp Siege bonus round |
 | Camp | Immersive panoramic 24 × 8 perspective world; four environments; camera persistence; multi-cell footprints; upgrades; motion; undo; bottom-sheet tools; calibrated object scaling |
 | Identity | Separate local child profiles; 19 inclusive climbers; selected climber appears throughout the game; isolated Summit Tester QA profile |
-| Collection | 40 named painted Fact Monsters; art-backed field guide/cards; caught favorites can be invited into six anchored Base Camp resident slots |
+| Collection | 78 named painted non-square Fact Monsters plus 13 square-fact realm guardians; all 91 canonical facts are visually unique; caught favorites can be invited into six anchored Base Camp resident slots |
 | Parent tools | Per-fact mastery heatmap, slow/weak fact summaries, controls, separate-profile saves, manual backup/restore with a visible last-export reminder |
 | Platform | Installable offline PWA on Netlify; service-worker cache migrations; responsive iPhone/iPad layouts; new creature art included in the offline manifest |
 | Engineering | Static single-page application plus a declared, locked `jsdom` regression dependency; one-command local QA and GitHub Actions on branches/pull requests |
@@ -88,15 +88,18 @@ produce actionable learning/usability notes.
 **Goal:** finish the largest remaining visual inconsistency and connect mastery
 to the camp world.
 
-**Implemented in the current beta branch:** all 40 locked identities now have
+**Implemented in the current beta branch:** all 78 locked non-square identities now have
 named 256×256 transparent production PNGs and archived high-resolution masters;
 the Field Guide, detail cards, filters, and undiscovered silhouettes use the new
-art. Up to six caught favorites can be invited to anchored, gently animated camp
-slots. Still required before the release exit gate: child observation, a gentle
-due-review state, and the last utility/reward glyph cleanup.
+art. Together with the 13 realm guardians, every canonical multiplication fact
+has a unique collectible while reversed facts share the correct identity. Up to
+six caught favorites can be invited to anchored, gently animated camp slots.
+Still required before the release exit gate: child observation, a gentle due-
+review state, and the last utility/reward glyph cleanup.
 
-- Produce the 40 final transparent Fact Monster assets in the locked `MON_POOL`
-  order. Never reorder that array; its indices are persistent creature identity.
+- Maintain the 78 final transparent Fact Monster assets in canonical triangular
+  order. Never reorder `MON_POOL` or `MON_NAMES`; their indices are persistent
+  creature identity, and modulo-based lookup is forbidden.
 - Enlarge field-guide creatures to card-readable size and finish caught, shiny,
   sleepy, wild, and undiscovered presentation using the existing one-asset-plus-
   CSS-state model.

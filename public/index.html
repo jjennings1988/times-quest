@@ -1322,12 +1322,21 @@ const REALM_PIECES = {
 };
 const SUMMIT_PIECE = {id:'trophy-summit', em:'🏆', name:'Summit Trophy',w:1,h:1,art:'art/camp/camp-trophy-summit.png'};
 
-const MON_POOL = ["🐛","🦔","🐙","🦀","🐌","🦎","🐿️","🦋","🐞","🐍","🦅","🦝","🐗","🦡","🦦","🐊","🦂","🦈","🐲","🦕","🦖","🐉","🦄","🐯","🦁","🐻","🐼","🐨","🦒","🦓","🐘","🦛","🦏","🐪","🦘","🦃","🦚","🦜","🦢","🦩"];
+const MON_POOL = [
+  "🐛","🦔","🐙","🦀","🐌","🦎","🐿️","🦋","🐞","🐍","🦅","🦝","🐗","🦡","🦦","🐊","🦂","🦈","🐲","🦕",
+  "🦖","🐉","🦄","🐯","🦁","🐻","🐼","🐨","🦒","🦓","🐘","🦛","🦏","🐪","🦘","🦃","🦚","🦜","🦢","🦩",
+  "🦗⚙️","🦎🏮","🐾💎","🐏🌿","🐾☄️","🐠🪸","🦬⚡","🦔🔩","🦇🌙","🦭❄️","🦎🔥","🫎🍁","🦎🌈","🐦⛈️","🪨⚙️","🦋🌙","🦭🌊","🐺🏜️","🪲💎","🐸🌋",
+  "🐈🌌","🐾🌿","🦬☁️","🐟🪸","🪼🏮","🦍🪨","🐦🌫️","🦌🌳","🐾🔭","🐇❄️","🕷️⚙️","🦅☀️","🐦‍⬛🌫️","🐂💎","🪲🏜️","🦫🌊","🐐⚡","⭐🪸"
+];
 const MON_NAMES = [
   'Rune Caterpillar','Bramble Hedgehog','Tidepool Octopus','Ember Crab','Moon Snail','Moss Lizard','Spark Squirrel','Prism Butterfly','Shield Ladybird','Coil Snake',
   'Sky Eagle','Mask Raccoon','Iron Boar','Burrow Badger','River Otter','Marsh Crocodile','Dune Scorpion','Reef Shark','Ember Wyrmling','Grove Longneck',
   'Stone T-Rex','Elder Dragon','Star Unicorn','Flame Tiger','Sun Lion','Cave Bear','Bamboo Panda','Cloud Koala','Canopy Giraffe','Stripe Zebra',
-  'Thunder Elephant','River Hippo','Plate Rhino','Dune Camel','Spring Kangaroo','Harvest Turkey','Prism Peacock','Echo Parrot','Frost Swan','Sunset Flamingo'
+  'Thunder Elephant','River Hippo','Plate Rhino','Dune Camel','Spring Kangaroo','Harvest Turkey','Prism Peacock','Echo Parrot','Frost Swan','Sunset Flamingo',
+  'Clockwork Mantis','Lantern Axolotl','Quartz Mole','Mossy Ram','Comet Ferret','Coral Seahorse','Thunder Yak','Copper Armadillo','Night Bat','Glacier Seal',
+  'Ember Salamander','Maple Moose','Prism Chameleon','Storm Crane','Gear Golem','Moon Moth','Tide Walrus','Canyon Coyote','Crystal Beetle','Lava Toad',
+  'Aurora Lynx','Bramble Pangolin','Sky Bison','Reef Manta','Lantern Jellyfish','Obsidian Gorilla','Mist Heron','Grove Stag','Canyon Meerkat','Frost Hare',
+  'Clockwork Spider','Sun Gryphon','Mist Raven','Crystal Minotaur','Dune Scarab','River Beaver','Thunder Goat','Starfish Sentinel'
 ];
 
 const RATING_LABEL = ["new","wild","wild","sleepy","caught","SHINY"];
@@ -1598,10 +1607,15 @@ function fact(a,b){
   return state.facts[k];
 }
 function factRating(a,b){ const f = state.facts[fkey(a,b)]; return f ? f.rating : 0; }
+function nonSquareMonsterIndex(lo,hi){
+  // Canonical triangular order: 0×1…0×12, 1×2…1×12, …, 11×12.
+  // This creates one stable ID for every non-square fact with no modulo collisions.
+  return lo*12-(lo*(lo-1))/2+(hi-lo-1);
+}
 function monsterIdentity(a,b){
   const lo=Math.min(a,b),hi=Math.max(a,b);
   if(lo===hi && REALMS[lo]) return {name:REALMS[lo].petName,emoji:REALMS[lo].pet,art:`art/realm/pet-${lo}.png`,index:null};
-  const index=(lo*13+hi)%MON_POOL.length;
+  const index=nonSquareMonsterIndex(lo,hi);
   return {name:MON_NAMES[index],emoji:MON_POOL[index],art:`art/mon/mon-${String(index+1).padStart(2,'0')}.png`,index};
 }
 function monsterFor(a,b){
@@ -2566,7 +2580,7 @@ function renderMonsters(){
   const filters=[['all','All'],['caught','Caught'],['shiny','Shiny'],['sleepy','Sleepy'],['wild','Wild']];
   seg.innerHTML=filters.map(([k,l])=>`<button class="${monsterFilter===k?'on':''}" onclick="monsterFilter='${k}';renderMonsters()">${l}</button>`).join('');
   const grid=$('monster-grid'); grid.innerHTML='';
-  let caughtN=0,total=0;
+  const uniqueFacts=new Set(),caughtFacts=new Set();
   const unlocked=unlockedFamilies();
   grid.innerHTML=`<div class="monster-book-intro" style="grid-column:1/-1">${icon('cards')}<div><strong>Quest Card Field Guide</strong><span>Tap any creature to inspect its fact, accuracy, best time, and realm strategy.</span></div></div>`;
   unlocked.forEach(fam=>{
@@ -2575,9 +2589,9 @@ function renderMonsters(){
     let realmCaught=0,realmShown=0;
     for(let b=0;b<=12;b++){
       const k=fkey(fam,b);
-      total++;
+      uniqueFacts.add(k);
       const r=factRating(fam,b);
-      if(r>=4){ caughtN++; realmCaught++; }
+      if(r>=4){ caughtFacts.add(k); realmCaught++; }
       const st = r===0?'undiscovered': r<=2?'wild': r===3?'sleepy': r===4?'caught':'shiny';
       if(monsterFilter!=='all'){
         if(monsterFilter==='caught'&&r<4) continue;
@@ -2595,7 +2609,7 @@ function renderMonsters(){
     }
     if(realmShown){ section.innerHTML=`<div class="monster-realm-head">${realmCharacter(fam)}<strong>${REALMS[fam].name}</strong><span>${realmCaught}/13 caught</span></div>`; section.appendChild(realmGrid); grid.appendChild(section); }
   });
-  $('monster-count').textContent=`${caughtN} of ${total} caught`;
+  $('monster-count').textContent=`${caughtFacts.size} of ${uniqueFacts.size} unique creatures caught`;
   if(grid.children.length===1) grid.innerHTML+='<div style="grid-column:1/-1;color:#8B83BD;font-weight:700;text-align:center;padding:30px 10px">Nothing here yet — go practice to find monsters!</div>';
 }
 
