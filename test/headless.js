@@ -291,7 +291,7 @@ async function boot(saveObj, seededStorage={}) {
     'bg-camp-dusk.png':[1180,640], 'bg-camp-morning.png':[1180,640],
     'bg-camp-autumn.png':[1180,640], 'bg-camp-moonlit.png':[1180,640],
   };
-  const factMonsters=Object.fromEntries(Array.from({length:40},(_,i)=>[`mon-${String(i+1).padStart(2,'0')}.png`,[256,256]]));
+  const factMonsters=Object.fromEntries(Array.from({length:78},(_,i)=>[`mon-${String(i+1).padStart(2,'0')}.png`,[256,256]]));
   const pngInfo=name=>{
     const buf=fs.readFileSync(require('path').join(PUBLIC,'art','camp',name));
     return {w:buf.readUInt32BE(16),h:buf.readUInt32BE(20),colorType:buf[25]};
@@ -403,7 +403,7 @@ async function boot(saveObj, seededStorage={}) {
        if(!fs.existsSync(p)) return false;
        const info=pngInfo(name); return info.w===size[0] && info.h===size[1];
      }));
-  ok('all forty Fact Monsters exist as optimized transparent 256×256 PNGs',
+  ok('all 78 non-square Fact Monsters exist as transparent 256×256 PNGs',
      Object.entries(factMonsters).every(([name,size])=>{
        const p=require('path').join(PUBLIC,'art','mon',name);
        if(!fs.existsSync(p)) return false;
@@ -439,7 +439,7 @@ async function boot(saveObj, seededStorage={}) {
   ok('offline shell pre-caches all avatar gear', Object.keys(avatarGear).every(n=>swSource.includes(`./art/${n}`)));
   ok('offline shell pre-caches all nineteen profile explorers', Object.keys(profileAvatars).every(n=>swSource.includes(`./art/${n}`)));
   ok('offline shell pre-caches every selectable camp background', Object.keys(campBackgrounds).every(n=>swSource.includes(`./art/camp/${n}`)));
-  ok('offline shell pre-caches all forty Fact Monsters', Object.keys(factMonsters).every(n=>swSource.includes(`./art/mon/${n}`)));
+  ok('offline shell pre-caches all 78 non-square Fact Monsters', Object.keys(factMonsters).every(n=>swSource.includes(`./art/mon/${n}`)));
   ok('retired hats are not loaded into the live offline shell', !swSource.includes('./art/hat/') && !swSource.includes('./art/archive/hat-upgrades/'));
   ok('runtime cache never stores missing future-batch art', swSource.includes('if (res.ok)'));
   ok('offline misses return a valid error response',swSource.includes('Response.error()'));
@@ -547,10 +547,27 @@ async function boot(saveObj, seededStorage={}) {
   win.showScreen('screen-monsters');
   ok('monster guide groups facts beneath realm guardians',
      win.document.querySelectorAll('#monster-grid .monster-realm-section').length === ev('unlockedFamilies().length'));
+  const visibleUniqueFacts=ev("new Set(unlockedFamilies().flatMap(f=>Array.from({length:13},(_,b)=>fkey(f,b)))).size");
+  ok('collection header counts canonical creatures rather than reversed card duplicates',
+     $('monster-count').textContent.includes('unique creatures') && $('monster-count').textContent.includes(`of ${visibleUniqueFacts}`));
   ok('each unlocked realm exposes all 13 collectible fact cards',
      Array.from(win.document.querySelectorAll('#monster-grid .monster-realm-section .monster-grid')).every(g => g.querySelectorAll('.monster-cell').length === 13));
   ok('zero-based monster identities map to one-based art filenames without drift',
-     ev("monsterIdentity(0,1).name==='Bramble Hedgehog' && monsterIdentity(0,1).art.endsWith('mon-02.png')"));
+     ev("monsterIdentity(0,1).name==='Rune Caterpillar' && monsterIdentity(0,1).art.endsWith('mon-01.png')"));
+  const canonicalFactMonsters=ev(`(()=>{const out=[];for(let lo=0;lo<13;lo++)for(let hi=lo+1;hi<13;hi++)out.push(monsterIdentity(lo,hi));return out})()`);
+  ok('all 78 canonical non-square facts receive unique monster art and names',
+     canonicalFactMonsters.length===78 && new Set(canonicalFactMonsters.map(m=>m.art)).size===78 && new Set(canonicalFactMonsters.map(m=>m.name)).size===78);
+  ok('reversed multiplication facts share the same canonical monster',
+     ev("monsterIdentity(1,3).art===monsterIdentity(3,1).art && monsterIdentity(6,9).name===monsterIdentity(9,6).name"));
+  ok('previously colliding facts now receive different monsters',
+     ev(`[
+       [monsterIdentity(6,9),monsterIdentity(9,10)],
+       [monsterIdentity(1,4),monsterIdentity(4,5)],
+       [monsterIdentity(3,6),monsterIdentity(0,5)],
+       [monsterIdentity(2,5),monsterIdentity(5,6)]
+     ].every(([left,right])=>left.art!==right.art&&left.name!==right.name)`));
+  ok('the 13 square facts continue to use their unique realm guardians',
+     ev("Array.from({length:13},(_,f)=>monsterIdentity(f,f).art).every((art,f)=>art.endsWith(`pet-${f}.png`))"));
   const firstMonsterCard = win.document.querySelector('#monster-grid .monster-cell');
   firstMonsterCard.click();
   ok('fact monster card opens with fact, strategy, and performance stats',

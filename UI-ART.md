@@ -1,7 +1,7 @@
 # Times Quest — Character & Interface Art
 
 Companion to `CAMP-ART.md`. Same world, same style bible. This covers everything
-outside the camp: the realm characters, the bosses, the 40 fact-monsters, the
+outside the camp: the realm characters, the bosses, the 78 non-square fact-monsters, the
 climber, and the interface icons.
 
 ## Production status
@@ -14,7 +14,7 @@ climber, and the interface icons.
 | Climber | Complete — transparent 3-frame 768×256 strip |
 | 6 hats | Complete — transparent 256×256 PNGs, layered on the climber |
 | 3 shop buddies | Complete — transparent 256×256 PNGs |
-| 40 fact monsters | Complete — named transparent 256×256 PNGs, high-resolution masters archived |
+| 78 non-square fact monsters | Complete — named transparent 256×256 PNGs, high-resolution masters archived; 13 square facts use realm guardians |
 | Tier B interface icons | Still emoji; planned as inline SVG rather than PNG |
 
 **Inventory: 137 distinct emoji, 223 uses.** They do not all want the same
@@ -151,17 +151,18 @@ public/art/
 ├── boss/boss-0.png … boss-12.png
 ├── battle/bg-battle-x0-portrait.webp … bg-battle-x12-portrait.webp
 ├── battle/bg-battle-camp-siege-portrait.webp
-├── mon/mon-00.png … mon-39.png       (index MUST match MON_POOL order)
+├── mon/mon-01.png … mon-78.png       (canonical non-square fact order)
 ├── hat/cap.png, tophat.png, …
 └── climber.png                        (3-frame idle strip)
 ```
 
 > ### ⚠️ The one thing that will break his collection
 >
-> `monsterFor(a,b)` resolves to `MON_POOL[(lo*13+hi) % 40]`. The **array index is
-> the identity** of every monster he has ever caught. If the art files are numbered
-> in a different order than the current emoji array, every creature in his
-> collection silently becomes a different animal.
+> `monsterFor(a,b)` resolves each non-square canonical fact in triangular order:
+> `0×1…0×12`, `1×2…1×12`, continuing through `11×12`. Reversed facts use the
+> same canonical pair, while square facts use their realm guardian. The **array
+> index is the identity** of every monster he has ever caught. Never reintroduce
+> modulo wrapping: it makes unrelated facts silently share a creature.
 >
 > Generate and name strictly in the existing order. It's listed in §6.
 
@@ -347,18 +348,20 @@ THE IMP (fallback)       a wiry purple imp with short horns, arms folded,
 
 ---
 
-## 6. The 40 fact-monsters
+## 6. The 78 non-square fact-monsters
 
-> **Production update — August 18, 2026:** all 40 identities have shipped in
-> locked order at `public/art/mon/mon-01.png` through `mon-40.png`; full-resolution
+> **Production update — August 18, 2026:** all 78 identities have shipped in
+> locked order at `public/art/mon/mon-01.png` through `mon-78.png`; full-resolution
 > sources are preserved under `art-raw/mon/`. They were produced as individual
 > transparent cutouts for stronger silhouette and edge control. The Field Guide
 > now renders them at 58px, and the same stable identity follows a fact into its
-> Quest Card and optional Base Camp resident slot. The sheet workflow below is
-> retained as the original art direction and index contract.
+> Quest Card and optional Base Camp resident slot. Together with the 13 square-
+> fact realm guardians, this creates 91 unique canonical collectibles. The sheet
+> workflow below is retained as the original art direction and index contract.
 
-**This is the highest-value art in the game.** It's the collection — 91 facts
-mapping into 40 creatures, the thing he'll page through and want to complete.
+**This is the highest-value art in the game.** It's the collection — all 91
+canonical facts now have distinct creatures, the thing he'll page through and
+want to complete.
 
 Framing: these are *fact monsters*, not zoo animals. Each keeps its animal
 identity but gains real presence — the set should read like a card-game bestiary
