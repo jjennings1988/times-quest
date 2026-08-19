@@ -76,7 +76,9 @@ async function boot(saveObj, seededStorage={}) {
   ok('every fact record preserved',
      Object.keys(before.facts).every(k =>
        S().facts[k] && S().facts[k].c === before.facts[k].c && S().facts[k].rating === before.facts[k].rating));
-  ok('schema version stamped', S().v === 6);
+  ok('schema version stamped', S().v === 7);
+  ok('legacy fact history receives additive spaced-review scheduling',
+     Object.values(S().facts).filter(f=>f.rating>0).every(f=>f.intervalDays>=1 && /^\d{4}-\d{2}-\d{2}$/.test(f.dueOn)));
   ok('existing stars are marked claimed without changing the saved gem balance',
      ev('REALM_ORDER').every(f=>S().realmRewardStars[f]===ev(`realmStars(${f}).stars`)) && S().gems===137,
      JSON.stringify(S().realmRewardStars));
@@ -426,8 +428,11 @@ async function boot(saveObj, seededStorage={}) {
   ok('offline core lists only real files and stays under 6 MB',
      corePaths.length>0 && corePaths.every(entry=>fs.existsSync(require('path').join(PUBLIC,entry==='./'?'index.html':entry.replace(/^\.\//,'')))) && coreBytes<6*1024*1024,
      `${coreBytes} bytes across ${corePaths.length} entries`);
-  ok('optional art failures cannot cancel service-worker installation',
-     swSource.includes('Promise.allSettled(OPTIONAL.map'));
+  ok('optional art warms after the compact service-worker installation in failure-safe batches',
+     swSource.includes('warmOptionalCache') && swSource.includes('Promise.allSettled(batch.map') && swSource.includes("type === 'WARM_OPTIONAL'"));
+  const swInstallBlock=swSource.slice(swSource.indexOf("addEventListener('install'"),swSource.indexOf('async function warmOptionalCache'));
+  ok('large optional artwork no longer blocks first service-worker install',
+     swInstallBlock.includes('c.addAll(CORE)') && !swInstallBlock.includes('OPTIONAL'));
   ok('offline shell pre-caches every Batch 1 asset', Object.keys(batch1).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('offline shell pre-caches every Batch 2 asset', Object.keys(batch2).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('offline shell pre-caches every Batch 3 asset', Object.keys(batch3).every(n=>swSource.includes(`./art/camp/${n}`)));
@@ -542,8 +547,10 @@ async function boot(saveObj, seededStorage={}) {
   win.showScreen('screen-hall');
   ok('training leads with one recommended workout',
      $('hall-body').textContent.includes('Recommended workout') && !!win.document.querySelector('#hall-body .training-hero'));
-  ok('training library offers five distinct workout paths',
-     win.document.querySelectorAll('#hall-body .training-workout').length === 5);
+  ok('training library offers six distinct workout paths including Daily Review',
+     win.document.querySelectorAll('#hall-body .training-workout').length === 6 && $('hall-body').textContent.includes('Daily Review'));
+  ok('due-fact selection ranks overdue, weak, slow, and lapsed facts without duplicates',
+     ev('dueFactEntries(12).every(([k],i,list)=>list.findIndex(([other])=>other===k)===i)') && ev('dueFactEntries(12).length')>0);
   win.showScreen('screen-monsters');
   ok('monster guide groups facts beneath realm guardians',
      win.document.querySelectorAll('#monster-grid .monster-realm-section').length === ev('unlockedFamilies().length'));
@@ -602,6 +609,10 @@ async function boot(saveObj, seededStorage={}) {
   ok('fast correct records a best time', typeof ev('state').facts[k].bt === 'number', String(ev('state').facts[k].bt));
   ok('a normal fast correct answer awards one gem', ev('state').gems === gemsBefore+1);
   ok('counted as first-try correct', ev('quiz').correct === 1);
+  ok('first-try retrieval schedules the fact on a future day',
+     ev('state').facts[k].intervalDays>=1 && ev('state').facts[k].dueOn>ev('dateKey()'), JSON.stringify(ev('state').facts[k]));
+  ok('first-try retrieval is recorded for parent trends',
+     ev('state').reviewHistory.at(-1).key===k && ev('state').reviewHistory.at(-1).ok===true);
   await new Promise(r => setTimeout(r, 700));
 
   section('Quiz — slow correct is capped at rating 3');
@@ -625,6 +636,9 @@ async function boot(saveObj, seededStorage={}) {
   ok('hint card shown', $('hint-card').style.display === 'block');
   ok('every miss includes a named realm strategy', !!$('hint-body').querySelector('.hint-strategy-label') && $('hint-body').textContent.includes('strategy'));
   ok('strategy coach explains how to build the answer', $('hint-body').querySelectorAll('b').length > 0, $('hint-body').textContent);
+  ok('worked hint pairs words with an accessible visual group model',
+     !!$('hint-body').querySelector('.worked-example[role="img"]') &&
+     (!!$('hint-body').querySelector('.worked-groups') || $('hint-body').textContent.includes('no groups')));
   ok('button offers a retry', $('hint-btn').textContent.includes('try again'), $('hint-btn').textContent);
   ok('title is the coaching one, not the answer', $('hint-title').textContent.includes('tricky'));
   ok('missed fact is added to the end of the round', ev('quiz').total === totalAtMiss + 1 &&
@@ -636,6 +650,8 @@ async function boot(saveObj, seededStorage={}) {
      ev("!['boss','siege','summit'].some(mode=>REVIEW_QUEUE_MODES.has(mode))"));
   ok('first miss costs a rating point', ev('state').facts[k3].rating < r3before || r3before <= 1);
   ok('first miss counted as wrong once', ev('quiz').wrong === 1);
+  ok('a lapse returns tomorrow and resets the spacing streak',
+     ev('state').facts[k3].dueOn===ev('addDays(dateKey(),1)') && ev('state').facts[k3].reviewStreak===0 && ev('state').facts[k3].lapses>=1);
 
   win.dismissHint();
   ok('same question is re-presented', ev('quiz').idx === idxAtMiss, `idx ${idxAtMiss} → ${ev('quiz').idx}`);
@@ -1106,14 +1122,18 @@ async function boot(saveObj, seededStorage={}) {
   ok('window choices offered', ['3s','4s','6s','8s'].every(s => pb.includes('>'+s+'<')));
   ok('round choices offered', pb.includes('Short') && pb.includes('Normal') && pb.includes('Long'));
   ok('heart choices offered', pb.includes("setPref('hearts',2)") && pb.includes("setPref('hearts',5)"));
-  ok('all six toggles present',
-     ['timer','retry','calm','sound','clicks'].every(k => pb.includes(`toggleSetting('${k}')`)));
+  ok('all sensory and round toggles present',
+     ['timer','retry','calm','sound','clicks','ambience'].every(k => pb.includes(`toggleSetting('${k}')`)));
+  ok('preference toggles expose switch state to assistive technology',
+     Array.from(win.document.querySelectorAll('#parent-body .tg')).every(button=>button.getAttribute('role')==='switch'&&button.hasAttribute('aria-checked')));
   ok('heatmap legend states the active window', pb.includes('under 4s'), 'legend missing window');
 
   section('Parent dashboard still computes');
   let pErr = null;
   try { win.showScreen('screen-parent'); } catch(e){ pErr = e.message; }
   ok('parent dashboard renders', !pErr, pErr);
+  ok('parent dashboard explains due, upcoming, secure, and recent retrieval performance',
+     ['Due today','Due next 7 days','Strong for 14+ days','7-day retrieval'].every(label=>$('parent-body').textContent.includes(label)));
   ok('heatmap has 169 cells + headers',
      win.document.querySelectorAll('.heat-cell').length === 169,
      String(win.document.querySelectorAll('.heat-cell').length));
@@ -1128,6 +1148,17 @@ async function boot(saveObj, seededStorage={}) {
   ok('legacy fields still present', reparsed.owned && reparsed.equipped && reparsed.facts && reparsed.realms);
   ok('profile saves no longer overwrite the ambiguous legacy mirror',
      JSON.parse(win.localStorage.getItem('timesquest-save')).gems===137);
+
+  section('PWA, viewport, and reduced-motion contract');
+  const source=fs.readFileSync(HTML,'utf8'),sw=fs.readFileSync(require('path').join(PUBLIC,'sw.js'),'utf8');
+  ok('standalone viewport synchronization can use the full device height',
+     source.includes('syncAppViewportHeight') && source.includes('--app-height') && source.includes('display-mode: standalone'));
+  ok('camp dock and sheet share the corrected bottom safe-area anchor',
+     source.includes('bottom:max(4px,env(safe-area-inset-bottom))') && source.includes('bottom:calc(max(4px,env(safe-area-inset-bottom)) + 70px)'));
+  ok('service-worker updates wait for the explicit in-app update action',
+     sw.includes("type === 'SKIP_WAITING'") && sw.indexOf('self.skipWaiting()')>sw.indexOf("addEventListener('message'") && source.includes('applyAppUpdate'));
+  ok('system reduced motion controls JS motion as well as CSS animation',
+     source.includes('prefersReducedMotion()') && source.includes('@media (prefers-reduced-motion: reduce)'));
 
   console.log(`\n${'='.repeat(46)}\n  ${pass} passed, ${fail} failed\n${'='.repeat(46)}`);
   process.exit(fail ? 1 : 0);
