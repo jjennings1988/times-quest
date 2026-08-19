@@ -1,5 +1,5 @@
 /* Times Quest service worker — offline-first app shell */
-const CACHE = 'times-quest-v42';
+const CACHE = 'times-quest-v44';
 const CORE = [
   './',
   './index.html',
@@ -225,13 +225,25 @@ const OPTIONAL = [
 ].filter((path) => !CORE.includes(path));
 
 self.addEventListener('install', (e) => {
-  e.waitUntil(
-    caches.open(CACHE).then(async (c) => {
-      await c.addAll(CORE);
-      await Promise.allSettled(OPTIONAL.map((path) => c.add(path)));
-    })
-  );
-  self.skipWaiting();
+  // Make the app usable as soon as the compact shell is ready. The larger art
+  // library warms in small batches after first paint instead of competing with
+  // startup for bandwidth and memory.
+  e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)));
+});
+
+async function warmOptionalCache() {
+  const cache = await caches.open(CACHE);
+  for (let i = 0; i < OPTIONAL.length; i += 12) {
+    const batch = OPTIONAL.slice(i, i + 12);
+    await Promise.allSettled(batch.map(async (path) => {
+      if (!(await cache.match(path))) await cache.add(path);
+    }));
+  }
+}
+
+self.addEventListener('message', (e) => {
+  if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
+  if (e.data && e.data.type === 'WARM_OPTIONAL') e.waitUntil(warmOptionalCache());
 });
 
 self.addEventListener('activate', (e) => {

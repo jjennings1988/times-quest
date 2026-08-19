@@ -25,7 +25,7 @@ The GitHub Actions workflow runs the same suite on every pull request and on pus
 1. Create a normal child profile and verify it starts at ×0 with zero gems.
 2. Open the current realm and confirm the three-step progress card explains each star.
 3. Verify Mastery Trial is locked before 10 monsters are caught.
-4. Complete Learn and Practice; miss a fact and confirm it returns at the end after coaching.
+4. Complete Learn and Practice; miss a fact and confirm the hint includes words plus a visual equal-groups model, then confirm the fact returns at the end.
 5. Catch 10 monsters, pass the Trial, and confirm star one appears on both realm and map.
 6. Defeat the guardian and confirm star two and the camp blueprint reveal.
 7. Catch all 13 facts and confirm star three.
@@ -33,12 +33,24 @@ The GitHub Actions workflow runs the same suite on every pull request and on pus
 9. Export a backup and verify the Parents tab records the export time.
 10. Close, relaunch, switch profiles, and confirm both children retain separate progress.
 
+## Retention and accessibility pass
+
+1. Learn at least four new facts, then confirm Parents → Retention across days shows the learned count and next review timing.
+2. Return on a later calendar day and confirm Training recommends Daily Review with the due facts first.
+3. Miss one due fact, finish its same-round retry, and confirm it is due again the next day rather than disappearing.
+4. Turn on iOS/Android reduced motion and confirm camp motes, sprite motion, confetti, smooth panning, and battle flourishes hold still while every action remains usable.
+5. Mute reward sounds, clicks, and camp ambience separately; background the app and confirm ambience stops.
+6. Navigate the desktop build by keyboard, including switches, dialogs, camp tools, answer keys, and update action. Confirm focus is always visible.
+7. At 200% browser zoom, confirm no primary control is clipped or hidden behind the camp sheet or bottom navigation.
+8. On installed iPhone and iPad builds, confirm the camp scene reaches the physical bottom, the tool dock sits just above the safe area, and opening Build leaves no purple gap below it.
+
 ## Offline and update checks
 
 1. Load the app online once, including Map, one Realm, Field Guide, and Camp.
 2. Enable airplane mode and relaunch the installed app.
 3. Confirm the map, 40 monster images, current realm, keypad, and camp render without broken art.
-4. Reconnect, deploy a test build with a new service-worker cache number, and confirm reopening receives the new build while progress remains.
+4. Reconnect, deploy a test build with a new service-worker cache number, and confirm the in-app “update ready” card appears.
+5. Finish or leave the active round, tap **Update**, and confirm the new build loads once while profiles, progress, and camp placement remain intact.
 
 ## Five-session child observation log
 

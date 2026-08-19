@@ -1,8 +1,8 @@
 # Times Quest — The Climb to Mount Twelve
 
 A multiplication fact-family game built as an installable Progressive Web App.
-Spaced repetition, realm-based progression, boss battles, a gem economy, and a
-parent dashboard with a per-fact heatmap.
+Adaptive spaced review, realm-based progression, boss battles, a gem economy,
+visual worked examples, and a parent dashboard with per-fact retention insight.
 
 No build step, runtime dependencies, or API keys. The game is a static PWA;
 `jsdom` is used only by the development regression suite.
@@ -51,9 +51,9 @@ Connected to Netlify via GitHub. Pushes to `main` deploy automatically.
 
 ## Updating the game — read before you push
 
-The service worker caches the app shell aggressively so it works offline. That
-means **an installed device will keep playing the old version after you deploy
-a new one** unless you tell it otherwise.
+The service worker caches the app shell aggressively so it works offline. A new
+cache version downloads in the background; the map then shows an explicit
+**Update** action so the app never reloads a child in the middle of a round.
 
 Whenever you change anything in `public/`, bump the cache name in `sw.js`:
 
@@ -62,11 +62,11 @@ const CACHE = 'times-quest-v2';   // → 'times-quest-v3'
 ```
 
 That single line is what triggers installed devices to fetch the new files.
-Forgetting it is the most common reason a deploy appears to do nothing.
+Forgetting it is the most common reason a deployed update does not appear.
 
 If a new file is required for the first offline screen, add it to `CORE` in
-`sw.js`. Add other artwork to `OPTIONAL`; optional files cache best-effort during
-installation and fill in from the network when first visited.
+`sw.js`. Add other artwork to `OPTIONAL`; the app warms those files in small,
+failure-safe batches after first paint and also caches them when visited.
 
 ## Where progress is saved
 

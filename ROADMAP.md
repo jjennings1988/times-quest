@@ -117,6 +117,8 @@ monster card or training prompt during observation.
 
 ### Release 11 — Retention engine v2
 
+**Implementation status (2026-08-19): feature-complete, awaiting multi-day child/device evidence.** The app now stores per-fact due dates, adaptive 1/2/4/7/14/30/60-day intervals, retrieval streaks and lapses; recommends a no-timer Daily Review; interleaves due and weak facts; shows accessible equal-group worked examples; and reports due, upcoming, two-week-secure, and seven-day retrieval measures to parents. Existing saves migrate additively without removing collectibles.
+
 **Goal:** prove facts remain retrievable across days, not merely within one
 session.
 
@@ -140,6 +142,8 @@ days, parent summaries explain why it was selected, and the child can recover a
 miss using the supplied strategy rather than guessing repeatedly.
 
 ### Release 12 — Sensory polish, accessibility, and PWA finish
+
+**Implementation status (2026-08-19): engineering pass complete, real-device audit still open.** Added optional low-volume camp ambience with a separate parent switch and background pause, OS plus in-app reduced-motion handling, stronger keyboard focus, semantic main regions and switches, clearer SVG action icons, asynchronous art decoding, a progress-safe service-worker update prompt, and a standalone iPhone viewport-height repair that anchors the camp dock/sheet to the real bottom edge.
 
 **Goal:** make the app feel authored and calm at every touchpoint.
 
@@ -190,16 +194,18 @@ loss of local/offline access when the network or backend is unavailable.
 
 ## Immediate next build slice
 
-1. Run the new automated suite and repair every regression from the progression
-   and collection integration.
-2. Complete the `BETA-QA.md` iPhone/iPad/offline/update matrix and fix only issues
-   found in that evidence pass.
-3. Observe five child sessions, especially whether the new 1★ / 2★ / 3★ ladder
-   and the next action are understood without adult coaching.
-4. Measure cold-load and installed-update behavior, then reduce service-worker
-   install cost without weakening predictable offline play.
-5. Extract the monolithic app into owned static modules before beginning the
-   due-review/retention scheduler.
+1. Complete the `BETA-QA.md` iPhone/iPad/offline/update matrix, specifically the
+   repaired camp bottom edge, sheet reachability, keyboard focus, muted play,
+   and reduced motion.
+2. Run a three-day retention pilot: learn facts on day one, confirm the due queue
+   changes on days two and three, and check whether the worked model helps a child
+   recover without guessing.
+3. Observe five child sessions, especially whether Daily Review, the 1★ / 2★ / 3★
+   ladder, and the next action are understood without adult coaching.
+4. Record real-device cold launch, camp pan smoothness, boss-frame stability, and
+   update activation; optimize only bottlenecks supported by those measurements.
+5. Extract the monolithic app into owned static modules before adding optional
+   family sync or another major system.
 
 ## Deliberately not next
 
