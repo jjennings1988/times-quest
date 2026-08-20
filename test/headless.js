@@ -3,6 +3,8 @@
 /* Times Quest — headless verification harness (jsdom)
    Exercises logic, state migration and the quiz/camp flows. Not layout. */
 const fs = require('fs');
+const { webcrypto } = require('crypto');
+const { TextEncoder, TextDecoder } = require('util');
 const { JSDOM } = require('jsdom');
 
 const HTML = require('path').join(__dirname,'..','public','index.html');
@@ -42,6 +44,9 @@ async function boot(saveObj, seededStorage={}) {
   const dom = new JSDOM(fs.readFileSync(HTML,'utf8'), {
     runScripts:'dangerously', pretendToBeVisual:true, url:'https://example.test/',
     beforeParse(win){
+      Object.defineProperty(win,'crypto',{value:webcrypto,configurable:true});
+      win.TextEncoder=TextEncoder;
+      win.TextDecoder=TextDecoder;
       if(saveObj!==undefined) win.localStorage.setItem('timesquest-save', JSON.stringify(saveObj));
       Object.entries(seededStorage).forEach(([key,value])=>win.localStorage.setItem(key,typeof value==='string'?value:JSON.stringify(value)));
       win.HTMLElement.prototype.scrollIntoView = () => {};
@@ -966,6 +971,46 @@ async function boot(saveObj, seededStorage={}) {
   $('save-json').value = '{"hello":"world"}';
   win.importSave();
   ok('wrong-shape import is rejected', ev('state').facts !== undefined);
+
+  section('Protected whole-family backup');
+  const backup=await boot(legacySave());
+  const bkev=expr=>backup.win.eval(expr);
+  backup.win.renderProfileGate('create');
+  backup.$('profile-name').value='Rowan';
+  await backup.win.createProfile();
+  bkev('state').gems=42;
+  await backup.win.storageSet(bkev('profileSaveKey(activeProfileId)'),JSON.stringify(bkev('state')));
+  const familyBundle=await backup.win.buildFamilyBackupBundle();
+  ok('family bundle includes every local climber and authoritative save',
+     familyBundle.profileBook.profiles.length===2&&Object.keys(familyBundle.saves).length===2);
+  const familyPass='long family trail phrase';
+  const protectedText=await backup.win.encryptFamilyBackup(familyBundle,familyPass);
+  ok('protected envelope exposes no child profile names or save fields',
+     !protectedText.includes('Rowan')&&!protectedText.includes('Climber')&&!protectedText.includes('facts'));
+  const unlocked=await backup.win.decryptFamilyBackup(protectedText,familyPass);
+  ok('correct parent passphrase restores the exact bundle',
+     JSON.stringify(unlocked)===JSON.stringify(familyBundle));
+  let wrongPassRejected=false;
+  try{ await backup.win.decryptFamilyBackup(protectedText,'this is the wrong passphrase'); }catch(e){ wrongPassRejected=/unlock|passphrase/i.test(e.message); }
+  ok('wrong passphrase is rejected before local progress changes',wrongPassRejected&&bkev('state').gems===42);
+  const damaged=JSON.parse(JSON.stringify(familyBundle));
+  delete damaged.saves[damaged.profileBook.active].facts;
+  let damageRejected=false;
+  try{ backup.win.validateFamilyBackupBundle(damaged); }catch(e){ damageRejected=true; }
+  ok('damaged or incomplete family bundles fail validation',damageRejected);
+  bkev('state').gems=999;
+  const restored=await backup.win.restoreFamilyBackupBundle(unlocked);
+  ok('confirmed whole-family restore replaces the changed active save',restored&&bkev('state').gems===42);
+  const restoredBalances=[];
+  for(const profile of bkev('profileBook').profiles){
+    const raw=await backup.win.storageGet(backup.win.profileSaveKey(profile.id));
+    restoredBalances.push(JSON.parse(raw).gems);
+  }
+  ok('whole-family restore preserves separate progress for both climbers',
+     JSON.stringify(restoredBalances.sort((a,b)=>a-b))===JSON.stringify([42,137]));
+  backup.win.showScreen('screen-parent');
+  ok('Parents UI explains local encryption and offers protected create/restore controls',
+     !!backup.$('family-backup-pass')&&!!backup.$('family-backup-file')&&backup.$('screen-parent').textContent.includes('Times Quest does not receive'));
 
   /* ================================================================ */
   section('Preferences — defaults reproduce the original behaviour');

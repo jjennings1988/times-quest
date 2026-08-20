@@ -78,6 +78,15 @@ Each child has a stable profile ID and a separate `localStorage` save. The app
 can rebuild a damaged profile index from those save slots, but clearing site
 data still erases all local progress, so use the Parents-tab backup for safety.
 
+The Parents tab now offers a **Protected family backup**. It packages every
+climber into one `.tqbackup` file, encrypts it in the browser with a parent
+passphrase, and opens the device share sheet (or downloads the file) so the
+parent can save it to Files, iCloud Drive, Google Drive, or another location.
+Times Quest does not upload the file or passphrase to its own server. Restoring
+one of these files validates it first, then replaces the complete set of local
+family profiles after an explicit warning. See [`CLOUD-BACKUP.md`](CLOUD-BACKUP.md)
+for the privacy boundary, recovery rules, and hosted-account decision gates.
+
 ## Installing on a device
 
 **Android / Chrome:** open the URL — an install banner appears at the top of

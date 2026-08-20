@@ -808,6 +808,19 @@ body.camp-world-open .toast{position:fixed;z-index:400;bottom:calc(max(4px,env(s
   width:100%;margin-top:9px;border-radius:12px;border:2px solid var(--cream-dim);background:#fff;
   padding:9px;font-family:ui-monospace,Menlo,monospace;font-size:11px;color:var(--ink-soft);resize:vertical;
 }
+.backup-vault{background:linear-gradient(145deg,#FFF8EC,#F2ECFF);border:2px solid #DCCFF6}
+.backup-vault h3{display:flex;align-items:center;gap:7px}
+.backup-privacy{margin:10px 0;padding:10px 12px;border-radius:13px;background:#E5F7EC;color:#245B42!important;font-size:12px!important;font-weight:800}
+.backup-fields{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin:11px 0 8px}
+.backup-field{display:flex;flex-direction:column;gap:4px;color:var(--ink);font-size:11px;font-weight:900}
+.backup-field input{min-width:0;width:100%;border:2px solid #D8CBB6;border-radius:12px;background:#fff;color:var(--ink);padding:11px 12px;font:800 15px var(--body)}
+.backup-pass-row{display:flex;gap:8px;align-items:end}
+.backup-pass-row .backup-fields{flex:1}
+.backup-reveal{width:46px;height:44px;border:2px solid #D8CBB6;border-radius:12px;background:#fff;color:var(--ink);font:900 18px var(--body);cursor:pointer;margin-bottom:8px}
+.backup-actions{display:flex;gap:9px;margin-top:10px}.backup-actions .btn{flex:1}
+.backup-status{min-height:18px;margin-top:10px!important;font-size:12px!important;font-weight:900;color:#5B5680!important}
+.backup-file-input{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap}
+@media(max-width:440px){.backup-fields{grid-template-columns:1fr}.backup-actions{flex-direction:column}.backup-reveal{margin-bottom:8px}}
 .tg{width:52px;height:30px;border-radius:99px;background:#CFC6B3;border:none;position:relative;cursor:pointer;transition:background .15s}
 .tg::after{content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;background:#fff;transition:left .15s;box-shadow:0 2px 3px rgba(0,0,0,.25)}
 .tg.on{background:var(--green)}
@@ -1012,6 +1025,10 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
 const REALM_ORDER = [0,1,10,2,5,11,3,4,9,6,12,8,7];
 const PROFILE_KEY='timesquest-profiles';
 const LEGACY_SAVE_KEY='timesquest-save';
+const FAMILY_BACKUP_FORMAT='timesquest-family-backup';
+const ENCRYPTED_BACKUP_FORMAT='timesquest-encrypted-backup';
+const FAMILY_BACKUP_VERSION=1;
+const BACKUP_KDF_ITERATIONS=250000;
 const PROFILE_AVATARS=Array.from({length:19},(_,i)=>`art/avatar/profile-${i+1}.png`);
 const QA_PROFILE_NAME='summit tester';
 let profileBook={v:1,active:null,profiles:[]},activeProfileId=null,profileDraftAvatar=0;
@@ -1133,6 +1150,7 @@ const UI_ICONS={
   trash:'<path d="M4 7h16M9 7V4h6v3M7 7l1 14h8l1-14M10 11v6M14 11v6"/>',
   upload:'<path d="M12 16V4M7 9l5-5 5 5M4 15v5h16v-5"/>',
   download:'<path d="M12 4v12M7 11l5 5 5-5M4 15v5h16v-5"/>',
+  eye:'<path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6z"/><circle cx="12" cy="12" r="2.5"/>',
 };
 function icon(name,cls=''){ return `<svg class="ui-icon ${cls}" viewBox="0 0 24 24" aria-hidden="true">${UI_ICONS[name]||''}</svg>`; }
 function hydrateIcons(root=document){ root.querySelectorAll('[data-icon]').forEach(el=>{ el.innerHTML=icon(el.dataset.icon); }); }
@@ -1374,7 +1392,7 @@ const RATING_LABEL = ["new","wild","wild","sleepy","caught","SHINY"];
    Defaults below reproduce the game's original behaviour exactly, so an
    existing save that predates settings plays identically until something
    is changed on purpose. */
-const APP_VERSION = '0.10.0-beta.1';
+const APP_VERSION = '0.11.0-beta.1';
 const FAST_MS = 4000;          // default bonus window
 const WINDOW_CHOICES = [3000,4000,6000,8000];
 const ROUND_CHOICES  = [8,12,16];
@@ -1464,6 +1482,14 @@ async function storageSet(key,val){
   }catch(e){}
   try{ localStorage.setItem(key,val); return; }catch(e){}
   memoryFallback=val;
+}
+async function storageRemove(key){
+  try{
+    if(typeof window.storage!=='undefined' && window.storage.remove){
+      await window.storage.remove(key); return;
+    }
+  }catch(e){}
+  try{ localStorage.removeItem(key); }catch(e){}
 }
 async function loadState(){
   await loadProfileBook();
@@ -2864,7 +2890,29 @@ function renderParent(){
 
       <div class="toggle-row" style="margin-top:6px"><span class="lbl">${icon('trash')} Reset all progress</span><button class="btn coral small" onclick="resetAll()">Reset</button></div>
     </div>
-    <div class="card"><h3>${icon('backpack')} Backup progress</h3>
+    <div class="card backup-vault"><h3>${icon('backpack')} Protected family backup</h3>
+      <p>Save every climber and all progress in one password-protected file. Use it to recover this device or move the whole family to another one.</p>
+      <p class="backup-privacy">Private by design: encryption happens on this device. Times Quest does not receive the file, the passphrase, or any child profile information.</p>
+      <div class="backup-pass-row">
+        <div class="backup-fields">
+          <label class="backup-field" for="family-backup-pass">Parent passphrase
+            <input id="family-backup-pass" type="password" minlength="12" autocomplete="new-password" aria-describedby="family-backup-help">
+          </label>
+          <label class="backup-field" for="family-backup-confirm">Confirm for a new backup
+            <input id="family-backup-confirm" type="password" minlength="12" autocomplete="new-password" aria-describedby="family-backup-help">
+          </label>
+        </div>
+        <button class="backup-reveal" type="button" onclick="toggleBackupPassphrase(this)" aria-label="Show backup passphrase" aria-pressed="false">${icon('eye')}</button>
+      </div>
+      <p id="family-backup-help" class="pref-note">Use 12 or more characters. Keep it somewhere safe—Times Quest cannot recover a forgotten passphrase. Confirmation is required only when creating a backup.</p>
+      <div class="backup-actions">
+        <button id="create-family-backup" class="btn gold small" onclick="createProtectedFamilyBackup()">${icon('upload')} Create protected backup</button>
+        <button class="btn ghost small" style="color:#2D2A4A;background:#E5DDF4" onclick="$('family-backup-file').click()">${icon('download')} Restore family backup</button>
+      </div>
+      <input id="family-backup-file" class="backup-file-input" type="file" accept=".tqbackup,application/json" onchange="restoreProtectedFamilyBackup(this.files&&this.files[0])">
+      <p id="family-backup-status" class="backup-status" role="status" aria-live="polite">No information leaves this device until you choose where to save or share the encrypted file.</p>
+    </div>
+    <div class="card"><h3>${icon('settings')} Advanced single-climber backup</h3>
       <p>Progress lives on this device only. Export before updating the game, or to move to another tablet.</p>
       <p id="backup-status" style="margin-top:7px;font-size:12px;font-weight:900;color:${state.lastBackupAt?'#25704d':'#9a541f'}">${backupStatus()}</p>
       <textarea id="save-json" class="save-box" rows="3" placeholder="Your save data appears here when you export — or paste a backup in to restore it." spellcheck="false"></textarea>
@@ -2897,6 +2945,177 @@ function resetAll(){
 /* ---------- save export / import ----------
    Progress lives in localStorage on one device. There's no practical way to
    pull it off an iPad by hand, so this is the backup hatch. */
+function bytesToBase64(bytes){
+  let binary='';
+  for(let i=0;i<bytes.length;i+=0x8000) binary+=String.fromCharCode(...bytes.subarray(i,i+0x8000));
+  return btoa(binary);
+}
+function base64ToBytes(value){
+  const binary=atob(value),bytes=new Uint8Array(binary.length);
+  for(let i=0;i<binary.length;i++) bytes[i]=binary.charCodeAt(i);
+  return bytes;
+}
+async function deriveBackupKey(passphrase,salt,usages){
+  if(!window.crypto||!crypto.subtle) throw new Error('Protected backups need a secure modern browser.');
+  const material=await crypto.subtle.importKey('raw',new TextEncoder().encode(passphrase),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey(
+    {name:'PBKDF2',salt,iterations:BACKUP_KDF_ITERATIONS,hash:'SHA-256'},material,
+    {name:'AES-GCM',length:256},false,usages
+  );
+}
+function validateFamilyBackupBundle(bundle){
+  if(!bundle||bundle.format!==FAMILY_BACKUP_FORMAT||bundle.version!==FAMILY_BACKUP_VERSION) throw new Error('This is not a supported Times Quest family backup.');
+  const book=bundle.profileBook;
+  if(!book||!Array.isArray(book.profiles)||book.profiles.length<1||book.profiles.length>20||!bundle.saves||typeof bundle.saves!=='object') throw new Error('The family backup is incomplete.');
+  const ids=new Set();
+  book.profiles.forEach(profile=>{
+    if(!profile||typeof profile.id!=='string'||!/^[a-zA-Z0-9_-]{3,80}$/.test(profile.id)||ids.has(profile.id)) throw new Error('The backup contains an invalid profile.');
+    if(typeof profile.name!=='string'||!profile.name.trim()||profile.name.length>18) throw new Error('The backup contains an invalid profile name.');
+    if(!Number.isInteger(Number(profile.avatar))||Number(profile.avatar)<0||Number(profile.avatar)>=PROFILE_AVATARS.length) throw new Error('The backup contains an invalid explorer.');
+    const save=bundle.saves[profile.id];
+    if(!save||typeof save!=='object'||!save.facts||typeof save.facts!=='object'||!save.realms||typeof save.realms!=='object') throw new Error('The backup is missing profile progress.');
+    ids.add(profile.id);
+  });
+  if(book.active&&!ids.has(book.active)) throw new Error('The backup has an invalid active profile.');
+  return true;
+}
+async function buildFamilyBackupBundle(){
+  if(!activeProfileId||!state) throw new Error('Choose a climber before creating a backup.');
+  clearTimeout(saveTimer);
+  await storageSet(profileSaveKey(activeProfileId),JSON.stringify(state));
+  await persistProfileBook();
+  const saves={};
+  for(const profile of profileBook.profiles){
+    const raw=await storageGet(profileSaveKey(profile.id));
+    let save;
+    try{ save=raw&&JSON.parse(raw); }catch(e){ throw new Error(`Could not read ${profile.name}'s progress.`); }
+    if(!save||!save.facts||!save.realms) throw new Error(`Could not read ${profile.name}'s progress.`);
+    saves[profile.id]=save;
+  }
+  const bundle={
+    format:FAMILY_BACKUP_FORMAT,version:FAMILY_BACKUP_VERSION,exportedAt:new Date().toISOString(),appVersion:APP_VERSION,
+    profileBook:{v:1,active:activeProfileId,profiles:profileBook.profiles.map(profile=>profileRecord(profile,saves[profile.id]))},saves
+  };
+  validateFamilyBackupBundle(bundle);
+  return bundle;
+}
+async function encryptFamilyBackup(bundle,passphrase){
+  validateFamilyBackupBundle(bundle);
+  const salt=crypto.getRandomValues(new Uint8Array(16)),iv=crypto.getRandomValues(new Uint8Array(12));
+  const key=await deriveBackupKey(passphrase,salt,['encrypt']);
+  const plaintext=new TextEncoder().encode(JSON.stringify(bundle));
+  const ciphertext=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},key,plaintext));
+  return JSON.stringify({
+    format:ENCRYPTED_BACKUP_FORMAT,version:FAMILY_BACKUP_VERSION,exportedAt:bundle.exportedAt,
+    kdf:{name:'PBKDF2',hash:'SHA-256',iterations:BACKUP_KDF_ITERATIONS,salt:bytesToBase64(salt)},
+    cipher:{name:'AES-GCM',iv:bytesToBase64(iv)},payload:bytesToBase64(ciphertext)
+  });
+}
+async function decryptFamilyBackup(text,passphrase){
+  let envelope;
+  try{ envelope=typeof text==='string'?JSON.parse(text):text; }catch(e){ throw new Error('That file is not a Times Quest protected backup.'); }
+  if(!envelope||envelope.format!==ENCRYPTED_BACKUP_FORMAT||envelope.version!==FAMILY_BACKUP_VERSION||
+    !envelope.kdf||envelope.kdf.name!=='PBKDF2'||envelope.kdf.hash!=='SHA-256'||envelope.kdf.iterations!==BACKUP_KDF_ITERATIONS||
+    !envelope.cipher||envelope.cipher.name!=='AES-GCM'||typeof envelope.payload!=='string') throw new Error('That file is not a supported Times Quest protected backup.');
+  try{
+    const salt=base64ToBytes(envelope.kdf.salt),iv=base64ToBytes(envelope.cipher.iv);
+    if(salt.length!==16||iv.length!==12) throw new Error('invalid envelope');
+    const key=await deriveBackupKey(passphrase,salt,['decrypt']);
+    const plaintext=await crypto.subtle.decrypt({name:'AES-GCM',iv},key,base64ToBytes(envelope.payload));
+    const bundle=JSON.parse(new TextDecoder().decode(plaintext));
+    validateFamilyBackupBundle(bundle);
+    return bundle;
+  }catch(e){
+    if(e&&/family backup|profile|explorer|progress/i.test(e.message||'')) throw e;
+    throw new Error('Could not unlock this backup. Check the passphrase and file.');
+  }
+}
+async function restoreFamilyBackupBundle(bundle){
+  validateFamilyBackupBundle(bundle);
+  if(!confirm(`Replace every local climber with the ${bundle.profileBook.profiles.length}-climber family backup?`)) return false;
+  clearTimeout(saveTimer);
+  const oldState=state,oldIds=profileBook.profiles.map(profile=>profile.id),migrated={};
+  try{
+    for(const profile of bundle.profileBook.profiles){
+      state=JSON.parse(JSON.stringify(bundle.saves[profile.id]));
+      migrateState();
+      migrated[profile.id]=state;
+    }
+  }catch(e){ state=oldState; throw new Error('The backup could not be safely upgraded for this version.'); }
+  const nextProfiles=bundle.profileBook.profiles.map(profile=>profileRecord(profile,migrated[profile.id]));
+  const nextActive=bundle.profileBook.active&&migrated[bundle.profileBook.active]?bundle.profileBook.active:nextProfiles[0].id;
+  for(const profile of nextProfiles) await storageSet(profileSaveKey(profile.id),JSON.stringify(migrated[profile.id]));
+  profileBook={v:1,active:nextActive,profiles:nextProfiles};
+  activeProfileId=nextActive; state=migrated[nextActive];
+  await persistProfileBook();
+  for(const id of oldIds) if(!migrated[id]) await storageRemove(profileSaveKey(id));
+  applyCalm();
+  return true;
+}
+function toggleBackupPassphrase(button){
+  const visible=$('family-backup-pass')&&$('family-backup-pass').type==='text';
+  ['family-backup-pass','family-backup-confirm'].forEach(id=>{ const input=$(id); if(input) input.type=visible?'password':'text'; });
+  if(button){ button.setAttribute('aria-pressed',String(!visible)); button.setAttribute('aria-label',visible?'Show backup passphrase':'Hide backup passphrase'); }
+}
+function setFamilyBackupStatus(message,ok=false){
+  const el=$('family-backup-status');
+  if(el){ el.textContent=message; el.style.color=ok?'#25704d':'#5B5680'; }
+}
+async function shareOrDownloadBackup(text,filename){
+  const blob=new Blob([text],{type:'application/json'});
+  if(typeof File!=='undefined'&&navigator.share&&navigator.canShare){
+    const file=new File([blob],filename,{type:'application/json'});
+    if(navigator.canShare({files:[file]})){
+      try{ await navigator.share({title:'Times Quest protected family backup',files:[file]}); return 'shared'; }
+      catch(e){ if(e&&e.name==='AbortError') return 'cancelled'; throw e; }
+    }
+  }
+  const url=URL.createObjectURL(blob),link=document.createElement('a');
+  link.href=url; link.download=filename; document.body.appendChild(link); link.click(); link.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  return 'downloaded';
+}
+async function markFamilyBackupComplete(when){
+  for(const profile of profileBook.profiles){
+    const raw=await storageGet(profileSaveKey(profile.id));
+    try{ const save=JSON.parse(raw); save.lastBackupAt=when; await storageSet(profileSaveKey(profile.id),JSON.stringify(save)); }catch(e){}
+  }
+  state.lastBackupAt=when;
+  await storageSet(profileSaveKey(activeProfileId),JSON.stringify(state));
+}
+async function createProtectedFamilyBackup(){
+  const pass=$('family-backup-pass'),confirmPass=$('family-backup-confirm'),button=$('create-family-backup');
+  if(!pass||pass.value.length<12){ setFamilyBackupStatus('Use a parent passphrase with at least 12 characters.'); pass&&pass.focus(); return; }
+  if(!confirmPass||pass.value!==confirmPass.value){ setFamilyBackupStatus('The two passphrases do not match.'); confirmPass&&confirmPass.focus(); return; }
+  if(button) button.disabled=true;
+  setFamilyBackupStatus('Encrypting every climber on this device…');
+  try{
+    const bundle=await buildFamilyBackupBundle(),encrypted=await encryptFamilyBackup(bundle,pass.value);
+    const filename=`times-quest-family-${bundle.exportedAt.slice(0,10)}.tqbackup`;
+    const result=await shareOrDownloadBackup(encrypted,filename);
+    if(result==='cancelled'){ setFamilyBackupStatus('Sharing was cancelled. No backup was created.'); return; }
+    await markFamilyBackupComplete(bundle.exportedAt);
+    setFamilyBackupStatus(`${bundle.profileBook.profiles.length} climber${bundle.profileBook.profiles.length===1?'':'s'} protected — ${result==='shared'?'choose Files or your family cloud drive to finish saving':'the encrypted file was downloaded'}.`,true);
+    pass.value=''; confirmPass.value='';
+  }catch(e){ setFamilyBackupStatus(e&&e.message||'The protected backup could not be created.'); }
+  finally{ if(button) button.disabled=false; }
+}
+async function restoreProtectedFamilyBackup(file){
+  const picker=$('family-backup-file'),pass=$('family-backup-pass');
+  if(!file) return;
+  try{
+    if(!pass||!pass.value){ setFamilyBackupStatus('Enter the backup passphrase before choosing a file.'); pass&&pass.focus(); return; }
+    if(file.size>10*1024*1024) throw new Error('That backup is too large to be a Times Quest save.');
+    setFamilyBackupStatus('Unlocking and checking the family backup…');
+    const bundle=await decryptFamilyBackup(await file.text(),pass.value);
+    if(await restoreFamilyBackupBundle(bundle)){
+      pass.value=''; const confirmPass=$('family-backup-confirm'); if(confirmPass) confirmPass.value='';
+      toast('Family backup restored');
+      showScreen('screen-map');
+    } else setFamilyBackupStatus('Restore cancelled. Nothing was changed.');
+  }catch(e){ setFamilyBackupStatus(e&&e.message||'The family backup could not be restored.'); }
+  finally{ if(picker) picker.value=''; }
+}
 function exportSave(){
   state.lastBackupAt=new Date().toISOString();
   saveState();

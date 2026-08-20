@@ -33,6 +33,16 @@ The GitHub Actions workflow runs the same suite on every pull request and on pus
 9. Export a backup and verify the Parents tab records the export time.
 10. Close, relaunch, switch profiles, and confirm both children retain separate progress.
 
+## Protected family backup
+
+1. Create two climbers with visibly different gems, realm progress, and camps.
+2. In Parents, enter and confirm a 12+ character passphrase, then create a protected family backup.
+3. Save the `.tqbackup` file through the iOS/iPadOS share sheet to Files or a family cloud drive; confirm no profile name is visible by opening the file as text.
+4. Change both local profiles, enter the passphrase, restore the file, accept the replacement warning, and confirm both exact earlier saves return.
+5. Repeat with the wrong passphrase and a non-backup JSON file; confirm neither changes any profile.
+6. Cancel both the share sheet and the replacement warning; confirm the UI reports cancellation and no progress changes.
+7. Forget the passphrase test: confirm the copy explains that Times Quest cannot recover it and never claims otherwise.
+
 ## Retention and accessibility pass
 
 1. Learn at least four new facts, then confirm Parents → Retention across days shows the learned count and next review timing.

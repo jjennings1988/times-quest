@@ -190,6 +190,14 @@ not as a prerequisite for the game.
 required, tested export/deletion/recovery, deterministic sync conflicts, and no
 loss of local/offline access when the network or backend is unavailable.
 
+**Foundation shipped in v0.11:** the parent can create and restore an encrypted
+whole-family `.tqbackup` file. Encryption happens locally and the parent chooses
+their own Files/cloud-drive destination; Times Quest operates no child-data
+backend and receives neither the file nor its passphrase. This provides manual
+multi-device transfer and disaster recovery without prematurely creating child
+accounts. The remaining Release 13 work is the separately gated hosted sync
+described in `CLOUD-BACKUP.md`.
+
 ---
 
 ## Immediate next build slice
