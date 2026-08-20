@@ -1,6 +1,6 @@
 {
   "name": "times-quest",
-  "version": "0.9.0-beta.1",
+  "version": "0.11.0-beta.1",
   "private": true,
   "description": "A mobile-first multiplication adventure PWA for children.",
   "scripts": {
