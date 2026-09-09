@@ -1,8 +1,11 @@
 /* Times Quest service worker — offline-first app shell */
-const CACHE = 'times-quest-v45';
+const CACHE = 'times-quest-v49';
+const CAMP_3D = ['./camp-v2-scene.js','./vendor/three/three.module.min.js','./vendor/three/three.core.min.js'];
 const CORE = [
   './',
   './index.html',
+  './camp-v2.js',
+  './camp-v2.css',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -244,6 +247,7 @@ async function warmOptionalCache() {
 self.addEventListener('message', (e) => {
   if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
   if (e.data && e.data.type === 'WARM_OPTIONAL') e.waitUntil(warmOptionalCache());
+  if (e.data && e.data.type === 'CACHE_CAMP_3D') e.waitUntil(caches.open(CACHE).then(cache=>Promise.all(CAMP_3D.map(async path=>{if(!(await cache.match(path)))await cache.add(path);}))).catch(()=>{}));
 });
 
 self.addEventListener('activate', (e) => {

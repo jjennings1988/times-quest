@@ -4,14 +4,17 @@ A multiplication fact-family game built as an installable Progressive Web App.
 Adaptive spaced review, realm-based progression, boss battles, a gem economy,
 visual worked examples, and a parent dashboard with per-fact retention insight.
 
-No build step, runtime dependencies, or API keys. The game is a static PWA;
-`jsdom` is used only by the development regression suite.
+No build step or API keys. The game is a static PWA. Camp 2 lazy-loads a pinned,
+locally vendored Three.js runtime; `jsdom` is used by the regression suite.
 
 ## Structure
 
 ```
 public/
-├── index.html              The entire game
+├── index.html              Learning, progression, profiles, Camp 1
+├── camp-v2.js              Camp commands, saves, controls, exploration
+├── camp-v2-scene.js        Procedural 3D woodland and models
+├── vendor/three/           Pinned offline renderer and MIT license
 ├── manifest.webmanifest    App name, icons, colors for install
 ├── sw.js                   Service worker — offline caching
 └── icons/                  Android, iOS, and maskable icons
@@ -32,7 +35,7 @@ and install prompts require a real HTTP origin. Serve it instead:
 npx serve public
 ```
 
-The game itself plays fine from `file://`; only the PWA features are affected.
+Camp 2 uses JavaScript modules and requires HTTP, including for local play.
 
 Run the regression suite before a pull request or deployment:
 
@@ -40,6 +43,28 @@ Run the regression suite before a pull request or deployment:
 pnpm install
 pnpm test
 ```
+
+The local dependency-free server is also available with `pnpm start` at
+`http://127.0.0.1:4177`.
+
+## Camp comparison prototype
+
+Open **Camp → Try Camp 2** to enter **Willowbrook Camp**, a playable 3D woodland
+with modeled shelters, furniture, fences, paths, an animated explorer and dog,
+a stream, a bridge, and three discoveries. Turn the camera with the arrow buttons;
+drag to pan and pinch or use buttons to zoom. The Camp 1 / Camp 2 switch keeps both
+versions available. The previous 2.5D prototype's layout and supplies migrate.
+Camp 2 has separate layout and building supplies inside each profile; spending
+there does not touch Camp 1 savings. Learning rounds reward both camps after Camp 2
+is first opened. See [the prototype specification and playtest guide](CAMP-V2-PROTOTYPE.md).
+
+Three.js 0.180.0 is pinned in the lockfile and copied into `public/vendor/three`.
+After an intentional dependency change, run `pnpm vendor:three`. There is no CDN
+dependency. Visit Camp 2 online before testing it offline. WebGL 2 is required
+for the 3D scene; Backpack controls and Camp 1 remain available without it.
+
+Accurate answers now progress at any speed. Earned creatures and realm stars stay
+earned, and returning after a break never deducts gems.
 
 ## Deployment
 

@@ -74,6 +74,32 @@ Do not coach unless the child is stuck for more than 20 seconds. Capture what th
 | 4 |  |  |  |  |  |
 | 5 |  |  |  |  |  |
 
+## Camp 2 comparison gate
+
+Follow [CAMP-V2-PROTOTYPE.md](CAMP-V2-PROTOTYPE.md) for scope and learning changes.
+
+- Compare Camp 1 and Camp 2 at 390×844, 430×932, 768×1024, 1024×768, and desktop.
+- Load a prior schema-1 Camp 2 save. Its objects, upgrades, gems, and inventory
+  should survive migration to the 3D woodland. Camp 1 must stay unchanged.
+- Turn the camera through every angle, then pick, move, and rotate an object.
+- Visit all three Journal destinations; cross water only on the bridge. Reload
+  while outside the clearing and confirm the explorer and discoveries persist.
+- Check gate opening, sitting, dog movement, bird visits, and calm mode.
+- Visit Camp 2 online, then reload offline. Also test WebGL 2 unavailable: the
+  saved camp must remain intact and Camp 1/Backpack must stay usable.
+- Enter/exit Camp 2 ten times; inspect GPU memory/context count and frame pacing.
+- Place, move, rotate the bench/fence, store, cancel, and undo an upgrade. Verify
+  both placement and supplies restore. Put furniture on a deck.
+- Gather wood, use the bench, complete a construction goal, and confirm neither
+  revisiting nor rebuilding repeats a claimed goal reward.
+- Switch between two profiles after editing each camp; no undo crosses profiles.
+- Reload and export/restore both camps, including low power and reduced motion.
+- Finish a learning round; Camp 2 gains its matching gems and wood piles replenish.
+- Verify slow accurate answers can catch a creature; a miss never removes an
+  earned creature or third star; same-day repetition cannot establish 14-day recall.
+- Installed iOS/Android PWA offline, update, battery, and screen-reader checks
+  remain required on physical devices before release.
+
 ## Release decision
 
 - No progress loss, profile mixing, blank screens, blocked navigation, or broken offline launch.
