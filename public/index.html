@@ -6,6 +6,7 @@
 <title>Times Quest: The Climb to Mount Twelve</title>
 <meta name="theme-color" content="#1A1538">
 <link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="camp-v2.css">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1002,6 +1003,7 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
   </div>
 
   <!-- ============ NAV ============ -->
+  <div class="screen" id="screen-camp-v2" role="main" aria-label="Camp 2 woodland"></div>
   <div id="nav" role="navigation" aria-label="Main destinations">
     <button data-s="screen-map" class="on" aria-current="page"><span class="em" data-icon="map"></span>Adventure</button>
     <button data-s="screen-hall"><span class="em" data-icon="training"></span>Training</button>
@@ -1017,6 +1019,7 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 </div>
 <div id="profile-gate" aria-modal="true" role="dialog"><div class="profile-shell" id="profile-gate-body"></div></div>
+<script src="camp-v2.js"></script>
 <script>
 /* =====================================================
    TIMES QUEST — game engine
@@ -1087,12 +1090,13 @@ function renderProfileGate(mode='choose'){
     setTimeout(()=>{ const input=$('profile-name'); if(input) input.focus(); },0); return;
   }
   const cards=profileBook.profiles.map(p=>`<button class="profile-choice" onclick="switchProfile(${escapeHtml(JSON.stringify(p.id))})"><img src="${profileAvatar(p)}" alt=""><div><strong>${escapeHtml(p.name)}</strong><span>${profileProgress(p)}</span></div></button>`).join('');
-  body.innerHTML=`<div class="profile-brand"><div class="mountain">⛰️</div><h1>Times Quest</h1><p>The Climb to Mount Twelve</p></div><div class="profile-card"><h2>${profileBook.profiles.length?'Who is playing?':'Welcome, climber!'}</h2><p>${profileBook.profiles.length?'Choose a profile or make a new one.':'Build multiplication mastery, catch Fact Monsters, and create a mountain camp of your own.'}</p>${profileBook.profiles.length?`<div class="profile-list">${cards}<button class="profile-choice profile-add" onclick="profileDraftAvatar=0;renderProfileGate('create')">＋ New climber</button></div>`:`<div class="quest-intro"><div><strong>1★</strong>Pass the Mastery Trial</div><div><strong>2★</strong>Defeat the realm guardian</div><div><strong>3★</strong>Catch all 13 Fact Monsters</div></div><p>Catch 10 monsters to unlock each Trial. Fast, correct answers raise monsters from wild to caught. Earn all 39 map stars to unlock the final Base Camp Lodge.</p><button class="btn gold" style="margin-top:14px" onclick="profileDraftAvatar=0;renderProfileGate('create')">Create first climber</button>`}</div>`;
+  body.innerHTML=`<div class="profile-brand"><div class="mountain">⛰️</div><h1>Times Quest</h1><p>The Climb to Mount Twelve</p></div><div class="profile-card"><h2>${profileBook.profiles.length?'Who is playing?':'Welcome, climber!'}</h2><p>${profileBook.profiles.length?'Choose a profile or make a new one.':'Build multiplication mastery, catch Fact Monsters, and create a mountain camp of your own.'}</p>${profileBook.profiles.length?`<div class="profile-list">${cards}<button class="profile-choice profile-add" onclick="profileDraftAvatar=0;renderProfileGate('create')">＋ New climber</button></div>`:`<div class="quest-intro"><div><strong>1★</strong>Pass the Mastery Trial</div><div><strong>2★</strong>Defeat the realm guardian</div><div><strong>3★</strong>Catch all 13 Fact Monsters</div></div><p>Catch 10 monsters to unlock each Trial. Correct answers raise monsters from wild to caught. Take the time you need. Earn all 39 map stars to unlock the final Base Camp Lodge.</p><button class="btn gold" style="margin-top:14px" onclick="profileDraftAvatar=0;renderProfileGate('create')">Create first climber</button>`}</div>`;
   setTimeout(()=>body.querySelector('button')&&body.querySelector('button').focus(),0);
 }
 async function createProfile(){
   const name=safeProfileName($('profile-name')&&$('profile-name').value);
   if(!name){ toast('Add a climber name first'); return; }
+  flushProfileSave(); resetCampEditor();
   const id=`p${Date.now().toString(36)}${Math.random().toString(36).slice(2,5)}`;
   const qa=name.toLocaleLowerCase()===QA_PROFILE_NAME;
   const snapshot=qa?allAccessState():defaultState();
@@ -1103,6 +1107,7 @@ async function createProfile(){
   if(qa) toast('QA profile ready: every realm and camp item is unlocked');
 }
 async function switchProfile(id){
+  clearTimeout(saveTimer); resetCampEditor();
   if(activeProfileId&&state) await storageSet(profileSaveKey(activeProfileId),JSON.stringify(state));
   const p=profileBook.profiles.find(x=>x.id===id); if(!p) return;
   activeProfileId=id; let raw=await storageGet(profileSaveKey(id));
@@ -1262,7 +1267,7 @@ function openMonsterCard(a,b){
     <div class="quest-card-head"><span class="number">FACT MONSTER · ${RATING_LABEL[rating]}</span><span class="type">×${fam} realm</span></div>
     <div class="quest-card-title">${rating?identity.name:'Unknown creature'} · ${a} × ${b} = ${a*b}</div>
     <div class="quest-card-art">${monsterVisual(a,b,`big ${rating?'':'unknown'}`)}</div>
-    <p class="quest-card-lore">${rating?`This creature has been discovered in ${r.name}. Keep answering its fact quickly to raise it from ${RATING_LABEL[rating]} toward shiny mastery.`:`A hidden creature from ${r.name}. Answer ${a} × ${b} during training to reveal it.`}</p>
+    <p class="quest-card-lore">${rating?`This creature has been discovered in ${r.name}. Keep practicing its fact at your own pace to raise it from ${RATING_LABEL[rating]} toward shiny mastery.`:`A hidden creature from ${r.name}. Answer ${a} × ${b} during training to reveal it.`}</p>
     ${rating>=4?`<button class="monster-favorite-btn" onclick="toggleCampMonster(${a},${b})">${invited?'✓ Living at Base Camp · send back':'Invite to Base Camp'} (${state.campMonsterFavorites.length}/6)</button>`:''}
     <div class="quest-card-ability"><strong>${REALM_LORE[fam].ability}</strong><span>${r.hint(a,b)}</span></div>
     <div class="quest-card-stats"><div class="quest-card-stat"><strong>${accuracy}%</strong>Accuracy</div><div class="quest-card-stat"><strong>${f.bt?`${(f.bt/1000).toFixed(1)}s`:'—'}</strong>Best time</div><div class="quest-card-stat"><strong>${RATING_LABEL[rating]}</strong>Status</div></div>
@@ -1392,7 +1397,7 @@ const RATING_LABEL = ["new","wild","wild","sleepy","caught","SHINY"];
    Defaults below reproduce the game's original behaviour exactly, so an
    existing save that predates settings plays identically until something
    is changed on purpose. */
-const APP_VERSION = '0.11.0-beta.1';
+const APP_VERSION = '0.13.0-beta.1';
 const FAST_MS = 4000;          // default bonus window
 const WINDOW_CHOICES = [3000,4000,6000,8000];
 const ROUND_CHOICES  = [8,12,16];
@@ -1435,6 +1440,7 @@ const defaultState = () => ({
   bought: {},      // stable piece ID -> quantity in camp inventory
   campDiscovered: {}, // consumed upgrade tiers remain visible in progression history
   campStarted: false,
+  campV2: null, // independent experimental layout, supplies, and command revision
   campTutorial: [],
   campSeen: null,  // toDateString() of last camp visit
   campBackground: 'dusk',
@@ -1464,15 +1470,15 @@ function allAccessState(){
   return next;
 }
 
-let memoryFallback = null;
+const memoryFallback = new Map();
 async function storageGet(key){
   try{
     if(typeof window.storage!=='undefined' && window.storage.get){
       const r=await window.storage.get(key); return r&&r.value;
     }
   }catch(e){}
-  try{ return localStorage.getItem(key); }catch(e){}
-  return memoryFallback;
+  try{ return memoryFallback.get(key)||localStorage.getItem(key); }catch(e){}
+  return memoryFallback.get(key)||null;
 }
 async function storageSet(key,val){
   try{
@@ -1480,10 +1486,12 @@ async function storageSet(key,val){
       await window.storage.set(key,val); return;
     }
   }catch(e){}
-  try{ localStorage.setItem(key,val); return; }catch(e){}
-  memoryFallback=val;
+  try{ localStorage.setItem(key,val);memoryFallback.delete(key);return; }catch(e){}
+  memoryFallback.set(key,val);
+  if(typeof toast==='function') toast('Progress could not be saved to this device. Keep this page open and make a family backup.');
 }
 async function storageRemove(key){
+  memoryFallback.delete(key);
   try{
     if(typeof window.storage!=='undefined' && window.storage.remove){
       await window.storage.remove(key); return;
@@ -1565,6 +1573,10 @@ function migrateState(){
   if(typeof state.lastBackupAt!=='string' || Number.isNaN(Date.parse(state.lastBackupAt))) state.lastBackupAt=null;
   if(typeof state.siegeWins!=='number') state.siegeWins=0;
   Object.values(state.facts).forEach(f=>migrateFactSchedule(f));
+  state.campMonsterFavorites.forEach(key=>{if(state.facts[key])state.facts[key].caught=true;});
+  REALM_ORDER.filter(fam=>state.realmRewardStars[fam]===3).forEach(fam=>{
+    for(let b=0;b<=12;b++){const record=state.facts[fkey(fam,b)];if(record)record.caught=true;}
+  });
   // One-time: seed the camp arrangement from the old hardcoded SHOP coordinates
   // so an existing camp loads looking identical — and is suddenly movable.
   if(!Array.isArray(state.placed)){
@@ -1650,13 +1662,15 @@ function ensureCampClimber(){
   if(spot) state.placed.push({t:CAMP_CLIMBER_PIECE.id,...spot,k:false});
 }
 let saveTimer = null;
+function flushProfileSave(){
+  clearTimeout(saveTimer);
+  if(state&&activeProfileId){ storageSet(profileSaveKey(activeProfileId),JSON.stringify(state)); persistProfileBook(); }
+}
 function saveState(){
   if(!state||!activeProfileId) return;
   clearTimeout(saveTimer);
-  saveTimer = setTimeout(()=>{
-    storageSet(profileSaveKey(activeProfileId),JSON.stringify(state));
-    persistProfileBook();
-  }, 400);
+  const savingProfile=activeProfileId;
+  saveTimer = setTimeout(()=>{ if(savingProfile===activeProfileId) flushProfileSave(); }, 400);
 }
 
 /* ---------- fact helpers ---------- */
@@ -1674,6 +1688,9 @@ function dayDistance(from,to=dateKey()){
   return Number.isNaN(a.getTime())?0:Math.round((b-a)/DAY_MS);
 }
 function migrateFactSchedule(f){
+  // Collection is permanent; current recall and fluency may still change.
+  if(f.rating>=4) f.caught=true;
+  if(f.rating>=5) f.shiny=true;
   f.intervalDays=Math.max(0,Number(f.intervalDays)||0);
   f.reviewStreak=Math.max(0,Number(f.reviewStreak)||0);
   f.lapses=Math.max(0,Number(f.lapses)||0);
@@ -1690,7 +1707,7 @@ function fact(a,b){
   migrateFactSchedule(state.facts[k]);
   return state.facts[k];
 }
-function factRating(a,b){ const f = state.facts[fkey(a,b)]; return f ? f.rating : 0; }
+function factRating(a,b){ const f = state.facts[fkey(a,b)]; return f ? Math.max(f.rating||0,f.shiny?5:f.caught?4:0) : 0; }
 function factIsDue(f,on=dateKey()){ return !!(f&&f.rating>0&&f.dueOn&&f.dueOn<=on); }
 function reviewPriority([key,f]){
   const overdue=Math.max(0,dayDistance(f.dueOn));
@@ -1707,7 +1724,7 @@ function reviewSummary(){
   const learned=Object.values(state.facts).filter(f=>f.rating>0);
   const due=learned.filter(f=>factIsDue(f));
   const soon=learned.filter(f=>f.dueOn&&f.dueOn>dateKey()&&dayDistance(dateKey(),f.dueOn)<=7);
-  const secure=learned.filter(f=>f.rating>=4&&f.intervalDays>=14);
+  const secure=learned.filter(f=>f.retentionSpanDays>=14&&f.lastRetrievalOk===true);
   const recent=(state.reviewHistory||[]).filter(e=>dayDistance(e.day)<=7);
   const accuracy=recent.length?Math.round(recent.filter(e=>e.ok).length/recent.length*100):null;
   return {learned:learned.length,due:due.length,soon:soon.length,secure:secure.length,recent:recent.length,accuracy};
@@ -1717,13 +1734,18 @@ function scheduleRetrieval(q,f,correct,fast){
   if(q.reviewRound||quiz.retry) return;
   state.reviewHistory.push({day:today,key:fkey(q.a,q.b),ok:!!correct,mode:quiz.mode});
   state.reviewHistory=state.reviewHistory.slice(-240);
+  const previous=f.last, wasDue=!f.dueOn||f.dueOn<=today;
   f.last=today;
-  if(!correct){ f.intervalDays=1;f.dueOn=addDays(today,1);f.reviewStreak=0;f.lapses++;return; }
+  if(!correct){ f.intervalDays=1;f.dueOn=addDays(today,1);f.reviewStreak=0;f.lapses++;f.lastRetrievalOk=false;f.retentionSpanDays=0;return; }
+  // A correction later today cannot turn today's lapse into spaced retention.
+  if(previous===today || (!wasDue&&f.intervalDays>0)) return;
+  f.lastRetrievalOk=true;
+  f.retentionSpanDays=previous?Math.max(0,dayDistance(previous,today)):0;
   const current=Math.max(0,Number(f.intervalDays)||0);
   let index=REVIEW_INTERVALS.findIndex(days=>days>=current);
   if(index<0) index=REVIEW_INTERVALS.length-1;
   if(current===0) index=-1;
-  const step=fast?index+1:Math.max(0,index);
+  const step=index+1; // correct retrieval advances independently of answer speed
   f.intervalDays=REVIEW_INTERVALS[Math.min(step,REVIEW_INTERVALS.length-1)];
   f.dueOn=addDays(today,f.intervalDays);
   f.reviewStreak=(Number(f.reviewStreak)||0)+1;
@@ -1817,7 +1839,14 @@ function syncCampAmbience(){
 /* ---------- UI helpers ---------- */
 function $(id){ return document.getElementById(id); }
 function showScreen(id){
+  if(id!=='screen-camp-v2'&&campV2Session){campV2Session.dispose();campV2Session=null;}
+  if(id==='screen-camp-v2'){
+    document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+    $('screen-camp-v2').classList.add('active');document.body.classList.add('camp-world-open');
+    $('nav').style.display='none';stopCampAmbience();enterCampV2();return;
+  }
   if(id!=='screen-camp'){
+    campUndo=null;
     campPanel=null; campCamera={left:null,top:null};
     document.body.classList.remove('camp-world-open');
   } else {
@@ -1867,8 +1896,7 @@ function checkDaily(){
     const yest=new Date(Date.now()-864e5).toDateString();
     if(state.lastPlayed===yest) state.streak++;
     else if(state.lastPlayed!==null){
-      if(state.gems>=20){ state.gems-=20; toast("🏕️ Campfire protected your streak! (−20 💎)"); }
-      else state.streak=1;
+      state.streak=1; // Welcome back. Absence never spends a child's building gems.
     } else state.streak=1;
     state.lastPlayed=today;
     state.questDate=today; state.questDone=false;
@@ -1879,13 +1907,13 @@ function questText(){
   const fam=currentFamily();
   return allConquered()
     ? {t:"Daily Quest: Summit Patrol", s:"Finish one Mixed Mayhem round today"}
-    : {t:`Daily Quest: ${REALMS[fam].name}`, s:`Rescue 10 monsters from the ${fam}s (one practice round)`};
+    : {t:`Daily Quest: ${REALMS[fam].name}`, s:`Answer ${Math.min(10,roundLen())} facts correctly from the ${fam}s in one round`};
 }
 function completeRound(correctCount, fams){
   // daily quest
   if(!state.questDone){
     const fam=currentFamily();
-    if((fams.includes(fam)||allConquered()) && correctCount>=10){
+    if((fams.includes(fam)||allConquered()) && correctCount>=Math.min(10,roundLen())){
       state.questDone=true; state.gems+=10; toast("📜 Daily Quest complete! +10 💎"); sfx.gem();
     }
   }
@@ -1909,6 +1937,7 @@ function realmStars(fam){
   if(state.realms[fam].trial) stars=1;
   if(state.realms[fam].conquered) stars=2;
   if(state.realms[fam].conquered && facts.every(r=>r>=4)) stars=3;
+  stars=Math.max(stars,Number(state.realmRewardStars&&state.realmRewardStars[fam])||0);
   return {stars, caught, avg};
 }
 function realmProgress(fam){
@@ -1959,6 +1988,7 @@ function claimRealmStarRewards(fam){
 /* One button that picks the right next thing, so opening the app to a menu of
    four modes he has no basis for choosing between is optional, not mandatory. */
 function nextAction(){
+  if(dueFactEntries(1).length) return {icon:'repeat',label:'A little Daily Review',sub:'A short, untimed visit with familiar facts',fn:startDailyReview,args:[]};
   if(allConquered()){
     if(!state.summitDone) return {icon:'summit', label:'Climb to the Summit', sub:'The final challenge', fn:startSummit, args:[]};
     return getWeakFacts().length
@@ -2123,7 +2153,7 @@ function weightedFamilyFacts(fam, count, division=false){
   // weight toward low-rating facts
   const pool=[];
   for(let b=0;b<=12;b++){
-    const r=factRating(fam,b);
+    const r=state.facts[fkey(fam,b)]?.rating||0; // current recall, not permanent collection ownership
     const w = r>=5?1 : r===4?2 : r===3?4 : 6;
     for(let i=0;i<w;i++) pool.push(b);
   }
@@ -2263,9 +2293,12 @@ function checkAnswer(){
     } else {
       quiz.correct++;
       if(!q.reviewRound) quiz.passCorrect++;
-      const before=f.rating;
-      if(fast){ f.rating=Math.min(5,f.rating+1); f.slow=Math.max(0,f.slow-1); quiz.fastStreak++; zap(); }
-      else { if(f.rating<3) f.rating++; f.slow++; quiz.fastStreak=0; }
+      const before=factRating(q.a,q.b);
+      if(!q.reviewRound) f.rating=Math.min(5,f.rating+1);
+      if(fast){ f.slow=Math.max(0,f.slow-1); quiz.fastStreak++; zap(); }
+      else { f.slow++; quiz.fastStreak=0; }
+      if(f.rating>=4) f.caught=true;
+      if(f.rating>=5) f.shiny=true;
       if(!f.bt || elapsed<f.bt) f.bt=Math.round(elapsed);
       const boost=quiz.fastStreak>=3;
       $('streak-flame').classList.toggle('show',boost);
@@ -2414,7 +2447,11 @@ function finishQuiz(failed=false){
   if(passed && (qz.mode==='boss'||qz.mode==='summit'||qz.mode==='siege'||stars===3)){ confetti(); sfx.win(); }
   else if(stars>=1) sfx.win();
 
+  const beforeRoundRewards=state.gems;
   completeRound(qz.correct+qz.recovered, qz.fams);
+  if(qz.correct>0&&window.CampV2&&state.campV2){
+    state.campV2=CampV2.awardLearning(state.campV2,qz.gems+starReward.gems+Math.max(0,state.gems-beforeRoundRewards));
+  }
 
   const resultVisual=(qz.mode==='boss'||qz.mode==='siege')?bossVisual(qz.battle?qz.battle.config.fam:qz.fams[0],'result'):em;
   const returnButton=qz.mode==='siege'
@@ -2837,19 +2874,19 @@ function renderParent(){
     <div class="card"><h3>${icon('target')} Suggested next session</h3><p>${plan}</p></div>
     <div class="card"><h3>${icon('repeat')} Retention across days</h3>
       <p>Facts return after gradually longer gaps. A miss shortens the gap so it is practiced again soon.</p>
-      <div class="retention-grid"><div class="retention-stat"><strong>${retention.due}</strong><span>Due today</span></div><div class="retention-stat"><strong>${retention.soon}</strong><span>Due next 7 days</span></div><div class="retention-stat"><strong>${retention.secure}</strong><span>Strong for 14+ days</span></div><div class="retention-stat"><strong>${retention.accuracy===null?'—':retention.accuracy+'%'}</strong><span>7-day retrieval</span></div></div>
+      <div class="retention-grid"><div class="retention-stat"><strong>${retention.due}</strong><span>Due today</span></div><div class="retention-stat"><strong>${retention.soon}</strong><span>Due next 7 days</span></div><div class="retention-stat"><strong>${retention.secure}</strong><span>Recalled after 14+ days</span></div><div class="retention-stat"><strong>${retention.accuracy===null?'—':retention.accuracy+'%'}</strong><span>7-day retrieval</span></div></div>
       <div class="retention-meter" aria-label="${retention.learned?Math.round(retention.secure/retention.learned*100):0}% of learned facts are secure"><span style="width:${retention.learned?Math.round(retention.secure/retention.learned*100):0}%"></span></div>
-      <p style="font-size:12px"><b>${retention.secure} of ${retention.learned}</b> learned facts currently hold a two-week-or-longer review interval.${due.length?` Due first: ${due.map(([k])=>k.replace('*','×')).join(', ')}.`:' Nothing is overdue today.'}</p>
+      <p style="font-size:12px"><b>${retention.secure} of ${retention.learned}</b> learned facts were correctly recalled after a gap of at least two weeks.${due.length?` Due first: ${due.map(([k])=>k.replace('*','×')).join(', ')}.`:' Nothing is overdue today.'}</p>
     </div>
     <div class="card"><h3>${icon('cards')} Family progress</h3><div style="margin-top:8px">${chips}</div></div>
     <div class="card"><h3>${icon('heal')} Needs attention</h3>
       ${weak.length?`<div class="weak-list">${weak.map(k=>`<span class="weak-pill">${k.replace('*','×')}</span>`).join('')}</div>`:'<p>No struggling facts right now. 🎉</p>'}
-      ${slow.length?`<p style="margin-top:10px"><b>Accurate but slow</b> (needs speed reps): ${slow.map(k=>k.replace('*','×')).join(', ')}</p>`:''}
+      ${slow.length?`<p style="margin-top:10px"><b>Accurate but slow</b> (can take their time): ${slow.map(k=>k.replace('*','×')).join(', ')}</p>`:''}
     </div>
     <div class="card"><h3>${icon('spark')} Habit</h3><p>Daily streak: <b>${state.streak} day${state.streak===1?'':'s'}</b> • Gems: <b>${state.gems}</b> • Quest today: <b>${state.questDone?'done':'not yet'}</b></p></div>
     <div class="card"><h3>${icon('target')} Fact heatmap (row × column)</h3>
       <p style="margin-bottom:8px;font-size:12px">Gray = not seen • Red = struggling • Amber = slow • Green = caught • Gold = mastered</p>
-      <p style="margin-bottom:8px;font-size:12px"><b>Green and gold mean "answered in under ${(state.settings.window/1000)}s"</b> — that's the current bonus window. Widen or narrow it in Preferences and these shift with it.</p>
+      <p style="margin-bottom:8px;font-size:12px"><b>Green and gold are earned collection milestones.</b> Accurate answers count at any speed. The optional ${(state.settings.window/1000)}s window affects bonus gems, not adventure access.</p>
       <div class="heat-grid">${heat}</div></div>
     <div class="card"><h3>${icon('hammer')} Create-a-Quiz</h3>
       <p>Build a custom round — any families, even ones not unlocked yet in the adventure.</p>
@@ -2863,11 +2900,11 @@ function renderParent(){
       <p style="margin-bottom:4px">Everything here changes how a round plays. Defaults match how the game shipped.</p>
 
       <div class="toggle-row"><span class="lbl">${icon('spark')} Speed bonus meter</span>${switchButton('Speed bonus meter',st.timer,"toggleSetting('timer')")}</div>
-      <div class="pref-note">The draining bar. Turn it off and answers are never timed — but ratings stop climbing past <b>sleepy</b>.</div>
+      <div class="pref-note">Hide the countdown for calmer practice. Accurate answers can earn every creature and star at any speed.</div>
       ${st.timer?`
       <div class="pref-sub">Bonus window — how long he has to earn the speed bonus</div>
       <div class="count-pick">${WINDOW_CHOICES.map(ms=>`<button class="${st.window===ms?'sel':''}" onclick="setPref('window',${ms})">${ms/1000}s</button>`).join('')}</div>
-      <div class="pref-note">Wider is gentler. It also makes <b>caught</b> and <b>shiny</b> easier to reach, so the heatmap below shifts with it.</div>`:''}
+      <div class="pref-note">A wider window makes bonus gems easier to earn. Collection milestones and adventure access never require fast answers.</div>`:''}
 
       <div class="pref-sub">Round length</div>
       <div class="count-pick">${ROUND_CHOICES.map(n=>`<button class="${st.roundLen===n?'sel':''}" onclick="setPref('roundLen',${n})">${n===8?'Short':n===12?'Normal':'Long'} · ${n}</button>`).join('')}</div>
@@ -3429,6 +3466,28 @@ function buyCampUpgrade(chainId){
    Tap a piece to hold it, tap a cell to put it down. No drag — drag fights
    page scroll on iPad Safari and needs pointer capture to behave. */
 let heldPiece=null,pendingUpgrade=null,campUndo=null;
+let campV2Session=null;
+function resetCampEditor(){
+  if(campV2Session){campV2Session.dispose();campV2Session=null;}
+  heldPiece=null;pendingUpgrade=null;campUndo=null;campPanel=null;campPreviewCell=null;
+  campCamera={left:null,top:null};stopCampAutoPan();clearTimeout(window._campCameraSave);
+  flushProfileSave();
+}
+function enterCampV2(){
+  if(campV2Session)return;
+  const host=$('screen-camp-v2');
+  if(!window.CampV2){host.innerHTML='<div class="card" style="margin:30px"><h2>Camp 2 is not downloaded yet</h2><p>Go online and update the app to try the new clearing.</p><button class="btn" onclick="showScreen(\'screen-camp\')">Back to Camp 1</button></div>';return;}
+  if(!state.campV2)state.campV2=CampV2.fresh();
+  if(!CampV2.validSave(state.campV2)){host.innerHTML='<div class="card" style="margin:30px"><h2>This clearing needs recovery</h2><p>Your saved Camp 2 has been kept intact. Camp 1 is still available.</p><button class="btn" onclick="showScreen(\'screen-camp\')">Back to Camp 1</button></div>';return;}
+  state.campV2=CampV2.migrateSave(state.campV2);
+  const owner=activeProfileId;
+  campV2Session=CampV2.mount(host,{profileId:owner,currentProfileId:()=>activeProfileId,
+    getSave:()=>state.campV2,setSave:next=>{if(owner===activeProfileId){state.campV2=next;saveState();}},
+    avatar:profileAvatar(),reducedMotion:()=>state.settings.calm||prefersReducedMotion(),
+    onExit:showScreen,onPractice:()=>{showScreen('screen-hall');}
+  });
+  saveState();
+}
 let campPanel=null,campCategory='all',campFilter='all',campCamera={left:null,top:null},campPreviewCell=null,campAutoPanTimer=null,campSheetDrag=null;
 function captureCampCamera(){
   const viewport=$('camp-viewport');
@@ -3467,7 +3526,7 @@ function setCampPanel(panel){
 }
 function setCampCategory(category){ campCategory=category; renderCamp(); }
 function setCampFilter(filter){ campFilter=filter; renderCamp(); }
-function campSheetDragStart(e){ campSheetDrag={startY:e.clientY,lastY:e.clientY}; e.currentTarget.setPointerCapture?.(e.pointerId); }
+function campSheetDragStart(e){ if(e.target.closest('button')) return; campSheetDrag={startY:e.clientY,lastY:e.clientY}; e.currentTarget.setPointerCapture?.(e.pointerId); }
 function campSheetDragMove(e){
   if(!campSheetDrag) return; campSheetDrag.lastY=e.clientY;
   const sheet=e.currentTarget.closest('.camp-sheet'); if(sheet) sheet.style.setProperty('--sheet-drag',`${Math.max(0,e.clientY-campSheetDrag.startY)}px`);
@@ -3482,11 +3541,13 @@ function setCampBackground(id){
   captureCampCamera(); state.campBackground=id; campCamera={left:null,top:null}; saveState(); renderCamp(false); toast(`${background.name} selected`);
 }
 function rememberCampUndo(){
-  campUndo={placed:state.placed.map(p=>({...p})),heldPiece,pendingUpgrade:pendingUpgrade?{...pendingUpgrade}:null};
+  campUndo={profileId:activeProfileId,placed:state.placed.map(p=>({...p})),heldPiece,pendingUpgrade:pendingUpgrade?{...pendingUpgrade}:null,
+    gems:state.gems,bought:{...state.bought},campDiscovered:{...state.campDiscovered},campTutorial:[...state.campTutorial]};
 }
 function undoCampAction(){
-  if(!campUndo){ toast('Nothing to undo yet'); return; }
-  state.placed=campUndo.placed.map(p=>({...p})); heldPiece=campUndo.heldPiece; pendingUpgrade=campUndo.pendingUpgrade; campUndo=null;
+  if(!campUndo||campUndo.profileId!==activeProfileId){campUndo=null;toast('Nothing to undo yet');return;}
+  state.placed=campUndo.placed.map(p=>({...p}));state.gems=campUndo.gems;state.bought={...campUndo.bought};state.campDiscovered={...campUndo.campDiscovered};state.campTutorial=[...campUndo.campTutorial];
+  heldPiece=campUndo.heldPiece; pendingUpgrade=campUndo.pendingUpgrade; campUndo=null;updateChips();
   saveState(); renderCamp(); toast('Last camp move undone');
 }
 function holdPiece(id){
@@ -3763,6 +3824,7 @@ function renderCamp(preserveCamera=true){
         <button class="camp-hud-btn" onclick="undoCampAction()" aria-label="Undo last camp move" title="Undo last move" ${campUndo?'':'disabled'}>${icon('undo')}</button>
       </div>
       <div class="camp-pan-hint">↔ Swipe to explore your whole camp</div>
+      <div class="camp-version-switch" aria-label="Compare camps"><button aria-current="page">Camp 1</button><button onclick="showScreen('screen-camp-v2')">Try Camp 2 →</button></div>
       <div class="camp-status-stack" aria-live="polite">
         ${state.campTutorial.length?`<div class="camp-notice">Camp setup: place your ${pieceById(state.campTutorial[0]).name}. Your Bedroll and Fire Ring are free starter gear.</div>`:''}
         ${state.campReturned.length?`<div class="camp-notice relocate">${state.campReturned.length} ${state.campReturned.length===1?'piece was':'pieces were'} returned to your backpack while your camp was updated. Open Build or Treasures to place ${state.campReturned.length===1?'it':'them'} again. <button class="btn small ghost" onclick="dismissCampReturned()">Got it</button></div>`:''}
@@ -3849,6 +3911,8 @@ window.addEventListener('resize',syncAppViewportHeight,{passive:true});
 window.addEventListener('orientationchange',()=>setTimeout(syncAppViewportHeight,120),{passive:true});
 if(window.visualViewport) window.visualViewport.addEventListener('resize',syncAppViewportHeight,{passive:true});
 document.addEventListener('visibilitychange',syncCampAmbience);
+window.addEventListener('pagehide',flushProfileSave);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)flushProfileSave();});
 if(window.matchMedia){
   const motionQuery=window.matchMedia('(prefers-reduced-motion: reduce)');
   const motionChanged=()=>{ if(state) applyCalm(); };

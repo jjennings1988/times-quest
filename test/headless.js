@@ -41,7 +41,8 @@ function legacySave() {
 }
 
 async function boot(saveObj, seededStorage={}) {
-  const dom = new JSDOM(fs.readFileSync(HTML,'utf8'), {
+  const source=fs.readFileSync(HTML,'utf8').replace('<script src="camp-v2.js"></script>',()=>`<script>${fs.readFileSync(require('path').join(PUBLIC,'camp-v2.js'),'utf8')}</script>`);
+  const dom = new JSDOM(source, {
     runScripts:'dangerously', pretendToBeVisual:true, url:'https://example.test/',
     beforeParse(win){
       Object.defineProperty(win,'crypto',{value:webcrypto,configurable:true});
@@ -497,8 +498,8 @@ async function boot(saveObj, seededStorage={}) {
   }
   win.showScreen('screen-map');
   ok('continue button has a label', ($('continue-btn').textContent||'').length > 5, $('continue-btn').textContent);
-  ok('continue points at the current realm (×2 practice or learn)',
-     /×2|Double River/.test($('continue-btn').textContent), $('continue-btn').textContent);
+  ok('continue prioritizes due review for a returning climber',
+     /Daily Review/.test($('continue-btn').textContent), $('continue-btn').textContent);
   ok('adventure renders one map destination per realm plus the summit',
      win.document.querySelectorAll('#map-trail .realm-node').length === 13 && !!win.document.querySelector('#map-trail .summit-node'));
   ok('adventure route has one curved segment between every destination',
@@ -620,12 +621,12 @@ async function boot(saveObj, seededStorage={}) {
      ev('state').reviewHistory.at(-1).key===k && ev('state').reviewHistory.at(-1).ok===true);
   await new Promise(r => setTimeout(r, 700));
 
-  section('Quiz — slow correct is capped at rating 3');
+  section('Quiz — accurate answers progress at any speed');
   let q2 = ev('quiz').queue[ev('quiz').idx];
   const k2 = `${Math.min(q2.a,q2.b)}*${Math.max(q2.a,q2.b)}`;
   ev('state').facts[k2] = {c:0,w:0,streak:0,rating:3,slow:0,last:null,bt:null};
   answer(q2.ans, false);
-  ok('slow correct does not exceed rating 3', ev('state').facts[k2].rating === 3, `got ${ev('state').facts[k2].rating}`);
+  ok('slow correct reaches caught status', ev('state').facts[k2].rating === 4 && ev('state').facts[k2].caught===true, `got ${ev('state').facts[k2].rating}`);
   ok('slow counter incremented', ev('state').facts[k2].slow === 1);
   await new Promise(r => setTimeout(r, 700));
 
@@ -1056,7 +1057,7 @@ async function boot(saveObj, seededStorage={}) {
   ev('qStart = performance.now() - 5000');
   String(wq2.ans).split('').forEach(d => win.pressKey(d));
   win.pressKey('enter');
-  ok('5s answer is slow in a 3s window (rating held)', ev('state').facts[wk2].rating === 4,
+  ok('5s answer progresses even outside a 3s bonus window', ev('state').facts[wk2].rating === 5,
      `rating ${ev('state').facts[wk2].rating}`);
   ok('slow counter rose instead', ev('state').facts[wk2].slow === 1);
   await new Promise(r => setTimeout(r, 700));
@@ -1171,14 +1172,14 @@ async function boot(saveObj, seededStorage={}) {
      ['timer','retry','calm','sound','clicks','ambience'].every(k => pb.includes(`toggleSetting('${k}')`)));
   ok('preference toggles expose switch state to assistive technology',
      Array.from(win.document.querySelectorAll('#parent-body .tg')).every(button=>button.getAttribute('role')==='switch'&&button.hasAttribute('aria-checked')));
-  ok('heatmap legend states the active window', pb.includes('under 4s'), 'legend missing window');
+  ok('heatmap separates collection from the optional speed bonus', pb.includes('optional 4s window') && pb.includes('Accurate answers count at any speed'), 'legend missing distinction');
 
   section('Parent dashboard still computes');
   let pErr = null;
   try { win.showScreen('screen-parent'); } catch(e){ pErr = e.message; }
   ok('parent dashboard renders', !pErr, pErr);
   ok('parent dashboard explains due, upcoming, secure, and recent retrieval performance',
-     ['Due today','Due next 7 days','Strong for 14+ days','7-day retrieval'].every(label=>$('parent-body').textContent.includes(label)));
+     ['Due today','Due next 7 days','Recalled after 14+ days','7-day retrieval'].every(label=>$('parent-body').textContent.includes(label)));
   ok('heatmap has 169 cells + headers',
      win.document.querySelectorAll('.heat-cell').length === 169,
      String(win.document.querySelectorAll('.heat-cell').length));
