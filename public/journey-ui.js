@@ -31,6 +31,11 @@ function deliverCampGrants(){
     for(const [type,count] of [['path',6],['deck',2],['lantern',1]])next.inventory[type]=Math.min(10000,(next.inventory[type]||0)+count);
     next.revision++;state.campV2=next;state.journey.riverKitDelivered=true;
   }
+  if(state.journey.zeroKit&&!state.journey.zeroKitDelivered){
+    const next=JSON.parse(JSON.stringify(state.campV2));
+    next.inventory.trailtent=(next.inventory.trailtent||0)+1;next.openingIntro=true;next.revision++;
+    state.campV2=next;state.journey.zeroKitDelivered=true;
+  }
   state.journey.pendingGems=0;
   // Compact acknowledged round IDs. Current round remains present for safe reentry.
   const entries=Object.entries(state.journey.grants);entries.forEach(([,g])=>g.claimed=true);
@@ -52,18 +57,22 @@ function beginLesson(fam){
   lastConfig={fn:beginLesson,args:[fam]};saveState();showScreen('screen-journey');
 }
 function resumeLesson(){if(state.journey.current)showScreen('screen-journey');else beginLesson(currentFamily());}
-function chooseStartingRoute(){state.journey.current={family:2,stage:'choose',groups:0};showScreen('screen-journey');}
-function lessonLandscape(fam){
+function chooseStartingRoute(){state.journey.current={family:0,stage:'choose',groups:0};showScreen('screen-journey');}
+function lessonLandscape(fam){return illustratedGuardian(fam);}
+function legacyLessonLandscape(fam){
   return `<div class="journey-landscape" aria-hidden="true" style="--realm-color:${REALMS[fam].color}"><div class="journey-hills"></div><div class="journey-stream"></div><div class="journey-bridge"><i></i><i></i><i></i><i></i><i></i></div><img src="art/realm/pet-${fam}.png" alt=""><span class="journey-spark">✦</span></div>`;
 }
 function renderJourney(){
   const current=state.journey.current,host=$('journey-body');
+  if(!current||current.stage==='choose')$('screen-journey').style.backgroundImage="url('art/battle/bg-battle-x0-portrait.webp')";
+  if(current?.family===0&&current.stage!=='choose'){renderZeroLesson();return;}
+  if(current?.stage==='see'&&GuardianChapters.chapters[current.family]){renderGuardianLesson();return;}
   if(!current){
-    host.innerHTML=`<div class="journey-heading"><small>YOUR EXPEDITION</small><h1>Make this world your own</h1><p>Help the guardians, discover creatures, and build a home for your adventures.</p></div>${lessonLandscape(2)}<section class="journey-card"><h2>A bridge needs your help</h2><p>Twix has found a crossing with a missing half. Discover how equal groups can rebuild it.</p><button class="btn gold" onclick="beginLesson(2)">Show me how</button><button class="btn secondary" onclick="chooseStartingRoute()">I have multiplied before</button><button class="btn ghost" onclick="state.journey.onboardingDone=true;saveState();showScreen('screen-map')">Explore the map first</button></section>`;
+    host.innerHTML=`<div class="journey-heading"><small>YOUR EXPEDITION</small><h1>Make this world your own</h1><p>Help the guardians, discover creatures, and build a home for your adventures.</p></div>${lessonLandscape(0)}<section class="journey-card"><h2>A little mystery in Zero Marsh</h2><p>Poof has found some empty baskets. Explore two surprising ways to make zero, then bring the first warm light home.</p><button class="btn gold" onclick="beginLesson(0)">Show me how</button><button class="btn secondary" onclick="chooseStartingRoute()">I have multiplied before</button><button class="btn ghost" onclick="state.journey.onboardingDone=true;saveState();showScreen('screen-map')">Explore the map first</button></section>`;
     return;
   }
   if(current.stage==='choose'){
-    host.innerHTML=`<div class="journey-heading"><small>CHOOSE YOUR START</small><h1>What would you like to try?</h1><p>Six calm questions can open a route. This is a starting suggestion, not a mastery badge.</p></div><div class="journey-route-grid">${REALM_ORDER.map(f=>`<button onclick="startReadiness(${f})">${realmCharacter(f)}<strong>${REALMS[f].name}</strong><span>×${f}</span></button>`).join('')}</div><button class="btn gold" onclick="beginLesson(2)">Learn with Twix instead</button>`;return;
+    host.innerHTML=`<div class="journey-heading"><small>CHOOSE YOUR START</small><h1>What would you like to try?</h1><p>Six calm questions can open a route. This is a starting suggestion, not a mastery badge.</p></div><div class="journey-route-grid">${REALM_ORDER.map(f=>`<button onclick="startReadiness(${f})">${realmCharacter(f)}<strong>${REALMS[f].name}</strong><span>×${f}</span></button>`).join('')}</div><button class="btn gold" onclick="beginLesson(0)">Begin with Poof instead</button>`;return;
   }
   const l=LearningJourney.lesson(current.family),fam=current.family,r=REALMS[fam],build=current.stage==='build';
   host.innerHTML=`<div class="journey-heading"><small>${build?'2 · BUILD TOGETHER':'1 · DISCOVER'} · NO TIMER</small><h1>${l.title}</h1><p>${r.petName} is your ally. ${l.idea}</p></div>${lessonLandscape(fam)}<section class="journey-card"><h2>${build?`Make ${fam} equal groups`:'Watch the groups work'}</h2><p>${build?`Each group holds 4 supplies. ${fam===0?'Leave no groups on the clearing.':`Use the buttons to build ${fam} groups. Then we will try a few new facts.`}`:l.explanation}</p>${build?lessonBuildMarkup(current.groups):MathVisuals.render(fam,4)}<div id="journey-feedback" role="status"></div>${build?`<button class="btn gold" onclick="checkLessonBuild()">Check my groups</button>`:`<button class="btn gold" onclick="lessonBuildStage()">Let me build it</button>`}<button class="btn ghost" onclick="saveState();showScreen('screen-map')">Save and explore</button></section>`;
@@ -86,6 +95,14 @@ function startReadiness(fam){
 }
 function finishJourneyRound(qz,passed){
   const fam=qz.fams[0];
+  if(qz.mode==='lesson'&&fam===0&&state.journey.zeroChapter){
+    if(!passed)return {headline:'Let’s explore a little more',sub:'Poof will help. Three independent discoveries open the path; every supported answer is useful practice.',action:'startZeroTry()',label:'Try three new discoveries'};
+    const first=!state.journey.lessons[0]?.completed;
+    state.journey.lessons[0]={completed:true,day:dateKey(),independent:qz.passCorrect,total:3};
+    state.realms[0].trial=true;state.journey.activeFamily=0;
+    if(first){state.gems+=12;qz.gems+=12;}
+    return {headline:'You discovered the power of zero!',sub:'Your first Realm Challenge is complete. Help Poof clear the fog with three discoveries.',action:'startBoss(0)',label:'Help Poof clear the marsh'};
+  }
   if(qz.mode==='lesson'){
     const old=state.journey.lessons[fam];state.journey.lessons[fam]={completed:true,day:dateKey(),independent:qz.passCorrect,total:qz.baseTotal};
     if(!old?.completed){state.gems+=12;qz.gems+=12;}
@@ -118,10 +135,11 @@ function renderQuestionContext(q){
 }
 function encounterQuestions(fam,count){
   const values=[3,4,6,5,7,8,9,2,11,12,10,1];
+  const unit=GuardianChapters.chapters[fam]?.unit||'supplies';
   return Array.from({length:count},(_,i)=>{
     const b=values[i%values.length],kind=['build','split','missing'][i%3];
-    if(kind==='missing'&&fam>0)return {a:fam,b,text:`${fam} × ? = ${fam*b}`,ans:b,encounter:kind,prompt:`Restore ${fam} equal sections using ${fam*b} supplies. How many belong in each section?`};
-    return {a:fam,b,text:`${fam} × ${b}`,ans:fam*b,encounter:kind==='missing'?'build':kind,prompt:kind==='split'?'Choose how to split the groups. Then combine their totals.':`Supply ${fam} equal sections with ${b} stones each.`};
+    if(kind==='missing'&&fam>0)return {a:fam,b,text:`${fam} × ? = ${fam*b}`,ans:b,encounter:kind,prompt:`Share ${fam*b} ${unit} into ${fam} equal groups. How many in each?`};
+    return {a:fam,b,text:`${fam} × ${b}`,ans:fam*b,encounter:kind==='missing'?'build':kind,prompt:kind==='split'?'Choose how to split the groups. Then combine their totals.':`Make ${fam} equal groups with ${b} ${unit} in each.`};
   });
 }
 function renderEncounter(q){
@@ -130,7 +148,7 @@ function renderEncounter(q){
     const left=Math.floor(q.a/2),p=LearningJourney.parts(q.a),choice=p&&p[1]>0?p:[left,q.a-left];
     host.innerHTML=`<div class="encounter-title">Choose your strategy</div><div class="encounter-options"><button onclick="chooseEncounterSplit(${choice[0]},${choice[1]})">${q.a===2?'Double the amount':`${choice[0]} groups + ${choice[1]} groups`}</button><button onclick="chooseEncounterSplit(${q.a-1},1,true)">${q.a===2?'See two equal groups':`${q.a-1} groups + 1 group`}</button></div><div id="encounter-model" aria-live="polite">Both routes work. Which helps you?</div>`;
   }else{
-    host.innerHTML=`<div class="encounter-title">${q.encounter==='missing'?'Find the missing supplies':'Restore the crossing'}</div><div class="encounter-sections" aria-label="${q.a} equal sections">${Array.from({length:q.a},()=>`<span>${q.encounter==='missing'?'?':q.b}</span>`).join('')||'<span>No sections · no supplies</span>'}</div><p>${q.encounter==='missing'?`${q.a*q.b} supplies altogether. Every section must have the same amount.`:'Each section needs the shown amount. Enter the total to restore it.'}</p>`;
+    host.innerHTML=`<div class="encounter-title">${q.encounter==='missing'?'Find the missing amount':GuardianChapters.chapters[q.a]?.goal||'Restore the crossing'}</div><div class="encounter-sections" aria-label="${q.a} equal groups">${Array.from({length:q.a},()=>`<span>${q.encounter==='missing'?'?':q.b}</span>`).join('')||'<span>No groups · no supplies</span>'}</div><p>${q.encounter==='missing'?`${q.a*q.b} altogether. How many in each equal group?`:'Equal groups. How many altogether?'}</p>`;
   }
 }
 function chooseEncounterSplit(a,b,showGroups=false){

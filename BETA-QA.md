@@ -23,13 +23,13 @@ The GitHub Actions workflow runs the same suite on every pull request and on pus
 ## Core journey
 
 1. Create a normal child profile. Verify eight initial explorer choices, More explorers, selected-state announcement, and a reachable Begin quest action.
-2. Choose Show me how. Twix’s ×2 lesson should show a model, ask for two equal groups, then offer four new problems without a timer. Tap primary actions in the center before and after a toast.
+2. Choose Play, create a climber, then Show me how. Poof’s ×0 lesson starts at Zero Marsh. Inspect three empty baskets, send away three baskets of four, compare the arrangements, then solve three independent problems. Tap primary actions in the center before and after a toast.
 3. Choose an experienced starting check on another profile. A pass opens that route without awarding a realm victory, creature collection, or retention mastery.
-4. Before lesson/readiness/ten catches, confirm the Realm Challenge is locked. A completed lesson opens its six-question, five-independent-success requirement. A locked boss must also reject keyboard Enter.
+4. Before lesson/readiness/ten catches, confirm the Realm Challenge is locked. A completed lesson opens its six-question, five-independent-success requirement. The authored Zero Marsh opening instead earns the first challenge star through three independent discoveries. A locked boss must also reject keyboard Enter.
 5. Miss a multiplication, division, and missing-factor question. Help must explain the actual unknown; supported answers must not raise independent accuracy or collection. Rescue questions are capped at two.
 6. Complete the challenge for star one. Restore the encounter for star two; victory happens on the answer that empties threat strength. On the last lost heart, help must appear before the result.
 7. Check build, split-choice, and missing-part tasks. Guardian is the ally; speed is never needed. Keypad and help must remain reachable in both orientations.
-8. Results show independent successes separately from supported corrections and reviews. Visit Camp 2 and confirm pending earnings plus the once-only Double River path/deck/lantern kit. Revisit/reload: no duplicate grants.
+8. Results show independent successes separately from supported corrections and reviews. Visit Camp 2 and confirm pending earnings and the once-only Cozy Pup Tent kit from the opening victory. Use it to renovate the same tent for free. The later Double River kit also remains once-only. Revisit/reload: no duplicate grants.
 9. Complete the full collection for star three. Choose an expedition-team creature; its card should be reachable during lessons and in the Camp 2 Journal.
 10. Leave or reload a partially answered round and a lesson. Resume the next unanswered task; an interrupted correction returns to help and remains supported. Earned supplies remain saved.
 11. Use Finish for today, return on another day, and find a short review. There must be no lost-streak or lost-reward message.
@@ -150,3 +150,17 @@ Follow [CAMP-V2-PROTOTYPE.md](CAMP-V2-PROTOTYPE.md) for scope and learning chang
 - [ ] Open Westwood Reach, Cedar Rise and Fern Hollow through untimed reviews; clear trees, build at the parcel edges and reload.
 - [ ] Verify forest and mountain boundaries when panning and rotating at the world edges.
 - [ ] Test iPhone portrait, iPad landscape, low power, gentle motion, pinch, and tap placement. Measure real-device GPU time and a 20-minute battery session before broad release.
+
+## Illustrated opening slice
+
+Follow [OPENING-EXPEDITION.md](OPENING-EXPEDITION.md). Check the title at phone and tablet sizes, parent information, both zero arrangements, manipulation reload, supported failure, three-success fog encounter, in-place free renovation, undo/reload, and My land → Homestead Meadow. Existing camps must retain their prior furniture and balance. New camps use the modest starter. Repeat with calm mode, keyboard, and a device with WebGL unavailable.
+
+### Guardian chapters and persistent land grid
+
+- Exercise each family’s manipulation, save halfway, reload, and finish the comparison.
+- Check half of ten at the harbor, ten minus one at the temple, and three doubles in the ice caves.
+- Verify independent answers restore scene stages; help and retry remain available.
+- With an ordinary profile, compare solid owned cells and dashed future cells while exploring. Summit Tester owns all parcels and therefore shows no future grid.
+- Claim land through its review activity: dashed cells become solid without moving any buildings.
+- Verify Story Stones have no interior grid, and trees still block placement within owned land.
+- Check phone/tablet portrait and landscape, gentle motion, low power, and legacy camp recovery.

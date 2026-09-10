@@ -129,8 +129,8 @@ async function boot(saveObj, seededStorage={}) {
   const fresh = await boot(undefined);
   const fev = expr => fresh.win.eval(expr);
   ok('fresh boot has no errors', fresh.errs.length === 0, fresh.errs.join('; '));
-  ok('a new device opens the welcome profile screen',
-     fev('state') === null && fresh.$('profile-gate').classList.contains('on') && fresh.$('profile-gate-body').textContent.includes('Welcome, climber'));
+  ok('a new device opens the illustrated title screen',
+     fev('state') === null && fresh.$('screen-title').classList.contains('active') && fresh.$('screen-title').textContent.includes('Build your world'));
   fresh.win.renderProfileGate('create');
   fresh.$('profile-name').value='Avery';
   await fresh.win.createProfile();
@@ -699,7 +699,7 @@ async function boot(saveObj, seededStorage={}) {
   ok('boss battle markup keeps its emoji fallback', $('battle-boss').innerHTML.includes('🌊'));
   ok('boss battle markup points at the stable semantic PNG', $('battle-boss').innerHTML.includes('art/boss/boss-2.png'));
   ok('selected profile climber enters the battle', $('battle-climber').innerHTML.includes('art/avatar/profile-1.png'));
-  ok('River Serpent uses the stepping-stone prototype', $('battle-stage').classList.contains('effect-river') && $('battle-mechanic-name').textContent.includes('Stepping-stone'));
+  ok('Double River uses its illustrated crossing restoration', $('battle-stage').classList.contains('effect-river') && $('battle-stage').classList.contains('guardian-restoration') && $('battle-name').textContent==='Rebuild the river crossing');
   ok('River Serpent loads its dedicated portrait battlefield', $('battle-stage').style.getPropertyValue('--battle-bg').includes('art/battle/bg-battle-x2-portrait.webp'));
   ok('River Serpent has a distinct counterattack pose', $('battle-stage').style.getPropertyValue('--boss-attack-art').includes('art/boss/boss-2-attack.webp'));
   ok('showdown renders a five-position battle lane', $('battle-lane').children.length === 5);

@@ -1,10 +1,11 @@
 /* Times Quest service worker — offline-first app shell */
-const CACHE = 'times-quest-v68';
+const CACHE = 'times-quest-v78';
 const CAMP_3D = ['./camp-v2-scene.js','./camp-world-details.js','./vendor/three/three.module.min.js','./vendor/three/three.core.min.js'];
 const CORE = [
   './',
   './index.html',
   './camp-v2.js',
+  './camp-guide.js',
   './camp-v2.css',
   './camp-content.js',
   './math-visuals.js',
@@ -12,6 +13,12 @@ const CORE = [
   './learning-journey.js',
   './journey-ui.js',
   './journey.css',
+  './opening.js',
+  './guardian-chapters.js',
+  './guardian-ui.js',
+  './opening.css',
+  './art/battle/bg-battle-x0-portrait.webp',
+  './art/realm/pet-0.png',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',
