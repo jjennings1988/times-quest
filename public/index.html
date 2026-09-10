@@ -7,6 +7,7 @@
 <meta name="theme-color" content="#1A1538">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="camp-v2.css">
+<link rel="stylesheet" href="math-visuals.css">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -773,7 +774,8 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[role="button"]:
 .camp-place-name{display:block}.camp-pan-hint{top:calc(max(10px,env(safe-area-inset-top)) + 48px);animation:campHintAway 6s 1s forwards}
 .camp-status-stack{left:50%;right:auto;bottom:calc(max(4px,env(safe-area-inset-bottom)) + 76px);width:min(560px,calc(100vw - 20px));transform:translateX(-50%)}
 body.camp-world-open #nav,body.camp-world-open #screen-camp>.topbar{visibility:hidden;pointer-events:none}
-body.camp-world-open .toast{position:fixed;z-index:400;bottom:calc(max(4px,env(safe-area-inset-bottom)) + 76px)}
+body.camp-world-open .toast{
+  pointer-events:none;position:fixed;z-index:400;bottom:calc(max(4px,env(safe-area-inset-bottom)) + 76px)}
 @keyframes flicker{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
 /* With a 300%-wide strip, 0/50/100% select frames 1/2/3. The 150%
    endpoint plus steps(3) holds exactly those three positions. */
@@ -852,6 +854,7 @@ body.camp-world-open .toast{position:fixed;z-index:400;bottom:calc(max(4px,env(s
 .confetti{position:fixed;top:-12px;border-radius:3px;pointer-events:none;z-index:99;animation:fall linear forwards}
 @keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
 .toast{
+  pointer-events:none;
   position:absolute;left:50%;bottom:96px;transform:translateX(-50%);background:var(--ink);color:#fff;
   border-radius:14px;padding:10px 18px;font-weight:800;font-size:14px;z-index:50;opacity:0;transition:opacity .25s;
   box-shadow:0 5px 16px rgba(0,0,0,.4);white-space:nowrap;
@@ -863,6 +866,7 @@ body.calm *{animation:none!important;transition:none!important}
 body.calm .stars{display:none}
 body.reduce-motion .camp-viewport{scroll-snap-type:none}
 </style>
+<link rel="stylesheet" href="journey.css">
 </head>
 <body>
 <div id="app">
@@ -874,7 +878,7 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
       <button class="profile-switch" onclick="openProfileChooser()" aria-label="Switch player" title="Switch player"><img class="profile-mini" id="map-profile-avatar" alt=""></button>
       <div class="title">Times Quest<small>The Climb to Mount Twelve</small></div>
       <div class="chip"><span class="em">💎</span><span id="gem-count">0</span></div>
-      <div class="chip"><span class="em">🔥</span><span id="streak-count">0</span></div>
+      <div class="chip"><span class="em">🌿</span><span id="streak-count">0</span></div>
       <button class="map-quest-toggle" id="map-quest-toggle" onclick="toggleMapNotices()" aria-label="Open quest notes" aria-expanded="false">📜<span class="dot"></span></button>
     </div>
     <div class="map-pad">
@@ -895,7 +899,7 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
         </div>
         <div id="chest-banner" style="display:none" class="daily-quest">
           <span class="em">🎁</span>
-          <div><div class="t">Mystery Chest!</div><div class="s">Finish any round today to open it.</div></div>
+          <div><div class="t">Welcome-back supplies · 6 gems</div><div class="s">Finish a learning round when you feel ready.</div></div>
         </div>
       </div>
       <div id="map-trail"></div>
@@ -949,12 +953,15 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
       <div class="battle-announcement" id="battle-announcement"><strong id="battle-callout-title"></strong><span id="battle-callout-copy"></span></div>
     </section>
     <div class="hearts" id="hearts"></div>
+    <div id="question-context"></div>
+    <div id="encounter-task"></div>
     <div class="question-zone">
       <div class="streak-flame" id="streak-flame">FAST STREAK · BONUS GEM</div>
-      <div class="q-text" id="q-text">7 × 8</div>
+      <div class="q-text" id="q-text" tabindex="-1">7 × 8</div>
       <div class="answer-box" id="answer-box">&nbsp;</div>
       <div class="timer-row" id="timer-track"><span class="timer-bolt" id="timer-bolt">⚡</span><div class="timer-track"><div class="timer-fill" id="timer-fill"></div></div></div>
     </div>
+    <button id="question-help" onclick="showQuestionHelp()">Show me</button>
     <div class="hint-card" id="hint-card" role="status" aria-live="polite">
       <div class="hint-title" id="hint-title">💡 Let's build it!</div>
       <div id="hint-body"></div>
@@ -968,6 +975,7 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
     </div>
   </div>
 
+  <div class="screen" id="screen-journey" role="main" aria-label="Guided learning adventure"><div id="journey-body"></div></div>
   <!-- ============ RESULTS SCREEN ============ -->
   <div class="screen" id="screen-results" role="main" aria-label="Round results">
     <div class="results-wrap" id="results-body"></div>
@@ -1019,7 +1027,11 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 </div>
 <div id="profile-gate" aria-modal="true" role="dialog"><div class="profile-shell" id="profile-gate-body"></div></div>
+<script src="camp-content.js"></script>
+<script src="learning-journey.js"></script>
+<script src="math-visuals.js"></script>
 <script src="camp-v2.js"></script>
+<script src="journey-ui.js"></script>
 <script>
 /* =====================================================
    TIMES QUEST — game engine
@@ -1042,7 +1054,7 @@ function profileById(id=activeProfileId){ return profileBook.profiles.find(p=>p.
 function safeProfileName(name){ return String(name||'').trim().replace(/[<>]/g,'').slice(0,18); }
 function escapeHtml(value){ return String(value??'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch])); }
 function profileAvatar(profile=profileById()){ return PROFILE_AVATARS[(profile&&profile.avatar)||0]; }
-function chooseProfileAvatar(i,button){ profileDraftAvatar=i; document.querySelectorAll('.avatar-pick button').forEach((b,n)=>b.classList.toggle('on',n===i)); }
+function chooseProfileAvatar(i,button){ profileDraftAvatar=i; document.querySelectorAll('.avatar-pick button').forEach((b,n)=>{b.classList.toggle('on',n===i);b.setAttribute('aria-pressed',String(n===i));});$('explorer-preview-image').src=PROFILE_AVATARS[i];$('explorer-preview-name').textContent=explorerNames[i]; }
 async function loadProfileBook(){
   try{ const raw=await storageGet(PROFILE_KEY); if(raw) profileBook=JSON.parse(raw); }catch(e){ profileBook={v:1,active:null,profiles:[]}; }
   if(!profileBook||!Array.isArray(profileBook.profiles)) profileBook={v:1,active:null,profiles:[]};
@@ -1086,28 +1098,28 @@ function renderProfileGate(mode='choose'){
   if(!gate.classList.contains('on')) profileReturnFocus=document.activeElement;
   gate.classList.add('on');
   if(mode==='create'){
-    body.innerHTML=`<div class="profile-brand"><div class="mountain">⛰️</div><h1>Create a climber</h1><p>Every child gets a completely separate quest.</p></div><div class="profile-card profile-form on"><h2>Who is climbing?</h2><input class="profile-name" id="profile-name" maxlength="18" autocomplete="off" placeholder="Climber name" aria-label="Climber name"><p>Choose the explorer who will appear on the map and at Base Camp.</p><div class="avatar-pick">${PROFILE_AVATARS.map((src,i)=>`<button class="${i===profileDraftAvatar?'on':''}" onclick="chooseProfileAvatar(${i},this)" aria-label="Choose explorer ${i+1}"><img src="${src}" alt="Explorer ${i+1}"></button>`).join('')}</div><div class="profile-actions"><button class="btn ghost" style="color:var(--ink);background:#E5DDF4" onclick="renderProfileGate('choose')">Back</button><button class="btn gold" onclick="createProfile()">Begin quest</button></div></div>`;
-    setTimeout(()=>{ const input=$('profile-name'); if(input) input.focus(); },0); return;
+    body.innerHTML=renderExplorerForm();
+    setTimeout(()=>document.querySelector('.avatar-pick button.on')?.focus({preventScroll:true}),0); return;
   }
   const cards=profileBook.profiles.map(p=>`<button class="profile-choice" onclick="switchProfile(${escapeHtml(JSON.stringify(p.id))})"><img src="${profileAvatar(p)}" alt=""><div><strong>${escapeHtml(p.name)}</strong><span>${profileProgress(p)}</span></div></button>`).join('');
-  body.innerHTML=`<div class="profile-brand"><div class="mountain">⛰️</div><h1>Times Quest</h1><p>The Climb to Mount Twelve</p></div><div class="profile-card"><h2>${profileBook.profiles.length?'Who is playing?':'Welcome, climber!'}</h2><p>${profileBook.profiles.length?'Choose a profile or make a new one.':'Build multiplication mastery, catch Fact Monsters, and create a mountain camp of your own.'}</p>${profileBook.profiles.length?`<div class="profile-list">${cards}<button class="profile-choice profile-add" onclick="profileDraftAvatar=0;renderProfileGate('create')">＋ New climber</button></div>`:`<div class="quest-intro"><div><strong>1★</strong>Pass the Mastery Trial</div><div><strong>2★</strong>Defeat the realm guardian</div><div><strong>3★</strong>Catch all 13 Fact Monsters</div></div><p>Catch 10 monsters to unlock each Trial. Correct answers raise monsters from wild to caught. Take the time you need. Earn all 39 map stars to unlock the final Base Camp Lodge.</p><button class="btn gold" style="margin-top:14px" onclick="profileDraftAvatar=0;renderProfileGate('create')">Create first climber</button>`}</div>`;
+  body.innerHTML=`<div class="profile-brand"><div class="mountain">⛰️</div><h1>Times Quest</h1><p>The Climb to Mount Twelve</p></div><div class="profile-card"><h2>${profileBook.profiles.length?'Who is playing?':'Welcome, climber!'}</h2><p>${profileBook.profiles.length?'Choose a profile or make a new one.':'An adventure of equal groups, friendly creatures, and a camp of your own.'}</p>${profileBook.profiles.length?`<div class="profile-list">${cards}<button class="profile-choice profile-add" onclick="profileEditing=false;profileDraftAvatar=0;renderProfileGate('create')">＋ New climber</button></div>`:`<p>Help friendly guardians, discover creatures, and build a camp of your own. We will show you the way.</p><button class="btn gold" style="margin-top:14px" onclick="profileEditing=false;profileDraftAvatar=0;renderProfileGate('create')">Create first climber</button>`}</div>`;
   setTimeout(()=>body.querySelector('button')&&body.querySelector('button').focus(),0);
 }
 async function createProfile(){
   const name=safeProfileName($('profile-name')&&$('profile-name').value);
   if(!name){ toast('Add a climber name first'); return; }
-  flushProfileSave(); resetCampEditor();
+  flushProfileSave(); resetCampEditor(); hallSel=new Set();
   const id=`p${Date.now().toString(36)}${Math.random().toString(36).slice(2,5)}`;
   const qa=name.toLocaleLowerCase()===QA_PROFILE_NAME;
   const snapshot=qa?allAccessState():defaultState();
   const p={id,name:qa?'Summit Tester':name,avatar:profileDraftAvatar,created:Date.now(),qa,...profileSummary(snapshot)};
   profileBook.profiles.push(p); activeProfileId=id; state=snapshot; migrateState();
   await storageSet(profileSaveKey(id),JSON.stringify(state)); await persistProfileBook();
-  closeProfileGate(); applyCalm(); showScreen('screen-map');
-  if(qa) toast('QA profile ready: every realm and camp item is unlocked');
+  closeProfileGate(); applyCalm(); checkDaily(); showScreen('screen-map');
+  if(qa) toast('QA profile ready: every realm and camp item is unlocked');else startWelcome();
 }
 async function switchProfile(id){
-  clearTimeout(saveTimer); resetCampEditor();
+  clearTimeout(saveTimer); resetCampEditor(); hallSel=new Set(); quiz=null; cancelAnimationFrame(qTimerRAF);
   if(activeProfileId&&state) await storageSet(profileSaveKey(activeProfileId),JSON.stringify(state));
   const p=profileBook.profiles.find(x=>x.id===id); if(!p) return;
   activeProfileId=id; let raw=await storageGet(profileSaveKey(id));
@@ -1115,8 +1127,9 @@ async function switchProfile(id){
   migrateState(); await storageSet(profileSaveKey(id),JSON.stringify(state)); await persistProfileBook(); closeProfileGate();
   applyCalm(); checkDaily(); showScreen('screen-map');
 }
-function openProfileChooser(){ renderProfileGate('choose'); }
+function openProfileChooser(){ profileEditing=false;renderProfileGate('choose'); }
 function closeProfileGate(){
+  profileEditing=false;
   $('profile-gate').classList.remove('on');
   const target=profileReturnFocus; profileReturnFocus=null;
   if(target&&target.isConnected&&typeof target.focus==='function') target.focus();
@@ -1169,7 +1182,7 @@ const REALM_LORE={
   11:{intro:"Copy repeats what he sees from the Twin Towers. For one-digit numbers he writes the digit twice; for larger numbers he combines ten groups with one more.",ability:"Twin Echo",example:"11 × 4 = 44"},
   3:{intro:"Trio swings through the jungle with three matching vines. He doubles a number first, then adds one more group to complete the trio.",ability:"Triple Swing",example:"3 × 7 = 14 + 7"},
   4:{intro:"Boulder carved Squarestone Valley by doubling everything twice. One double makes two groups, and the second double makes four.",ability:"Double-Double",example:"4 × 6: 6 → 12 → 24"},
-  9:{intro:"Sensei studies the ×9 patterns in the temple. He begins with ten groups, silently removes one group, and checks that the answer's digits add to nine.",ability:"Shadow Subtract",example:"9 × 6 = 60 − 6"},
+  9:{intro:"Sensei studies the ×9 patterns in the temple. He begins with ten groups, silently removes one group, and subtracts the amount in that group.",ability:"Shadow Subtract",example:"9 × 6 = 60 − 6"},
   6:{intro:"Buzz powers Six Circuit with five bright cells and one spare. He finds five groups first, then adds one more group to complete the circuit.",ability:"Five Plus One",example:"6 × 8 = 40 + 8"},
   12:{intro:"Tock measures the desert in dozens. He combines ten groups with a quick double, building twelve without counting every group.",ability:"Dozen Time",example:"12 × 6 = 60 + 12"},
   8:{intro:"Glacier explores the caves by doubling three times. Each icy echo grows the number from two groups, to four, and finally to eight.",ability:"Triple Double",example:"8 × 7: 7 → 14 → 28 → 56"},
@@ -1179,13 +1192,13 @@ const REALM_LORE={
 const REALMS = {
   0:{name:"Zero Marsh",pet:"👻",petName:"Poof the Ghost",color:"#3E7C6B",
      strategy:"Anything times 0 disappears! 0 × anything = 0.",
-     hint:(a,b)=>`Zero magic! ${a} × ${b} means ${b===0?a:b} groups of nothing. That's always <b>0</b>!`},
+     hint:(a,b)=>`${a} groups of ${b} make <b>0</b>. ${a===0?'There are no groups.':'Each group is empty.'}`},
   1:{name:"One Woods",pet:"🐰",petName:"Echo the Bunny",color:"#4C9A4C",
      strategy:"The mirror world: 1 × any number is just that number.",
      hint:(a,b)=>{const n=a===1?b:a;return `One copy of ${n} is just... <b>${n}</b>! The number stays the same.`}},
   10:{name:"Ten City",pet:"🤖",petName:"Deca the Robot",color:"#4A7FBF",
-     strategy:"Stick a zero on the end! 10 × 7 = 70.",
-     hint:(a,b)=>{const n=a===10?b:a;return `Take ${n} and stick a 0 on the end: <b>${n}0</b>!`}},
+     strategy:"Ten equal groups. 10 × 7 = 70: seven tens.",
+     hint:(a,b)=>{const n=a===10?b:a;return `Ten groups of ${n} make <b>${n*10}</b>. Whole-number digits move one place to the left.`}},
   2:{name:"Double River",pet:"🦊",petName:"Twix the Fox",color:"#E07B39",
      strategy:"Just double it! 2 × 8 means 8 + 8.",
      hint:(a,b)=>{const n=a===2?b:a;return `Double it! ${n} + ${n} = <b>${n*2}</b>`}},
@@ -1194,7 +1207,7 @@ const REALMS = {
      hint:(a,b)=>{const n=a===5?b:a;return `Count by fives ${n} times: ${Array.from({length:Math.min(n,12)},(_,i)=>5*(i+1)).join(", ")}. Or: half of ${n}×10 (${n*10}) = <b>${n*5}</b>`}},
   11:{name:"Twin Towers",pet:"🦜",petName:"Copy the Parrot",color:"#B5559E",
      strategy:"Copy-number magic! 11 × 4 = 44. For big ones: 11 × n = 10n + n.",
-     hint:(a,b)=>{const n=a===11?b:a;return n<=9?`Write ${n} twice: <b>${n}${n}</b>!`:`${n} tens plus ${n} more: ${n*10} + ${n} = <b>${n*11}</b>`}},
+     hint:(a,b)=>{const n=a===11?b:a;return `${n} tens plus ${n} more: ${n*10} + ${n} = <b>${n*11}</b>`}},
   3:{name:"Triple Jungle",pet:"🐵",petName:"Trio the Monkey",color:"#2E8B57",
      strategy:"Double it, then add one more group. 3 × 7 = 14 + 7.",
      hint:(a,b)=>{const n=a===3?b:a;return `Double ${n} = ${n*2}. Add one more ${n}: ${n*2} + ${n} = <b>${n*3}</b>`}},
@@ -1202,7 +1215,7 @@ const REALMS = {
      strategy:"Double-double! Double the number, then double again.",
      hint:(a,b)=>{const n=a===4?b:a;return `Double ${n} = ${n*2}. Double again: ${n*2} + ${n*2} = <b>${n*4}</b>`}},
   9:{name:"Nine Ninja Temple",pet:"🦉",petName:"Sensei the Owl",color:"#C0392B",
-     strategy:"Ten groups minus one group! 9 × 6 = 60 − 6. (The digits add to 9!)",
+     strategy:"Ten groups minus one group! 9 × 6 = 60 − 6.",
      hint:(a,b)=>{const n=a===9?b:a;return `Ten ${n}s = ${n*10}. Take one ${n} away: ${n*10} − ${n} = <b>${n*9}</b>`}},
   6:{name:"Six Circuit",pet:"🐝",petName:"Buzz the Bee",color:"#D4A50B",
      strategy:"Use 5s plus one more group. 6 × 8 = 40 + 8.",
@@ -1260,17 +1273,18 @@ function openGuardianCard(fam){
   </div></article>`);
 }
 function openMonsterCard(a,b){
+  if(quiz&&quiz.queue[quiz.idx]&&fkey(quiz.queue[quiz.idx].a,quiz.queue[quiz.idx].b)===fkey(a,b)){quiz.queue[quiz.idx].assisted=true;cancelAnimationFrame(qTimerRAF);checkpointRound();saveState();}
   const f=fact(a,b),rating=factRating(a,b),fam=REALMS[a]?a:b,r=REALMS[fam],identity=monsterIdentity(a,b);
-  const accuracy=(f.c||0)+(f.w||0)?Math.round((f.c||0)/((f.c||0)+(f.w||0))*100):0;
+  const evidence=LearningJourney.evidence(f),accuracy=evidence?.accuracy;
   const invited=state.campMonsterFavorites.includes(fkey(a,b));
   openQuestCard(`<article class="quest-card" style="--card-color:${r.color}"><div class="quest-card-inner">
     <div class="quest-card-head"><span class="number">FACT MONSTER · ${RATING_LABEL[rating]}</span><span class="type">×${fam} realm</span></div>
     <div class="quest-card-title">${rating?identity.name:'Unknown creature'} · ${a} × ${b} = ${a*b}</div>
     <div class="quest-card-art">${monsterVisual(a,b,`big ${rating?'':'unknown'}`)}</div>
-    <p class="quest-card-lore">${rating?`This creature has been discovered in ${r.name}. Keep practicing its fact at your own pace to raise it from ${RATING_LABEL[rating]} toward shiny mastery.`:`A hidden creature from ${r.name}. Answer ${a} × ${b} during training to reveal it.`}</p>
-    ${rating>=4?`<button class="monster-favorite-btn" onclick="toggleCampMonster(${a},${b})">${invited?'✓ Living at Base Camp · send back':'Invite to Base Camp'} (${state.campMonsterFavorites.length}/6)</button>`:''}
+    <p class="quest-card-lore">${rating?`This creature has been discovered in ${r.name}. Keep practicing its fact at your own pace to raise it from ${RATING_LABEL[rating]} toward a lasting friendship.`:`A hidden creature from ${r.name}. Answer ${a} × ${b} during training to reveal it.`}</p>
+    ${rating>=4?`<button class="monster-favorite-btn" onclick="toggleCampMonster(${a},${b})">${invited?'✓ On my expedition team · remove':'Add to my expedition team'} (${state.campMonsterFavorites.length}/6)</button>`:''}
     <div class="quest-card-ability"><strong>${REALM_LORE[fam].ability}</strong><span>${r.hint(a,b)}</span></div>
-    <div class="quest-card-stats"><div class="quest-card-stat"><strong>${accuracy}%</strong>Accuracy</div><div class="quest-card-stat"><strong>${f.bt?`${(f.bt/1000).toFixed(1)}s`:'—'}</strong>Best time</div><div class="quest-card-stat"><strong>${RATING_LABEL[rating]}</strong>Status</div></div>
+    <div class="quest-card-stats"><div class="quest-card-stat"><strong>${accuracy===null||accuracy===undefined?'—':accuracy+'%'}</strong>Independent accuracy</div><div class="quest-card-stat"><strong>${evidence?.attempts||0}</strong>Recorded first attempts</div><div class="quest-card-stat"><strong>${RATING_LABEL[rating]}</strong>Status</div></div>
   </div></article>`);
 }
 
@@ -1391,13 +1405,13 @@ const MON_NAMES = [
   'Clockwork Spider','Sun Gryphon','Mist Raven','Crystal Minotaur','Dune Scarab','River Beaver','Thunder Goat','Starfish Sentinel'
 ];
 
-const RATING_LABEL = ["new","wild","wild","sleepy","caught","SHINY"];
+const RATING_LABEL = ["undiscovered","discovered","befriending","befriending","companion","shiny companion"];
 
 /* ---------- preferences ----------
    Defaults below reproduce the game's original behaviour exactly, so an
    existing save that predates settings plays identically until something
    is changed on purpose. */
-const APP_VERSION = '0.13.0-beta.1';
+const APP_VERSION = '0.17.0-beta.1';
 const FAST_MS = 4000;          // default bonus window
 const WINDOW_CHOICES = [3000,4000,6000,8000];
 const ROUND_CHOICES  = [8,12,16];
@@ -1432,6 +1446,7 @@ const defaultState = () => ({
   settings: { ...PREF_DEFAULTS },
   facts: {},   // canonical fact records also carry intervalDays, dueOn, reviewStreak, lapses
   reviewHistory: [], // bounded first-attempt retrieval events for parent insights
+  journey: LearningJourney.fresh(true),
   realms: Object.fromEntries(REALM_ORDER.map(f=>[f,{trial:false,conquered:false}])),
   realmRewardStars: Object.fromEntries(REALM_ORDER.map(f=>[f,0])),
   summitDone: false,
@@ -1465,6 +1480,7 @@ function allAccessState(){
     if(!piece.chain || piece.repeatable) next.bought[piece.id]=piece.repeatable?40:1;
   });
   next.owned=SHOP.filter(item=>item.type==='buddy').map(item=>item.id);
+  next.campV2=CampV2.syncProgress(CampV2.fresh(),13,true);
   next.campStarted=true;
   next.campTutorial=[];
   return next;
@@ -1535,6 +1551,7 @@ async function loadState(){
 /* Backfills any field a save predates. Additive only — never renames or removes,
    so an old save keeps every bit of progress it had. Also used on import. */
 function migrateState(){
+  state.journey=LearningJourney.migrate(state.journey);
   if(!state.settings) state.settings={};
   Object.entries(PREF_DEFAULTS).forEach(([k,v])=>{ if(state.settings[k]===undefined) state.settings[k]=v; });
   // A hand-edited or corrupted value shouldn't be able to break a round.
@@ -1711,7 +1728,7 @@ function factRating(a,b){ const f = state.facts[fkey(a,b)]; return f ? Math.max(
 function factIsDue(f,on=dateKey()){ return !!(f&&f.rating>0&&f.dueOn&&f.dueOn<=on); }
 function reviewPriority([key,f]){
   const overdue=Math.max(0,dayDistance(f.dueOn));
-  return overdue*14+(5-(Number(f.rating)||0))*6+(Number(f.slow)||0)*3+(Number(f.lapses)||0)*4-(Number(f.intervalDays)||0)*.08;
+  return overdue*14+(5-(Number(f.rating)||0))*6+0+(Number(f.lapses)||0)*4-(Number(f.intervalDays)||0)*.08;
 }
 function dueFactEntries(limit=roundLen()){
   const unlocked=new Set(unlockedFamilies());
@@ -1721,7 +1738,7 @@ function dueFactEntries(limit=roundLen()){
     .slice(0,limit);
 }
 function reviewSummary(){
-  const learned=Object.values(state.facts).filter(f=>f.rating>0);
+  const learned=Object.values(state.facts).filter(f=>(f.c||0)>0);
   const due=learned.filter(f=>factIsDue(f));
   const soon=learned.filter(f=>f.dueOn&&f.dueOn>dateKey()&&dayDistance(dateKey(),f.dueOn)<=7);
   const secure=learned.filter(f=>f.retentionSpanDays>=14&&f.lastRetrievalOk===true);
@@ -1729,10 +1746,10 @@ function reviewSummary(){
   const accuracy=recent.length?Math.round(recent.filter(e=>e.ok).length/recent.length*100):null;
   return {learned:learned.length,due:due.length,soon:soon.length,secure:secure.length,recent:recent.length,accuracy};
 }
-function scheduleRetrieval(q,f,correct,fast){
+function scheduleRetrieval(q,f,correct,fast,retrieval=quiz||{}){
   const today=dateKey();
-  if(q.reviewRound||quiz.retry) return;
-  state.reviewHistory.push({day:today,key:fkey(q.a,q.b),ok:!!correct,mode:quiz.mode});
+  if(q.reviewRound||q.assisted||retrieval.retry) return;
+  state.reviewHistory.push({day:today,key:fkey(q.a,q.b),ok:!!correct,mode:retrieval.mode});
   state.reviewHistory=state.reviewHistory.slice(-240);
   const previous=f.last, wasDue=!f.dueOn||f.dueOn<=today;
   f.last=today;
@@ -1786,12 +1803,12 @@ function toggleCampMonster(a,b){
 function unlockedFamilies(){
   const out=[REALM_ORDER[0]];
   for(let i=0;i<REALM_ORDER.length-1;i++){
-    if(state.realms[REALM_ORDER[i]].conquered) out.push(REALM_ORDER[i+1]); else break;
+    if(state.realms[REALM_ORDER[i]].conquered) out.push(REALM_ORDER[i+1]);
   }
-  return out;
+  return [...new Set([...out,...(state.journey?.routes||[])])];
 }
 function conqueredFamilies(){ return REALM_ORDER.filter(f=>state.realms[f].conquered); }
-function currentFamily(){ const u=unlockedFamilies(); return u[u.length-1]; }
+function currentFamily(){ const u=unlockedFamilies(),active=state.journey?.activeFamily; return active!==null&&u.includes(active)&&!state.realms[active].conquered?active:u.find(f=>!state.realms[f].conquered)??u[u.length-1]; }
 function allConquered(){ return REALM_ORDER.every(f=>state.realms[f].conquered); }
 
 /* ---------- sound ---------- */
@@ -1813,7 +1830,7 @@ function beep(freq, dur, type, vol){ if(state.settings.sound) tone(freq,dur,type
 function click(){ if(state.settings.clicks) tone(440,.04,"square",.06); }
 const sfx = {
   ok(){ beep(660,.09); setTimeout(()=>beep(880,.12),80); },
-  bad(){ beep(180,.25,"sawtooth",.1); },
+  bad(){ beep(330,.16,"sine",.055); },
   win(){ [523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.18),i*120)); },
   gem(){ beep(1200,.07,"triangle"); },
 };
@@ -1839,8 +1856,10 @@ function syncCampAmbience(){
 /* ---------- UI helpers ---------- */
 function $(id){ return document.getElementById(id); }
 function showScreen(id){
+  const renderStarted=performance.now();
   if(id!=='screen-camp-v2'&&campV2Session){campV2Session.dispose();campV2Session=null;}
   if(id==='screen-camp-v2'){
+    state.journey.preferredCamp='v2';
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
     $('screen-camp-v2').classList.add('active');document.body.classList.add('camp-world-open');
     $('nav').style.display='none';stopCampAmbience();enterCampV2();return;
@@ -1854,23 +1873,28 @@ function showScreen(id){
   }
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   $(id).classList.add('active');
-  $('nav').style.display = (id==='screen-quiz') ? 'none' : 'flex';
+  $('toast').classList.remove('show');
+  if(id==='screen-camp'&&state.journey){state.journey.preferredCamp='v1';saveState();}
+  $('nav').style.display = (id==='screen-quiz'||id==='screen-journey') ? 'none' : 'flex';
   document.querySelectorAll('#nav button').forEach(b=>{
     const current=b.dataset.s===id;
     b.classList.toggle('on',current);
     if(current) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');
   });
   if(id==='screen-map') renderMap();
+  if(id==='screen-journey')renderJourney();
   if(id==='screen-hall') renderHall();
   if(id==='screen-monsters') renderMonsters();
   if(id==='screen-camp') enterCamp();
   if(id==='screen-parent') renderParent();
   updateChips();
+  $(id).dataset.renderMs=(performance.now()-renderStarted).toFixed(1);
   setTimeout(syncCampAmbience,0);
 }
 function updateChips(){
   ['gem-count','gem-count-2','gem-count-3','gem-count-4'].forEach(i=>{ if($(i)) $(i).textContent=state.gems; });
-  $('streak-count').textContent = state.streak;
+  $('streak-count').textContent = state.journey.days.filter(d=>dayDistance(d)>=0&&dayDistance(d)<7).length;
+  $('streak-count').parentElement.setAttribute('aria-label','Learning visits this week; no streak to lose');
   const avatar=$('map-profile-avatar'),p=profileById();
   if(avatar&&p){ avatar.src=profileAvatar(p); avatar.alt=`${p.name} profile`; }
 }
@@ -1903,24 +1927,20 @@ function checkDaily(){
     saveState();
   }
 }
-function questText(){
-  const fam=currentFamily();
-  return allConquered()
-    ? {t:"Daily Quest: Summit Patrol", s:"Finish one Mixed Mayhem round today"}
-    : {t:`Daily Quest: ${REALMS[fam].name}`, s:`Answer ${Math.min(10,roundLen())} facts correctly from the ${fam}s in one round`};
-}
+function questText(){return {t:'A small expedition',s:'Complete a round with 4 correct answers, supported or independent. +10 gems once today.'};}
+
 function completeRound(correctCount, fams){
   // daily quest
   if(!state.questDone){
     const fam=currentFamily();
-    if((fams.includes(fam)||allConquered()) && correctCount>=Math.min(10,roundLen())){
+    if(correctCount>=4){
       state.questDone=true; state.gems+=10; toast("📜 Daily Quest complete! +10 💎"); sfx.gem();
     }
   }
   // mystery chest
   if(state.chest && state.chestFrom!==todayStr()){
-    state.chest=false; const bonus=5+Math.floor(Math.random()*6);
-    state.gems+=bonus; toast(`🎁 Mystery Chest opened! +${bonus} 💎`); confetti(30);
+    state.chest=false; const bonus=6;
+    state.gems+=bonus; toast(`🎁 Welcome-back supplies! +${bonus} 💎`); confetti(30);
   }
   state.chest=true; state.chestFrom=todayStr();
   saveState();
@@ -1941,31 +1961,31 @@ function realmStars(fam){
   return {stars, caught, avg};
 }
 function realmProgress(fam){
-  const base=realmStars(fam),st=state.realms[fam],rewards=REALM_GEM_REWARDS[fam];
+  const base=realmStars(fam),st=state.realms[fam],rewards=REALM_GEM_REWARDS[fam],ready=challengeReady(fam);
   const steps=[
     {
-      title:'Pass the Mastery Trial',done:st.trial,
-      detail:st.trial?'Trial passed':base.caught<10?`${base.caught}/10 Fact Monsters caught · ${10-base.caught} more to unlock`:`Ready now · get ${trialNeeds()} of ${roundLen()} first try`,
-      short:st.trial?'Trial passed':base.caught<10?`Catch ${10-base.caught} more for Trial`:'Mastery Trial ready',reward:rewards[0]
+      title:'Pass the Realm Challenge',done:st.trial,
+      detail:st.trial?'Challenge completed':ready?`Ready now · ${challengeNeeds()} of ${challengeLength()} independently`:'Finish a guided lesson, show readiness, or catch 10 creatures',
+      short:st.trial?'Challenge completed':ready?'Realm Challenge ready':'Learn with your guardian',reward:rewards[0]
     },
     {
-      title:'Defeat the realm guardian',done:st.conquered,
-      detail:st.conquered?'Guardian defeated':st.trial?`${bossName(fam)} is ready for battle`:'Pass the Mastery Trial to unlock the battle',
-      short:st.conquered?'Guardian defeated':st.trial?'Guardian battle ready':'Pass the Trial first',reward:rewards[1]
+      title:'Restore the realm',done:st.conquered,
+      detail:st.conquered?'Realm restored':st.trial?`${bossName(fam)} is ready for battle`:'Pass the Realm Challenge to unlock the battle',
+      short:st.conquered?'Realm restored':st.trial?'Realm encounter ready':'Pass the Trial first',reward:rewards[1]
     },
     {
       title:'Catch all 13 Fact Monsters',done:st.conquered&&base.caught===13,
-      detail:base.caught===13?(st.conquered?'Every fact is caught':'13/13 caught · defeat the guardian to claim this star'):`${base.caught}/13 caught · ${13-base.caught} still wild`,
+      detail:base.caught===13?(st.conquered?'Every fact is caught':'13/13 caught · restore the realm to claim this star'):`${base.caught}/13 caught · ${13-base.caught} still wild`,
       short:base.caught===13?'All facts caught':`Catch ${13-base.caught} more`,reward:rewards[2]
     }
   ];
   const current=Math.max(0,steps.findIndex(step=>!step.done));
-  return {...base,steps,current,trialReady:base.caught>=10||st.trial,complete:base.stars===3};
+  return {...base,steps,current,trialReady:ready,complete:base.stars===3};
 }
 function realmProgressGuide(fam){
   const progress=realmProgress(fam);
   return `<section class="realm-progress-card" aria-label="Realm star progress: ${progress.stars} of 3">
-    <div class="realm-progress-head"><div><h3>Path to three stars</h3><p>Catch 10 to unlock the Trial, then finish each milestone in order. Every star pays its gem reward once.</p></div><div class="realm-progress-total">★ ${progress.stars}/3</div></div>
+    <div class="realm-progress-head"><div><h3>Path to three stars</h3><p>Learn with your guardian to open the challenge. Restore the realm, then collect every creature at your own pace. Each star rewards you once.</p></div><div class="realm-progress-total">★ ${progress.stars}/3</div></div>
     <div class="realm-progress-track" aria-hidden="true"><span style="width:${progress.stars/3*100}%"></span></div>
     <div class="realm-star-steps">${progress.steps.map((step,index)=>`<div class="realm-star-step ${step.done?'done':index===progress.current?'current':''}">
       <div class="realm-star-icon">${step.done?'✓':'★'}</div><div class="realm-star-copy"><strong>${index+1} star${index?'s':''}: ${step.title}</strong><small>${step.detail}</small></div><div class="realm-star-reward"><strong>💎 ${step.reward}</strong>${step.done?'earned':index===progress.current?'next':'later'}</div>
@@ -1988,19 +2008,21 @@ function claimRealmStarRewards(fam){
 /* One button that picks the right next thing, so opening the app to a menu of
    four modes he has no basis for choosing between is optional, not mandatory. */
 function nextAction(){
-  if(dueFactEntries(1).length) return {icon:'repeat',label:'A little Daily Review',sub:'A short, untimed visit with familiar facts',fn:startDailyReview,args:[]};
+  if(!state.journey.onboardingDone)return {icon:'learn',label:'Start my expedition',sub:'Meet Twix and build a bridge',fn:startWelcome,args:[]};
+  if(state.journey.resume)return {icon:'learn',label:'Resume my round',sub:'Your completed answers are saved',fn:resumeRound,args:[]};
+  if(state.journey.current)return {icon:'learn',label:'Continue my lesson',sub:'Your guardian is waiting',fn:resumeLesson,args:[]};
   if(allConquered()){
     if(!state.summitDone) return {icon:'summit', label:'Climb to the Summit', sub:'The final challenge', fn:startSummit, args:[]};
     return getWeakFacts().length
-      ? {icon:'heal', label:'Weak Fact Workout', sub:'Shore up the tricky ones', fn:startWeakWorkout, args:[]}
+      ? {icon:'heal', label:'Tricky Fact Workshop', sub:'Shore up the tricky ones', fn:startWeakWorkout, args:[]}
       : {icon:'mix', label:'Mixed Mayhem', sub:'Keep every family sharp', fn:startMixedMayhem, args:[]};
   }
   const fam=currentFamily(), r=REALMS[fam], st=state.realms[fam];
   const seen=Array.from({length:13},(_,i)=>factRating(fam,i)).some(v=>v>0);
   const {caught}=realmStars(fam);
-  if(!seen)      return {icon:'learn', label:`Learn the ×${fam}s`,       sub:`${r.name} — no timer, with helpers`, fn:startLearn,    args:[fam]};
-  if(caught<10)  return {icon:'target', label:`Practice in ${r.name}`,     sub:`${caught} of 13 monsters caught`,    fn:startPractice, args:[fam]};
-  if(!st.trial)  return {icon:'trial', label:`Mastery Trial: ×${fam}`,    sub:`Get ${trialNeeds()} of ${roundLen()} to open the Boss`, fn:startTrial, args:[fam]};
+  if(!seen&&!challengeReady(fam))      return {icon:'learn', label:`Learn the ×${fam}s`,       sub:`${r.name} — no timer, with helpers`, fn:startLearn,    args:[fam]};
+  if(!challengeReady(fam))  return {icon:'learn', label:`Learn with ${r.petName}`, sub:'Build the idea together, then try new facts', fn:startLearn, args:[fam]};
+  if(!st.trial)  return {icon:'trial', label:`Realm Challenge: ×${fam}`,    sub:`Get ${challengeNeeds()} of ${challengeLength()} to open the Boss`, fn:startTrial, args:[fam]};
   return           {icon:'boss', label:`Fight ${bossName(fam)}`,         sub:`${r.name} — ${heartCt()} hearts`,    fn:startBoss,     args:[fam]};
 }
 function doContinue(){
@@ -2038,7 +2060,7 @@ function mapRouteSvg(completedCount){
     const bend=i%2===0?125:-125;
     const midY=(a.y+b.y)/2;
     const d=`M ${a.x} ${a.y} C ${a.x+bend} ${midY+48}, ${b.x-bend} ${midY-48}, ${b.x} ${b.y}`;
-    const cls=i<completedCount?'complete':i===completedCount?'current':'';
+    const cls=state.realms[REALM_ORDER[i]].conquered?'complete':REALM_ORDER[i]===currentFamily()?'current':'';
     return `<path class="map-route-segment ${cls}" d="${d}"/>`;
   };
   return `<svg class="map-route" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none" aria-hidden="true">${points.slice(0,-1).map((p,i)=>segment(p,points[i+1],i)).join('')}</svg>`;
@@ -2083,10 +2105,11 @@ function renderMap(){
     world.appendChild(node);
   });
   world.appendChild(summit);
+  improveMapNavigation();
   // quest banner
   const q=questText();
   $('dq-title').textContent=state.questDone?'Daily Quest complete! ✅':q.t;
-  $('dq-sub').textContent=state.questDone?'+10 gems earned — come back tomorrow!':q.s;
+  $('dq-sub').textContent=state.questDone?'+10 gems earned. Your progress is saved.':q.s;
   $('daily-quest').classList.toggle('done',state.questDone);
   $('chest-banner').style.display = (state.chest && state.chestFrom!==todayStr()) ? 'flex':'none';
   $('map-quest-toggle').classList.toggle('has-reward',!state.questDone || $('chest-banner').style.display==='flex');
@@ -2110,14 +2133,14 @@ function openRealm(fam){
   const lore=REALM_LORE[fam];
   const ratings=Array.from({length:13},(_,i)=>factRating(fam,i));
   const seenCount=ratings.filter(v=>v>0).length,shiny=ratings.filter(v=>v>=5).length;
-  const seen=seenCount>0;
-  const recommended=!seen
+  const seen=seenCount>0,ready=challengeReady(fam);
+  const recommended=!seen&&!ready
     ? {label:`Meet the ×${fam}s`,sub:'Start with a calm, guided tour.',fn:`startLearn(${fam})`,icon:'learn'}
-    : caught<10
-      ? {label:'Find more fact monsters',sub:`${caught} of 13 caught in this realm.`,fn:`startPractice(${fam})`,icon:'target'}
+    : !ready
+      ? {label:'Learn with your guardian',sub:'Build equal groups, then try new facts.',fn:`startLearn(${fam})`,icon:'learn'}
       : !trialDone
-        ? {label:'Take the Mastery Trial',sub:`Get ${trialNeeds()} of ${roundLen()} right to open the boss.`,fn:`startTrial(${fam})`,icon:'trial'}
-        : {label:conquered?'Rematch the realm boss':'Face the realm boss',sub:conquered?'Train against the guardian again.':'Win to unlock the next destination.',fn:`startBoss(${fam})`,icon:'boss'};
+        ? {label:'Take the Realm Challenge',sub:`Get ${challengeNeeds()} of ${challengeLength()} right to open the boss.`,fn:`startTrial(${fam})`,icon:'trial'}
+        : {label:conquered?'Rematch the realm boss':'Face the realm boss',sub:conquered?'Help your guardian in another encounter.':'Win to unlock the next destination.',fn:`startBoss(${fam})`,icon:'boss'};
   $('realm-title-top').textContent=r.name;
   $('realm-body').innerHTML=`
     <div class="realm-hero" style="background:linear-gradient(160deg, ${r.color}, ${r.color}CC)">
@@ -2138,8 +2161,8 @@ function openRealm(fam){
     <div class="mode-grid">
       <button class="mode-card" onclick="startLearn(${fam})">${icon('learn')}<span class="nm">Learn</span><span class="sub">No timer, with helpers</span></button>
       <button class="mode-card" onclick="startPractice(${fam})">${icon('target')}<span class="nm">Practice</span><span class="sub">Warm-up and today's facts</span></button>
-      <button class="mode-card ${caught>=10?'':'locked'}" onclick="startTrial(${fam})">${icon('trial')}<span class="nm">Mastery Trial</span><span class="sub">${caught>=10?`${roundLen()} facts • get ${trialNeeds()} right`:`Catch ${10-caught} more to unlock`}</span></button>
-      <button class="mode-card ${trialDone?'':'locked'}" onclick="startBoss(${fam})">${icon('boss')}<span class="nm">Boss Battle</span><span class="sub">${trialDone?(conquered?'Rematch the boss':'Defeat it to climb on'):'Pass the Trial first'}</span></button>
+      <button class="mode-card ${ready?'':'locked'}" ${ready?'':'disabled'} onclick="startTrial(${fam})">${icon('trial')}<span class="nm">Realm Challenge</span><span class="sub">${ready?`${challengeLength()} facts • get ${challengeNeeds()} right`:'Finish a guided lesson or catch 10 creatures'}</span></button>
+      <button class="mode-card ${trialDone?'':'locked'}" ${trialDone?'':'disabled'} onclick="startBoss(${fam})">${icon('boss')}<span class="nm">Boss Battle</span><span class="sub">${trialDone?(conquered?'Rematch the boss':'Defeat it to climb on'):'Pass the Trial first'}</span></button>
     </div>`;
   showScreen('screen-realm');
 }
@@ -2190,14 +2213,15 @@ function warmupQs(excludeFam){
 }
 
 function startQuiz(cfg){
-  quiz={
+  quiz=cfg.resume||{
     mode:cfg.mode, fams:cfg.fams, queue:cfg.queue, idx:0, total:cfg.queue.length,
     correct:0, passCorrect:0, wrong:0, gems:0, fastStreak:0, rewardProgress:0, hearts:cfg.hearts||0,
     needCorrect:cfg.needCorrect||0, timed:cfg.timed && state.settings.timer,
     boss:cfg.boss||null, bossHP:cfg.queue.length, title:cfg.title,
     battle:cfg.battle?createBossBattle(cfg.battleFam??cfg.fams[0],cfg.queue.length,cfg.needCorrect,cfg.battleConfig||null):null,
     caughtThis:[], answer:"", locked:false, learn:cfg.mode==='learn',
-    recovered:0, retry:false, reviewAdded:0,
+    recovered:0, retry:false, reviewAdded:0, reviewCompleted:0, failedPending:false,
+    baseTotal:cfg.queue.length, independentAttempts:0, grantId:makeRoundGrantId(),
   };
   const showdown=!!quiz.battle;
   $('screen-quiz').classList.toggle('boss-active',showdown);
@@ -2207,6 +2231,7 @@ function startQuiz(cfg){
   else if(quiz.boss){ $('boss-em').innerHTML=bossVisual(cfg.fams[0]); $('boss-hp').style.width='100%'; }
   $('hearts').textContent = quiz.hearts?'❤️'.repeat(quiz.hearts):'';
   $('battle-lives').textContent = showdown?'♥'.repeat(quiz.hearts):'';
+  $('battle-lives').setAttribute('aria-label',`${quiz.hearts} hearts remaining`);
   $('timer-track').style.visibility = quiz.timed?'visible':'hidden';
   $('hint-card').style.display='none';
   $('keypad').style.display='grid';
@@ -2214,22 +2239,25 @@ function startQuiz(cfg){
   nextQ();
 }
 function nextQ(){
-  if(quiz.idx>=quiz.queue.length){ finishQuiz(); return; }
+  if(quiz.idx>=quiz.queue.length||quiz.battle?.hp===0){ finishQuiz(); return; }
   quiz.locked=false; quiz.answer=""; quiz.retry=false;
   const q=quiz.queue[quiz.idx];
   $('q-text').textContent=q.text;
   $('answer-box').innerHTML='&nbsp;';
   $('answer-box').className='answer-box';
-  $('q-count').textContent=`${Math.min(quiz.idx+1,quiz.total)} / ${quiz.total}`;
+  $('q-count').textContent=quiz.battle?`${quiz.battle.maxHP-quiz.battle.hp} / ${quiz.battle.maxHP} restored`:`${Math.min(quiz.idx+1,quiz.total)} / ${quiz.total}`;
   $('progress-fill').style.width=`${(quiz.idx/quiz.queue.length)*100}%`;
   // learn mode shows the strategy up front for the family
+  renderQuestionContext(q);
   qStart=performance.now();
   $('timer-track').style.visibility = quiz.timed?'visible':'hidden';
   if(quiz.timed) runTimer();
+  checkpointRound();saveState();
+  if(q.restoreSupport){quiz.locked=true;cancelAnimationFrame(qTimerRAF);showHint(q);}
 }
 const REVIEW_QUEUE_MODES=new Set(['learn','practice','trial','review']);
 function queueMissedFactForReview(q){
-  if(!quiz||!REVIEW_QUEUE_MODES.has(quiz.mode)) return false;
+  if(!quiz||!REVIEW_QUEUE_MODES.has(quiz.mode)||q.reviewRound||q.reviewQueued||quiz.reviewAdded>=2) return false;
   const review={...q,reviewRound:(q.reviewRound||0)+1};
   delete review.reviewQueued;
   q.reviewQueued=true;
@@ -2241,7 +2269,7 @@ function queueMissedFactForReview(q){
   return true;
 }
 /* The bar IS the bonus window — it drains over FAST_MS and then sits empty.
-   Answering after it empties costs a rating point, never the round. */
+   Answering after it empties only misses the optional speed bonus. */
 function runTimer(){
   cancelAnimationFrame(qTimerRAF);
   const dur=fastMs();
@@ -2251,7 +2279,7 @@ function runTimer(){
     const pct=Math.max(0,100-((performance.now()-qStart)/dur)*100);
     $('timer-fill').style.width=`${pct}%`;
     if(pct<=0) bolt.classList.add('spent');
-    if(!quiz.locked) qTimerRAF=requestAnimationFrame(tick);
+    if(quiz&&!quiz.locked&&pct>0) qTimerRAF=requestAnimationFrame(tick);
   };
   tick();
 }
@@ -2271,11 +2299,16 @@ function pressKey(k){
   $('answer-box').textContent=quiz.answer||'\u00A0';
 }
 function checkAnswer(){
+  if(!quiz||quiz.locked)return;
   quiz.locked=true;
   cancelAnimationFrame(qTimerRAF);
   const q=quiz.queue[quiz.idx];
   const elapsed=performance.now()-qStart;
-  const fast=elapsed<fastMs();
+  const fast=!!quiz.timed && !quiz.retry && !q.assisted && elapsed<fastMs();
+  const independent=!quiz.retry&&!q.reviewRound&&!q.assisted;
+  if(independent)quiz.independentAttempts++;
+  const operation=q.text.includes('÷')?'divide':q.text.includes('?')?'missing-factor':'multiply';
+  LearningJourney.record(fact(q.a,q.b),{correct:parseInt(quiz.answer,10)===q.ans,assisted:!independent,elapsed,operation,day:dateKey()});
   const f=fact(q.a,q.b);
   const correct=parseInt(quiz.answer,10)===q.ans;
 
@@ -2283,7 +2316,7 @@ function checkAnswer(){
     sfx.ok();
     $('answer-box').classList.add('ok');
     f.c++; f.streak++;
-    if(quiz.retry){
+    if(quiz.retry||q.assisted){
       // Second-chance correct: he just read the answer. It counts for the round
       // and for the boss's health, but it does not raise mastery and it does not
       // count toward the pass threshold.
@@ -2293,10 +2326,11 @@ function checkAnswer(){
     } else {
       quiz.correct++;
       if(!q.reviewRound) quiz.passCorrect++;
+      else quiz.reviewCompleted++;
       const before=factRating(q.a,q.b);
       if(!q.reviewRound) f.rating=Math.min(5,f.rating+1);
-      if(fast){ f.slow=Math.max(0,f.slow-1); quiz.fastStreak++; zap(); }
-      else { f.slow++; quiz.fastStreak=0; }
+      if(fast){ quiz.fastStreak++; zap(); }
+      else quiz.fastStreak=0;
       if(f.rating>=4) f.caught=true;
       if(f.rating>=5) f.shiny=true;
       if(!f.bt || elapsed<f.bt) f.bt=Math.round(elapsed);
@@ -2307,20 +2341,22 @@ function checkAnswer(){
       // responses instead, so review practice cannot be farmed for gems.
       const gemBoost=fast && quiz.fastStreak>0 && quiz.fastStreak%3===0;
       let g=0;
-      if(quiz.learn||q.reviewRound){ quiz.rewardProgress++; if(quiz.rewardProgress%4===0) g=1; }
+      if(quiz.learn||q.reviewRound||quiz.mode==='lesson'){ quiz.rewardProgress++; if(quiz.rewardProgress%4===0) g=1; }
       else g=1+(gemBoost?1:0);
       quiz.gems+=g; state.gems+=g;
       if(before<4 && f.rating>=4) quiz.caughtThis.push({a:q.a,b:q.b,shiny:false});
       else if(before<5 && f.rating===5) quiz.caughtThis.push({a:q.a,b:q.b,shiny:true});
     }
     scheduleRetrieval(q,f,true,fast);
-    if(quiz.battle) resolveBossTurn('correct',fast,quiz.retry);
+    if(quiz.battle) resolveBossTurn('correct',fast,quiz.retry||q.assisted);
     else if(quiz.boss){
       quiz.bossHP--; $('boss-hp').style.width=`${(quiz.bossHP/quiz.total)*100}%`;
       $('boss-em').style.transform='scale(.85)'; setTimeout(()=>$('boss-em').style.transform='',150);
     }
+    creditLearningRound(quiz,0,true);checkpointRound(quiz.idx+1);
     updateChips(); saveState();
-    setTimeout(()=>{ quiz.idx++; nextQ(); }, 550);
+    const completedQuiz=quiz;
+    setTimeout(()=>{ if(quiz!==completedQuiz)return; quiz.idx++; if(quiz.battle&&quiz.battle.hp===0)finishQuiz();else nextQ(); }, 550);
   } else {
     sfx.bad();
     $('answer-box').classList.add('bad');
@@ -2336,47 +2372,39 @@ function checkAnswer(){
         quiz.hearts--;
         $('hearts').textContent='❤️'.repeat(quiz.hearts);
         $('battle-lives').textContent='♥'.repeat(quiz.hearts);
+        $('battle-lives').setAttribute('aria-label',`${quiz.hearts} hearts remaining`);
         if(quiz.battle) resolveBossTurn('wrong',false,false);
-        if(quiz.hearts===0){ saveState(); setTimeout(()=>finishQuiz(true),quiz.battle?850:600); return; }
+        if(quiz.hearts===0) quiz.failedPending=true;
       }
     }
+    q.restoreSupport=true;checkpointRound();
     saveState();
-    setTimeout(()=>showHint(q), 450);
+    const missedQuiz=quiz;
+    setTimeout(()=>{if(quiz===missedQuiz)showHint(q);},450);
   }
 }
-function strategyHintFor(q){
-  const lo=Math.min(q.a,q.b), hi=Math.max(q.a,q.b);
-  const fam = (lo===0||lo===1||lo===10||lo===2) ? lo : hi; // easiest rule wins
-  const r=REALMS[fam]||REALMS[hi]||REALMS[lo];
-  return {
-    label:r ? `${r.name} strategy` : 'Multiplication strategy',
-    body:r ? r.hint(q.a,q.b) : `${q.a} × ${q.b} = <b>${q.a*q.b}</b>`
-  };
-}
-function workedExample(q){
-  const groups=Math.min(q.a,q.b),each=Math.max(q.a,q.b),answer=q.a*q.b;
-  if(groups===0) return `<div class="worked-example" role="img" aria-label="Zero groups makes zero"><div class="worked-example-title">Picture it: no groups</div><div class="worked-equation">0 groups of ${each} = <b>0</b></div></div>`;
-  const dots='<span class="worked-dot"></span>'.repeat(each);
-  const blocks=`<span class="worked-group" style="--columns:${Math.min(each,6)}">${dots}</span>`.repeat(groups);
-  return `<div class="worked-example" role="img" aria-label="${groups} groups of ${each} equals ${answer}"><div class="worked-example-title">Picture it: ${groups} group${groups===1?'':'s'} of ${each}</div><div class="worked-groups">${blocks}</div><div class="worked-equation">${groups} × ${each} = <b>${answer}</b></div></div>`;
-}
+function strategyHintFor(q){const e=MathVisuals.explain(q);return {label:e.label+' strategy',body:e.body};}
+function workedExample(q){return MathVisuals.explain(q).visual;}
 function showHint(q){
   const strategy=strategyHintFor(q);
-  const canRetry = state.settings.retry && !quiz.retry;
+  const canRetry = state.settings.retry && !quiz.retry && !quiz.failedPending;
   $('hint-title').textContent = canRetry
     ? `💡 That one's tricky — let's build it!`
     : `The answer is ${q.ans}`;
   const reviewNote=q.reviewQueued
-    ? `<div class="hint-review-note">↻ This fact was added to the end. Get it right there to finish the round!</div>`
+    ? `<div class="hint-review-note">↻ We will revisit this fact once. Extra help is always available, and your progress is saved.</div>`
     : '';
   $('hint-body').innerHTML = `<div class="hint-strategy-label">${strategy.label}</div><div>${strategy.body}</div>${workedExample(q)}${reviewNote}`;
-  $('hint-btn').textContent = canRetry ? 'Got it — try again!' : 'Next question →';
+  $('hint-btn').textContent = quiz.failedPending?'Save and see my next step':canRetry ? 'Got it — try again!' : 'Next question →';
   $('hint-card').style.display='block';
   $('keypad').style.display='none';
+  $('hint-btn').focus({preventScroll:true});
 }
 /* First miss hands the question back so he types the answer he just learned —
    that retype is the rep. Second miss reveals it and moves on. */
 function dismissHint(){
+  if(!quiz)return;
+  if(quiz.failedPending){finishQuiz(true);return;}
   $('hint-card').style.display='none';
   $('keypad').style.display='grid';
   if(state.settings.retry && !quiz.retry){ quiz.retry=true; retryQ(); }
@@ -2393,22 +2421,26 @@ function retryQ(){
 function quitQuiz(){
   cancelAnimationFrame(qTimerRAF);
   const returnToCamp=quiz&&quiz.mode==='siege';
+  if(quiz){creditLearningRound(quiz);state.journey.resume=null;saveState();}
   quiz=null;
-  if(returnToCamp){ showScreen('screen-camp'); return; }
+  if(returnToCamp){ visitCamp(); return; }
   showScreen(activeRealm!==null?'screen-realm':'screen-map');
   if(activeRealm!==null) openRealm(activeRealm);
 }
 
 /* ---------- finishing ---------- */
 function finishQuiz(failed=false){
+  if(!quiz)return;
   cancelAnimationFrame(qTimerRAF);
-  const qz=quiz; quiz=null;
-  const acc = qz.correct+qz.wrong>0 ? qz.correct/(qz.correct+qz.wrong) : 0;
-  const passCorrect=qz.mode==='trial'?qz.passCorrect:qz.correct;
-  const passed = !failed && (qz.needCorrect===0 || passCorrect>=qz.needCorrect);
+  const qz=quiz; quiz=null;state.journey.resume=null;
+  const acc = qz.independentAttempts>0 ? qz.passCorrect/qz.independentAttempts : 0;
+  const passCorrect=qz.passCorrect;
+  const passed = !failed && (qz.battle?qz.battle.hp===0:(qz.needCorrect===0 || passCorrect>=qz.needCorrect));
+  const journeyOutcome=finishJourneyRound(qz,passed);
   let headline="", em="🎉", sub="", newPiece=null, newBlueprints=[], starReward={gems:0,stars:[]};
 
-  if(qz.mode==='trial' && passed){
+  if(journeyOutcome){headline=journeyOutcome.headline;sub=journeyOutcome.sub;em='🌿';
+  } else if(qz.mode==='trial' && passed){
     state.realms[qz.fams[0]].trial=true;
     headline="Trial Passed!"; em="🏅"; sub="The Boss Battle is now open!";
   } else if(qz.mode==='trial'){
@@ -2417,6 +2449,7 @@ function finishQuiz(failed=false){
     const fam=qz.fams[0];
     const first=!state.realms[fam].conquered;
     state.realms[fam].conquered=true;
+    state.journey.activeFamily=REALM_ORDER[REALM_ORDER.indexOf(fam)+1]??null;
     headline="Boss Defeated!"; em="⚔️";
     const next=unlockedFamilies(); const newest=next[next.length-1];
     sub = first && newest!==fam ? `${REALMS[newest].name} (the ×${newest}s) is unlocked! ⛰️` : "The realm is yours!";
@@ -2425,7 +2458,7 @@ function finishQuiz(failed=false){
       newBlueprints=blueprintsAt(conquestCount());
     }
   } else if(qz.mode==='boss'){
-    headline="The boss blocked you!"; em="🛡️"; sub="Heal up in the Training Hall, then rematch!";
+    headline="The boss blocked you!"; em="🛡️"; sub="Your progress is saved. Try a guided lesson, visit camp, or return when you are ready.";
   } else if(qz.mode==='siege' && passed){
     state.siegeWins++;
     headline="Camp Defended!"; em="🛡️"; sub=`Siege victory ${state.siegeWins}! Your camp is safe and the bonus round is ready for another rematch.`;
@@ -2433,14 +2466,14 @@ function finishQuiz(failed=false){
     headline="The raider broke through!"; em="🏕️"; sub="Nothing at camp was lost. Train your mixed facts and defend it again!";
   } else if(qz.mode==='summit' && passed){
     const firstSummit=!state.summitDone;
-    state.summitDone=true; headline="YOU CONQUERED MOUNT TWELVE!"; em="🏆"; sub="Every fact family mastered. Legendary!";
+    state.summitDone=true; headline="YOU CONQUERED MOUNT TWELVE!"; em="🏆"; sub="Every realm restored. Keep your friendships and revisit facts at your own pace.";
     if(firstSummit) newPiece=SUMMIT_PIECE;
   } else if(qz.mode==='summit'){
     headline="The summit storm pushed you back!"; em="🌨️"; sub="Sharpen your weak facts and climb again!";
   } else {
     headline = acc>=0.9?"Amazing round!":acc>=0.7?"Great climbing!":"Good training!";
     em = acc>=0.9?"🌟":acc>=0.7?"🎉":"💪";
-    sub = `${qz.correct} correct out of ${qz.correct+qz.wrong} answers`;
+    sub = `${qz.passCorrect} of ${qz.independentAttempts} independent attempts correct. Every supported step helps you learn.`;
   }
   const stars = passed&&acc>=0.99?3 : acc>=0.85?2 : acc>=0.6?1:0;
   if(qz.fams.length===1 && REALMS[qz.fams[0]]) starReward=claimRealmStarRewards(qz.fams[0]);
@@ -2449,9 +2482,7 @@ function finishQuiz(failed=false){
 
   const beforeRoundRewards=state.gems;
   completeRound(qz.correct+qz.recovered, qz.fams);
-  if(qz.correct>0&&window.CampV2&&state.campV2){
-    state.campV2=CampV2.awardLearning(state.campV2,qz.gems+starReward.gems+Math.max(0,state.gems-beforeRoundRewards));
-  }
+  creditLearningRound(qz,starReward.gems+Math.max(0,state.gems-beforeRoundRewards));
 
   const resultVisual=(qz.mode==='boss'||qz.mode==='siege')?bossVisual(qz.battle?qz.battle.config.fam:qz.fams[0],'result'):em;
   const returnButton=qz.mode==='siege'
@@ -2461,7 +2492,7 @@ function finishQuiz(failed=false){
     <div class="big-em">${resultVisual}</div>
     <h2>${headline}</h2>
     <div class="sub">${sub}</div>
-    <div class="result-stars">${'⭐'.repeat(stars)}<span style="opacity:.25">${'⭐'.repeat(3-stars)}</span></div>
+<p class="result-save-note">Your progress is saved. Map stars are permanent realm milestones.</p>
     ${newPiece?`<div class="piece-reveal">
       <div class="pem">${newPiece.em}</div>
       <div class="pnm">${newPiece.name} unlocked!</div>
@@ -2471,21 +2502,25 @@ function finishQuiz(failed=false){
     ${newBlueprints.length?`<div class="piece-reveal blueprint-reveal">
       <div class="pnm">New camp blueprints!</div>
       <div class="psub">${newBlueprints.map(p=>p.name).join(' · ')}</div>
-      <button class="btn secondary small" style="margin-top:10px" onclick="showScreen('screen-camp')">See camp upgrades →</button>
+      <button class="btn secondary small" style="margin-top:10px" onclick="visitCamp()">See camp upgrades →</button>
     </div>`:''}
     <div class="reward-row">
       <div class="reward-pill">💎 +${qz.gems} gems</div>
-      ${starReward.gems?`<div class="reward-pill">⭐ +${starReward.gems} realm mastery gems</div>`:''}
-      <div class="reward-pill">✅ ${qz.correct} first try</div>
-      ${qz.recovered?`<div class="reward-pill">💡 ${qz.recovered} on the retry</div>`:''}
-      ${qz.reviewAdded?`<div class="reward-pill">↻ ${qz.reviewAdded} review${qz.reviewAdded===1?'':'s'} completed</div>`:''}
+      ${starReward.gems?`<div class="reward-pill">⭐ +${starReward.gems} realm milestone gems</div>`:''}
+      <div class="reward-pill">✅ ${qz.passCorrect} independent successes</div>
+      ${qz.recovered?`<div class="reward-pill">💡 ${qz.recovered} with support</div>`:''}
+      ${qz.reviewAdded?`<div class="reward-pill">↻ ${qz.reviewCompleted} later review${qz.reviewCompleted===1?'':'s'} correct</div>`:''}
       ${qz.wrong?`<div class="reward-pill">🩹 ${qz.wrong} to train</div>`:''}
     </div>
     ${qz.caughtThis.length?`<div class="sub" style="margin-bottom:6px">Monsters ${qz.caughtThis.some(c=>c.shiny)?'caught & shined':'caught'}!</div>
     <div class="caught-list">${qz.caughtThis.slice(0,6).map(c=>`<div class="caught-monster ${c.shiny?'shiny':''}"><span class="em">${c.shiny?'✨':''}${monsterFor(c.a,c.b)}</span>${Math.min(c.a,c.b)}×${Math.max(c.a,c.b)}</div>`).join('')}</div>`:''}
-    <div class="btn-row" style="width:100%;max-width:330px">
-      ${returnButton}
-      <button class="btn gold" onclick="repeatLast()">${icon('repeat')} Again</button>
+    ${qz.mode==='lesson'&&qz.fams[0]===2?'<div class="piece-reveal"><div class="pnm">Twix’s building kit</div><p>Six path stones, two deck pieces, and a lantern are ready for Camp 2. Build a crossing of your own.</p></div>':''}
+    <div id="result-camp-goal">${campGoalMarkup()}</div>
+    <div class="result-next">
+      <button class="btn gold" onclick="${journeyOutcome?journeyOutcome.action:qz.mode==='trial'&&passed?'startBoss('+qz.fams[0]+')':failed?'startLearn('+qz.fams[0]+')':'doContinue()'}">${journeyOutcome?journeyOutcome.label:qz.mode==='trial'&&passed?'Help my guardian':failed?'Learn with my guardian':'Continue adventure'}</button>
+      <button class="btn secondary" onclick="visitCamp()">Use my supplies at camp</button>
+      <button class="btn ghost" onclick="finishToday()">Finish for today</button>
+      <details><summary>More choices</summary><div class="btn-row">${returnButton}<button class="btn ghost" onclick="repeatLast()">Again</button></div></details>
     </div>`;
   lastConfig._repeat=true;
   showScreen('screen-results');
@@ -2495,7 +2530,8 @@ let lastConfig={};
 function repeatLast(){ if(lastConfig.fn) lastConfig.fn(...lastConfig.args); }
 
 /* ---------- mode launchers ---------- */
-function startLearn(fam){
+function startLearn(fam){beginLesson(fam);}
+function startFactTour(fam){
   lastConfig={fn:startLearn,args:[fam]};
   const queue=[]; for(let b=0;b<=12;b++) queue.push({a:fam,b,text:`${fam} × ${b}`,ans:fam*b});
   startQuiz({mode:'learn',fams:[fam],queue,timed:false,title:'Learn'});
@@ -2504,16 +2540,15 @@ function startLearn(fam){
 function startPractice(fam){
   lastConfig={fn:startPractice,args:[fam]};
   const queue=[...warmupQs(fam), ...weightedFamilyFacts(fam,roundLen())];
-  startQuiz({mode:'practice',fams:[fam],queue,timed:true,title:'Practice'});
+  startQuiz({mode:'practice',fams:[fam],queue,timed:false,title:'Practice'});
 }
-function trialNeeds(){ return Math.max(1, roundLen()-1); }
+function challengeLength(){return 6;}
+function challengeNeeds(){return 5;}
+function trialNeeds(){ return challengeNeeds(); }
 function startTrial(fam){
-  const caught=realmStars(fam).caught;
-  if(caught<10){ toast(`Catch ${10-caught} more Fact Monster${10-caught===1?'':'s'} to unlock the Mastery Trial`); return; }
+  if(!unlockedFamilies().includes(fam)||!challengeReady(fam)){toast('Finish a guided lesson or catch 10 creatures to open this challenge');return;}
   lastConfig={fn:startTrial,args:[fam]};
-  const queue=weightedFamilyFacts(fam,roundLen());
-  startQuiz({mode:'trial',fams:[fam],queue,timed:true,needCorrect:trialNeeds(),title:'Mastery Trial'});
-  toast(`🏅 Get ${trialNeeds()} of ${roundLen()} right to pass!`);
+  startQuiz({mode:'trial',fams:[fam],queue:weightedFamilyFacts(fam,challengeLength()),timed:false,needCorrect:challengeNeeds(),title:'Realm Challenge'});
 }
 
 /* Every guardian uses the same readable turn-based battle engine, while this
@@ -2522,7 +2557,7 @@ const BOSS_BATTLE_CONFIGS={
   0:{effect:'fog',accent:'#8FE4C8',shadow:'#244A43',art:'art/battle/bg-battle-x0-portrait.webp',mechanic:'Clear the vanishing fog',intro:'Light the path before it disappears.',phases:['Find the Trail','Break the Mist','Reveal the Guardian']},
   1:{effect:'mirror',accent:'#A8EF9C',shadow:'#264F35',art:'art/battle/bg-battle-x1-portrait.webp',mechanic:'Shatter the mirror decoys',intro:'Only the true reflection stays the same.',phases:['Spot the Copy','Crack the Mirror','True Reflection']},
  10:{effect:'machine',accent:'#75C6FF',shadow:'#193B69',art:'art/battle/bg-battle-x10-portrait.webp',mechanic:'Overload the power cells',intro:'Charge Ten City one zero at a time.',phases:['Start the Engines','Break the Circuit','System Overload']},
-  2:{effect:'river',accent:'#58D8FF',shadow:'#13496A',art:'art/battle/bg-battle-x2-portrait.webp',attackArt:'art/boss/boss-2-attack.webp',mechanic:'Stepping-stone surge',intro:'Double each answer to cross the raging river.',phases:['Cross the Rapids','Break the Current','Final Surge']},
+  2:{effect:'river',accent:'#58D8FF',shadow:'#13496A',art:'art/battle/bg-battle-x2-portrait.webp',attackArt:'art/boss/boss-2-attack.webp',mechanic:'Stepping-stone surge',intro:'Use two equal groups to restore the crossing.',phases:['Cross the Rapids','Break the Current','Final Surge']},
   5:{effect:'harbor',accent:'#88E06B',shadow:'#275B3A',art:'art/battle/bg-battle-x5-portrait.webp',mechanic:'Free the harbor from its grip',intro:'Every high five loosens a kraken tentacle.',phases:['Cut the Ropes','Free the Fleet','Last Tentacle']},
  11:{effect:'twin',accent:'#F49AE0',shadow:'#63335D',art:'art/battle/bg-battle-x11-portrait.webp',mechanic:'Strike the matching tower',intro:'Keep both twins in perfect balance.',phases:['Face the First Twin','Balance the Towers','Twin Echo']},
   3:{effect:'jungle',accent:'#63DF91',shadow:'#19553C',art:'art/battle/bg-battle-x3-portrait.webp',mechanic:'Break the three vine shields',intro:'Swing through three layers of jungle defense.',phases:['Part the Vines','Break the Canopy','Triple Swing']},
@@ -2563,7 +2598,7 @@ function renderBossBattle(){
   stage.style.setProperty('--boss-attack-art',c.attackArt?`url('${c.attackArt}')`:'var(--boss-art)');
   $('battle-kicker').textContent=c.kicker||`×${c.fam} REALM SHOWDOWN · ${c.realm}`;
   $('battle-name').textContent=c.name;
-  $('battle-health-title').textContent=c.healthLabel||'Guardian power';
+  $('battle-health-title').textContent=c.healthLabel||'Threat strength';
   $('battle-mechanic-name').textContent=c.mechanic;
   $('battle-climber').innerHTML=`<img src="${profileAvatar()}" alt="${escapeHtml((profileById()&&profileById().name)||'Your climber')}">`;
   $('battle-boss').innerHTML=bossVisual(c.fam);
@@ -2574,6 +2609,7 @@ function updateBossBattleUI(){
   if(!quiz||!quiz.battle) return;
   const battle=quiz.battle,phase=battlePhaseIndex(battle),c=battle.config;
   battle.phase=phase;
+  $('q-count').textContent=`${battle.maxHP-battle.hp} / ${battle.maxHP} restored`;
   const hpPct=Math.max(0,Math.round(battle.hp/battle.maxHP*100));
   $('battle-hp').style.width=`${hpPct}%`;
   $('battle-hp-copy').textContent=`${hpPct}%`;
@@ -2613,10 +2649,10 @@ function resolveBossTurn(outcome,fast=false,retry=false){
   } else if(outcome==='correct'){
     battle.hp=Math.max(0,battle.hp-1);
     battle.position=Math.min(4,battle.position+1);
-    battle.charge=fast?Math.min(3,battle.charge+1):0;
+    battle.charge=Math.min(3,battle.charge+1);
     const special=battle.charge>=3;
     battle.lastAction=special?'special':'strike';
-    if(special){ announceBattle(battle.config.phases[battlePhaseIndex(battle)],'SPECIAL MOVE! Three fast answers unleash a power strike.'); battle.charge=0; }
+    if(special){ announceBattle(battle.config.phases[battlePhaseIndex(battle)],'Three independent answers! Your guardian lights the way.'); battle.charge=0; }
     animateBattle(special?'special-hit':'hero-hit');
   } else {
     battle.position=Math.max(0,battle.position-1); battle.charge=0; battle.lastAction='boss';
@@ -2627,13 +2663,14 @@ function resolveBossTurn(outcome,fast=false,retry=false){
   updateBossBattleUI();
   const newPhase=battlePhaseIndex(battle);
   if(outcome==='correct'&&!retry&&!battle.lastAction.includes('special')&&newPhase!==oldPhase){
-    announceBattle(battle.config.phases[newPhase],newPhase===2?'The guardian is weakening. Finish the showdown!':'The battle has changed. Keep climbing!');
+    announceBattle(battle.config.phases[newPhase],newPhase===2?'The threat is weakening. Restore the realm!':'The battle has changed. Keep climbing!');
   }
 }
 function startBoss(fam){
+  if(!canStartBoss(fam)){toast("Complete the Realm Challenge to meet this threat");return;}
   lastConfig={fn:startBoss,args:[fam]};
   // boss mixes hardest facts of this family + previously conquered hard facts
-  const queue=weightedFamilyFacts(fam,Math.max(4,roundLen()-3));
+  const queue=encounterQuestions(fam,Math.max(4,roundLen()-3));
   const prior=conqueredFamilies();
   for(let i=0;i<3;i++){
     const f = prior.length? prior[Math.floor(Math.random()*prior.length)] : fam;
@@ -2641,7 +2678,7 @@ function startBoss(fam){
   }
   // Hearts are the gate — needCorrect is set to match so there is exactly one
   // rule to understand: run out of hearts and the boss wins.
-  startQuiz({mode:'boss',fams:[fam],queue:queue.sort(()=>Math.random()-.5),timed:true,hearts:heartCt(),needCorrect:queue.length-heartCt(),boss:bossEmoji(fam),battle:true,title:'Realm Showdown'});
+  startQuiz({mode:'boss',fams:[fam],queue,timed:false,hearts:heartCt(),needCorrect:queue.length-heartCt(),boss:bossEmoji(fam),battle:true,title:'Realm Showdown'});
   toast(`${bossName(fam)} guards the path. Win the showdown!`);
 }
 function startCampSiege(){
@@ -2662,7 +2699,7 @@ function startCampSiege(){
   };
   lastConfig={fn:startCampSiege,args:[]};
   activeRealm=null;
-  startQuiz({mode:'siege',fams,queue:queue.sort(()=>Math.random()-.5),timed:true,hearts:heartCt(),needCorrect:queue.length-heartCt(),boss:bossEmoji(attacker),battle:true,battleFam:attacker,battleConfig:config,title:'Camp Siege'});
+  startQuiz({mode:'siege',fams,queue:queue.sort(()=>Math.random()-.5),timed:false,hearts:heartCt(),needCorrect:queue.length-heartCt(),boss:bossEmoji(attacker),battle:true,battleFam:attacker,battleConfig:config,title:'Camp Siege'});
   toast(`${bossName(attacker)} is raiding Base Camp. Defend it!`);
 }
 function bossEmoji(fam){ return {0:'🌫️',1:'🪞',10:'🏗️',2:'🌊',5:'🦑',11:'🗼',3:'🦍',4:'🗿',9:'🥷',6:'⚙️',12:'🐲',8:'🧊',7:'⛈️'}[fam]||'👹'; }
@@ -2672,6 +2709,7 @@ function bossVisual(fam, cls=''){
   return `<span class="boss-visual ${cls}" role="img" aria-label="${bossName(fam)}" style="--boss-art:url('${art}')"><span class="boss-visual-emoji" aria-hidden="true">${bossEmoji(fam)}</span><span class="boss-visual-image" aria-hidden="true"></span><img class="boss-visual-probe" src="${art}" alt="" decoding="async" onload="this.parentElement.classList.add('art-ready')" onerror="this.remove()"></span>`;
 }
 function startSummit(){
+  if(!allConquered()){toast("Restore all thirteen realms to open the summit");return;}
   lastConfig={fn:startSummit,args:[]};
   const queue=[];
   // hardest facts across all families
@@ -2679,7 +2717,7 @@ function startSummit(){
   hard.forEach(([a,b])=>queue.push(makeQ(a,b)));
   const filler=Math.max(2,roundLen()-4);
   for(let i=0;i<filler;i++){ const f=REALM_ORDER[Math.floor(Math.random()*13)]; queue.push(makeQ(f,Math.floor(Math.random()*13))); }
-  startQuiz({mode:'summit',fams:REALM_ORDER,queue:queue.sort(()=>Math.random()-.5),timed:true,hearts:heartCt(),needCorrect:queue.length-heartCt(),boss:'🐉',title:'The 12s Summit'});
+  startQuiz({mode:'summit',fams:REALM_ORDER,queue:queue.sort(()=>Math.random()-.5),timed:false,hearts:heartCt(),needCorrect:queue.length-heartCt(),boss:'🐉',title:'The 12s Summit'});
   toast("⛰️ The final climb! The Summit Dragon guards the peak!");
 }
 
@@ -2694,26 +2732,26 @@ function renderHall(){
   const recommended=due.length
     ? {title:'Daily Review',copy:`${due.length} fact${due.length===1?' is':'s are'} ready for a spaced recall check today. No timer.`,fn:'startDailyReview()',icon:'repeat'}
     : weak.length
-    ? {title:'Weak Fact Workout',copy:`Coach the ${weak.length} fact${weak.length===1?'':'s'} that need the most help. No timer.`,fn:'startWeakWorkout()',icon:'heal'}
+    ? {title:'Tricky Fact Workshop',copy:`Coach the ${weak.length} fact${weak.length===1?'':'s'} that need the most help. No timer.`,fn:'startWeakWorkout()',icon:'heal'}
     : {title:`×${currentFamily()} Realm Practice`,copy:'The best next workout for your current climb.',fn:"hallStart('practice')",icon:'target'};
   $('hall-body').innerHTML=`
     <div class="training-hero">${icon(recommended.icon)}<div class="copy"><span class="sect-label" style="margin:0;color:#765411">Recommended workout</span><strong>${recommended.title}</strong><p>${recommended.copy}</p><button class="btn" onclick="${recommended.fn}">${icon('spark')} Start workout</button></div></div>
     <div class="training-family-panel"><div class="sect-label">Choose unlocked families</div><div class="fam-pick" id="fam-pick"></div><p id="hall-note" style="color:#B7AEE8;font-size:11.5px;font-weight:700;margin-top:9px"></p></div>
-    <div class="sect-label">Workout library</div>
+    <button class="btn gold" onclick="hallStart('practice')">Practice my selected families</button><details class="training-more"><summary>More ways to practice</summary>
     <div class="training-workout-grid">
       <button class="training-workout" onclick="startDailyReview()" ${due.length?'':'disabled'}>${icon('repeat')}<strong>Daily Review</strong><span>Recall facts when the spaced-learning tracker says they are due.</span></button>
       <button class="training-workout" onclick="hallStart('practice')">${icon('target')}<strong>Practice</strong><span>Focused repetitions without the speed pressure.</span></button>
-      <button class="training-workout" onclick="hallStart('speed')">${icon('spark')}<strong>Speed Round</strong><span>Build fast recall and improve mastery ratings.</span></button>
-      <button class="training-workout" onclick="startWeakWorkout()">${icon('heal')}<strong>Weak Facts</strong><span>Adaptive coaching for recent misses and slow answers.</span></button>
+      <button class="training-workout" onclick="hallStart('speed')">${icon('spark')}<strong>Speed Round</strong><span>Optional fluency practice. Speed never blocks adventure.</span></button>
+      <button class="training-workout" onclick="startWeakWorkout()">${icon('heal')}<strong>Tricky Facts</strong><span>Calm coaching for recent independent mistakes.</span></button>
       <button class="training-workout" onclick="startMixedMayhem()">${icon('mix')}<strong>Mixed Mayhem</strong><span>Keep every unlocked family fresh.</span></button>
-      <button class="training-workout" id="division-btn" onclick="startDivision()">${icon('divide')}<strong>Division</strong><span>Reverse mastered multiplication facts.</span></button>
-    </div>`;
+      <button class="training-workout" id="division-btn" onclick="startDivision()">${icon('divide')}<strong>Division</strong><span>Explore related multiplication and division facts.</span></button>
+    </div></details>`;
   const pick=$('fam-pick'); pick.innerHTML='';
   REALM_ORDER.slice().sort((a,b)=>a-b).forEach(f=>{
     const b=document.createElement('button');
     b.textContent='×'+f;
     b.disabled=!unlocked.includes(f);
-    b.classList.toggle('sel',hallSel.has(f));
+    b.classList.toggle('sel',hallSel.has(f));b.setAttribute('aria-pressed',String(hallSel.has(f)));
     b.onclick=()=>{ hallSel.has(f)?hallSel.delete(f):hallSel.add(f); renderHall(); };
     pick.appendChild(b);
   });
@@ -2724,7 +2762,7 @@ function renderHall(){
     : 'No weak facts detected — go catch some new monsters!';
   $('division-btn').disabled = conqueredFamilies().length===0;
 }
-function hallFams(){ return hallSel.size? [...hallSel] : [currentFamily()]; }
+function hallFams(){ const selected=[...hallSel].filter(f=>unlockedFamilies().includes(f));return selected.length?selected:[currentFamily()]; }
 function hallStart(kind){
   const fams=hallFams();
   lastConfig={fn:hallStart,args:[kind]};
@@ -2735,7 +2773,7 @@ function hallStart(kind){
 }
 function getWeakFacts(){
   return Object.entries(state.facts)
-    .filter(([k,f])=> (f.w>0 && f.rating<4) || f.slow>=2)
+    .filter(([k,f])=> LearningJourney.needsHelp(f))
     .sort((a,b)=>reviewPriority(b)-reviewPriority(a)).map(([k])=>k);
 }
 function startDailyReview(){
@@ -2756,7 +2794,7 @@ function startWeakWorkout(){
   const weak=getWeakFacts().slice(0,roundLen());
   if(!weak.length){ toast("🌟 No weak facts! Amazing!"); return; }
   const queue=weak.map(k=>{ const [a,b]=k.split('*').map(Number); return makeQ(a,b); });
-  startQuiz({mode:'practice',fams:unlockedFamilies(),queue,timed:false,title:'Weak Fact Workout'});
+  startQuiz({mode:'practice',fams:unlockedFamilies(),queue,timed:false,title:'Tricky Fact Workshop'});
   toast("🩹 Building up your tricky facts — no timer!");
 }
 function startMixedMayhem(){
@@ -2764,7 +2802,7 @@ function startMixedMayhem(){
   const fams=unlockedFamilies();
   const queue=[];
   for(let i=0;i<roundLen();i++){ const f=fams[Math.floor(Math.random()*fams.length)]; queue.push(makeQ(f,Math.floor(Math.random()*13))); }
-  startQuiz({mode:'practice',fams,queue,timed:true,title:'Mixed Mayhem'});
+  startQuiz({mode:'practice',fams,queue,timed:false,title:'Mixed Mayhem'});
 }
 function startDivision(){
   lastConfig={fn:startDivision,args:[]};
@@ -2786,12 +2824,12 @@ function startDivision(){
 let monsterFilter='all';
 function renderMonsters(){
   const seg=$('monster-seg');
-  const filters=[['all','All'],['caught','Caught'],['shiny','Shiny'],['sleepy','Sleepy'],['wild','Wild']];
+  const filters=[['all','All'],['caught','Companions'],['shiny','Shiny'],['sleepy','Befriending'],['wild','Discovering']];
   seg.innerHTML=filters.map(([k,l])=>`<button class="${monsterFilter===k?'on':''}" onclick="monsterFilter='${k}';renderMonsters()">${l}</button>`).join('');
   const grid=$('monster-grid'); grid.innerHTML='';
   const uniqueFacts=new Set(),caughtFacts=new Set();
   const unlocked=unlockedFamilies();
-  grid.innerHTML=`<div class="monster-book-intro" style="grid-column:1/-1">${icon('cards')}<div><strong>Quest Card Field Guide</strong><span>Tap any creature to inspect its fact, accuracy, best time, and realm strategy.</span></div></div>`;
+  grid.innerHTML=`<div class="monster-book-intro" style="grid-column:1/-1">${icon('cards')}<div><strong>Quest Card Field Guide</strong><span>Mirror facts such as 3×4 and 4×3 share one creature. Friendships are permanent; recall grows with later visits.</span></div></div>`;
   unlocked.forEach(fam=>{
     const section=document.createElement('section'); section.className='monster-realm-section';
     const realmGrid=document.createElement('div'); realmGrid.className='monster-grid';
@@ -2818,7 +2856,7 @@ function renderMonsters(){
     }
     if(realmShown){ section.innerHTML=`<div class="monster-realm-head">${realmCharacter(fam)}<strong>${REALMS[fam].name}</strong><span>${realmCaught}/13 caught</span></div>`; section.appendChild(realmGrid); grid.appendChild(section); }
   });
-  $('monster-count').textContent=`${caughtFacts.size} of ${uniqueFacts.size} unique creatures caught`;
+  $('monster-count').textContent=`${caughtFacts.size} companions · ${uniqueFacts.size} discoverable here · 91 in the world`;
   if(grid.children.length===1) grid.innerHTML+='<div style="grid-column:1/-1;color:#8B83BD;font-weight:700;text-align:center;padding:30px 10px">Nothing here yet — go practice to find monsters!</div>';
 }
 
@@ -2832,6 +2870,7 @@ function backupStatus(){
 }
 function switchButton(label,on,handler){ return `<button class="tg ${on?'on':''}" role="switch" aria-checked="${!!on}" aria-label="${label}" onclick="${handler}"><span class="sr-only">${label}: ${on?'on':'off'}</span></button>`; }
 function renderParent(){
+  rememberParentPanels();
   const unlocked=unlockedFamilies();
   const st=state.settings;
   const retention=reviewSummary();
@@ -2840,16 +2879,16 @@ function renderParent(){
   let chips='';
   REALM_ORDER.forEach(f=>{
     if(!unlocked.includes(f)){ chips+=`<span class="fam-chip untouched">×${f} 🔒</span>`; return; }
-    const ratings=Array.from({length:13},(_,i)=>factRating(f,i));
-    const avg=ratings.reduce((a,b)=>a+b,0)/13;
-    const cls=avg>=4?'strong':avg>=2.2?'mid':'weak';
-    const lbl=avg>=4?'Strong':avg>=2.2?'Improving':'Needs work';
+    const evidence=Array.from({length:13},(_,i)=>LearningJourney.evidence(state.facts[fkey(f,i)])).filter(e=>e&&e.recent.length);
+    const attempts=evidence.flatMap(e=>e.recent),right=attempts.filter(e=>e.ok).length;
+    const cls=!attempts.length?'untouched':right/attempts.length>=.8?'strong':'mid';
+    const lbl=attempts.length?`${right}/${attempts.length} recent independent`:'No new independent evidence';
     chips+=`<span class="fam-chip ${cls}">×${f} ${lbl}</span>`;
   });
   // weak facts
   const weak=getWeakFacts().slice(0,8);
   // slow facts (accurate but slow)
-  const slow=Object.entries(state.facts).filter(([k,f])=>f.rating===3&&f.c>0).map(([k])=>k).slice(0,8);
+  const slow=[]; // Response speed never labels a fact as needing instruction.
   // heatmap
   let heat='<div class="hd"></div>';
   for(let c=0;c<=12;c++) heat+=`<div class="hd">${c}</div>`;
@@ -2858,7 +2897,7 @@ function renderParent(){
     for(let c=0;c<=12;c++){
       const r=factRating(rIdx,c);
       const col=['rgba(255,255,255,.07)','#6B2430','#8a3a2a','#6B4E00','#2E8B57','#FFC53D'][r];
-      heat+=`<div class="heat-cell" style="background:${col}" title="${rIdx}×${c}: ${RATING_LABEL[r]}"></div>`;
+      heat+=`<button class="heat-cell" onclick="openMonsterCard(${rIdx},${c})" style="background:${col}" aria-label="${rIdx} times ${c}: ${RATING_LABEL[r]}" title="${rIdx}×${c}: ${RATING_LABEL[r]}"></button>`;
     }
   }
   // suggested plan
@@ -2866,26 +2905,26 @@ function renderParent(){
   const plan = due.length
     ? `Start with Daily Review (${due.slice(0,4).map(([k])=>k.replace('*','×')).join(', ')}${due.length>4?'…':''}), then stop or play one short ×${fam} round.`
     : weak.length
-    ? `5-minute plan: Weak Fact Workout (${weak.slice(0,4).map(k=>k.replace('*','×')).join(', ')}), then one ×${fam} Practice round.`
-    : `5-minute plan: one ×${fam} Practice round, then Mixed Mayhem to keep old families fresh.`;
+    ? `Try the Tricky Fact Workshop (${weak.slice(0,4).map(k=>k.replace('*','×')).join(', ')}). Then visit camp or finish for today.`
+    : `${escapeHtml(nextAction().label)}. Follow the Adventure button for this next step, then use the supplies at camp or finish for today.`;
 
   $('parent-body').innerHTML=`
-    <div class="card"><h3>${icon('parent')} Current player</h3><p><b>${profileById()?escapeHtml(profileById().name):'Climber'}</b> has a separate map, camp, cards, gems, and settings.</p><button class="btn secondary small" style="margin-top:9px" onclick="openProfileChooser()">Switch or add player</button></div>
+    <div class="card"><h3>${icon('parent')} Current player</h3><p><b>${profileById()?escapeHtml(profileById().name):'Climber'}</b> has a separate map, camp, cards, gems, and settings.</p><button class="btn secondary small" style="margin-top:9px" onclick="openProfileChooser()">Switch or add player</button><button class="btn ghost small" onclick="editExplorer()">Change my explorer</button></div>
     <div class="card"><h3>${icon('target')} Suggested next session</h3><p>${plan}</p></div>
     <div class="card"><h3>${icon('repeat')} Retention across days</h3>
       <p>Facts return after gradually longer gaps. A miss shortens the gap so it is practiced again soon.</p>
-      <div class="retention-grid"><div class="retention-stat"><strong>${retention.due}</strong><span>Due today</span></div><div class="retention-stat"><strong>${retention.soon}</strong><span>Due next 7 days</span></div><div class="retention-stat"><strong>${retention.secure}</strong><span>Recalled after 14+ days</span></div><div class="retention-stat"><strong>${retention.accuracy===null?'—':retention.accuracy+'%'}</strong><span>7-day retrieval</span></div></div>
-      <div class="retention-meter" aria-label="${retention.learned?Math.round(retention.secure/retention.learned*100):0}% of learned facts are secure"><span style="width:${retention.learned?Math.round(retention.secure/retention.learned*100):0}%"></span></div>
-      <p style="font-size:12px"><b>${retention.secure} of ${retention.learned}</b> learned facts were correctly recalled after a gap of at least two weeks.${due.length?` Due first: ${due.map(([k])=>k.replace('*','×')).join(', ')}.`:' Nothing is overdue today.'}</p>
+      <div class="retention-grid"><div class="retention-stat"><strong>${retention.due}</strong><span>Due today</span></div><div class="retention-stat"><strong>${retention.soon}</strong><span>Due next 7 days</span></div><div class="retention-stat"><strong>${retention.secure}</strong><span>Recalled after 14+ days</span></div><div class="retention-stat"><strong>${retention.accuracy===null?'—':retention.accuracy+'%'}</strong><span>Recent independent retrieval</span></div></div>
+      <div class="retention-meter" aria-label="${retention.learned?Math.round(retention.secure/retention.learned*100):0}% of practiced facts are secure"><span style="width:${retention.learned?Math.round(retention.secure/retention.learned*100):0}%"></span></div>
+      <p style="font-size:12px">Percentage uses ${retention.recent} first attempts from the past 7 days (at most 240 recent records). Immediate corrections are excluded.</p><p style="font-size:12px"><b>${retention.secure} of ${retention.learned}</b> practiced facts were correctly recalled after a gap of at least two weeks.${due.length?` Due first: ${due.map(([k])=>k.replace('*','×')).join(', ')}.`:' Nothing is overdue today.'}</p>
     </div>
     <div class="card"><h3>${icon('cards')} Family progress</h3><div style="margin-top:8px">${chips}</div></div>
     <div class="card"><h3>${icon('heal')} Needs attention</h3>
       ${weak.length?`<div class="weak-list">${weak.map(k=>`<span class="weak-pill">${k.replace('*','×')}</span>`).join('')}</div>`:'<p>No struggling facts right now. 🎉</p>'}
       ${slow.length?`<p style="margin-top:10px"><b>Accurate but slow</b> (can take their time): ${slow.map(k=>k.replace('*','×')).join(', ')}</p>`:''}
     </div>
-    <div class="card"><h3>${icon('spark')} Habit</h3><p>Daily streak: <b>${state.streak} day${state.streak===1?'':'s'}</b> • Gems: <b>${state.gems}</b> • Quest today: <b>${state.questDone?'done':'not yet'}</b></p></div>
+    <div class="card"><h3>${icon('spark')} Habit</h3><p>Learning visits in the past week: <b>${state.journey.days.filter(d=>dayDistance(d)>=0&&dayDistance(d)<7).length}</b> • Gems: <b>${state.gems}</b> • Quest today: <b>${state.questDone?'done':'not yet'}</b></p></div>
     <div class="card"><h3>${icon('target')} Fact heatmap (row × column)</h3>
-      <p style="margin-bottom:8px;font-size:12px">Gray = not seen • Red = struggling • Amber = slow • Green = caught • Gold = mastered</p>
+      <p style="margin-bottom:8px;font-size:12px">Gray = undiscovered • Rust / amber = befriending • Green = companion • Gold = shiny companion</p>
       <p style="margin-bottom:8px;font-size:12px"><b>Green and gold are earned collection milestones.</b> Accurate answers count at any speed. The optional ${(state.settings.window/1000)}s window affects bonus gems, not adventure access.</p>
       <div class="heat-grid">${heat}</div></div>
     <div class="card"><h3>${icon('hammer')} Create-a-Quiz</h3>
@@ -2900,15 +2939,15 @@ function renderParent(){
       <p style="margin-bottom:4px">Everything here changes how a round plays. Defaults match how the game shipped.</p>
 
       <div class="toggle-row"><span class="lbl">${icon('spark')} Speed bonus meter</span>${switchButton('Speed bonus meter',st.timer,"toggleSetting('timer')")}</div>
-      <div class="pref-note">Hide the countdown for calmer practice. Accurate answers can earn every creature and star at any speed.</div>
+      <div class="pref-note">Applies only to optional Speed Rounds and timed custom quizzes. Adventure, lessons, and ordinary practice have no countdown.</div>
       ${st.timer?`
-      <div class="pref-sub">Bonus window — how long he has to earn the speed bonus</div>
+      <div class="pref-sub">Optional speed-round bonus window</div>
       <div class="count-pick">${WINDOW_CHOICES.map(ms=>`<button class="${st.window===ms?'sel':''}" onclick="setPref('window',${ms})">${ms/1000}s</button>`).join('')}</div>
       <div class="pref-note">A wider window makes bonus gems easier to earn. Collection milestones and adventure access never require fast answers.</div>`:''}
 
       <div class="pref-sub">Round length</div>
       <div class="count-pick">${ROUND_CHOICES.map(n=>`<button class="${st.roundLen===n?'sel':''}" onclick="setPref('roundLen',${n})">${n===8?'Short':n===12?'Normal':'Long'} · ${n}</button>`).join('')}</div>
-      <div class="pref-note">Applies to practice, trials, boss fights and every Training Hall workout. The Mastery Trial now needs <b>${trialNeeds()} of ${roundLen()}</b>.</div>
+      <div class="pref-note">Applies to practice and encounters. Realm Challenges stay short and need <b>${challengeNeeds()} of ${challengeLength()}</b>.</div>
 
       <div class="toggle-row"><span class="lbl">${icon('learn')} Second chance on a miss</span>${switchButton('Second chance on a miss',st.retry,"toggleSetting('retry')")}</div>
       <div class="pref-note">On: a missed question comes back once, untimed, after the hint. Off: the hint shows the answer and moves on.</div>
@@ -2959,6 +2998,7 @@ function renderParent(){
       </div>
       <p style="margin-top:10px;font-size:11px;color:#746b8f">Times Quest ${APP_VERSION} · save schema ${state.v}</p>
     </div>`;
+  organizeParentPanels();
 }
 function applyCalm(){
   document.body.classList.toggle('calm', !!state.settings.calm);
@@ -3466,6 +3506,10 @@ function buyCampUpgrade(chainId){
    Tap a piece to hold it, tap a cell to put it down. No drag — drag fights
    page scroll on iPad Safari and needs pointer capture to behave. */
 let heldPiece=null,pendingUpgrade=null,campUndo=null;
+function campMasteredCount(){return REALM_ORDER.filter(f=>state.realms[f]?.trial||(state.realmRewardStars[f]||0)>=1).length;}
+function isCampTester(){const p=profileBook.profiles.find(p=>p.id===activeProfileId);return !!p?.qa;}
+function campReviewQuestions(){const due=dueFactEntries(40).map(([key])=>{const [a,b]=key.split('*').map(Number);return {a,b};}).filter(q=>unlockedFamilies().includes(q.a)||unlockedFamilies().includes(q.b));const result=due.slice(0,3).map(q=>({a:q.a,b:q.b}));for(const q of weightedFamilyFacts(currentFamily(),3,false))if(result.length<3&&!result.some(p=>fkey(p.a,p.b)===fkey(q.a,q.b)))result.push({a:q.a,b:q.b});while(result.length<3)result.push({a:currentFamily(),b:result.length+1});return result;}
+function recordCampReview(event){if(!event.firstTry)return;const f=fact(event.a,event.b);LearningJourney.record(f,{correct:event.correct,day:dateKey(),operation:'multiply'});if(event.correct){f.c++;f.rating=Math.min(5,f.rating+1);f.streak++;if(f.rating>=4)f.caught=true;if(f.rating>=5)f.shiny=true;}else{f.w++;f.streak=0;f.rating=Math.max(1,f.rating-1);}scheduleRetrieval(event,f,event.correct,false,{mode:'camp-review',retry:false});saveState();}
 let campV2Session=null;
 function resetCampEditor(){
   if(campV2Session){campV2Session.dispose();campV2Session=null;}
@@ -3478,13 +3522,18 @@ function enterCampV2(){
   const host=$('screen-camp-v2');
   if(!window.CampV2){host.innerHTML='<div class="card" style="margin:30px"><h2>Camp 2 is not downloaded yet</h2><p>Go online and update the app to try the new clearing.</p><button class="btn" onclick="showScreen(\'screen-camp\')">Back to Camp 1</button></div>';return;}
   if(!state.campV2)state.campV2=CampV2.fresh();
+  deliverCampGrants();
   if(!CampV2.validSave(state.campV2)){host.innerHTML='<div class="card" style="margin:30px"><h2>This clearing needs recovery</h2><p>Your saved Camp 2 has been kept intact. Camp 1 is still available.</p><button class="btn" onclick="showScreen(\'screen-camp\')">Back to Camp 1</button></div>';return;}
-  state.campV2=CampV2.migrateSave(state.campV2);
+  state.campV2=CampV2.syncProgress(state.campV2,campMasteredCount(),isCampTester());
   const owner=activeProfileId;
   campV2Session=CampV2.mount(host,{profileId:owner,currentProfileId:()=>activeProfileId,
     getSave:()=>state.campV2,setSave:next=>{if(owner===activeProfileId){state.campV2=next;saveState();}},
+    guardians:REALM_ORDER.map(family=>({family,name:REALMS[family].petName,color:REALMS[family].color,defeated:!!state.realms[family].conquered})),
+    companions:state.campMonsterFavorites.map(key=>{const [a,b]=key.split('*').map(Number);return {key,a,b,...monsterIdentity(a,b)};}),
+    onCompanion:(a,b)=>{showScreen('screen-monsters');openMonsterCard(a,b);},
+    tester:isCampTester(),reviewQuestions:campReviewQuestions,onReview:recordCampReview,
     avatar:profileAvatar(),reducedMotion:()=>state.settings.calm||prefersReducedMotion(),
-    onExit:showScreen,onPractice:()=>{showScreen('screen-hall');}
+    onExit:showScreen,onPractice:family=>{showScreen('screen-hall');if(Number.isInteger(family)&&state.realms[family]?.conquered)startPractice(family);}
   });
   saveState();
 }
@@ -3871,7 +3920,7 @@ function shopTap(id,type,price,locked){
   saveState(); updateChips(); renderCamp();
 }
 /* Routed here from the boss results screen with the new piece already in hand. */
-function goPlace(id){ heldPiece=id; showScreen('screen-camp'); }
+function goPlace(id){ if(state.journey.preferredCamp==='v2'){visitCamp();return;} heldPiece=id; showScreen('screen-camp'); }
 
 /* =====================================================
    CREATE-A-QUIZ (parent tool)
@@ -3918,7 +3967,7 @@ if(window.matchMedia){
   const motionChanged=()=>{ if(state) applyCalm(); };
   motionQuery.addEventListener?motionQuery.addEventListener('change',motionChanged):motionQuery.addListener&&motionQuery.addListener(motionChanged);
 }
-document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>showScreen(b.dataset.s));
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>b.dataset.s==='screen-camp'?visitCamp():showScreen(b.dataset.s));
 hydrateIcons();
 $('keypad').addEventListener('click',e=>{ const k=e.target.closest('.key'); if(k) pressKey(k.dataset.k); });
 document.addEventListener('keydown',e=>{
@@ -3927,9 +3976,11 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape' && $('card-modal').classList.contains('on')){ closeQuestCard(); return; }
   if(e.key==='Escape' && $('profile-gate').classList.contains('on') && state){ closeProfileGate(); return; }
   if(e.key==='Escape' && $('screen-camp').classList.contains('active')){ if(campPanel){ setCampPanel(campPanel); } else { showScreen('screen-map'); } return; }
-  if(!quiz) return;
-  if(e.key>='0'&&e.key<='9') pressKey(e.key);
-  else if(e.key==='Backspace') pressKey('back');
+  if($('card-modal').classList.contains('on')||$('profile-gate').classList.contains('on'))return;
+  if(!quiz||!$('screen-quiz').classList.contains('active')) return;
+  if(e.key==='Enter'&&e.target.closest('button'))return;
+  if(e.key>='0'&&e.key<='9'){e.preventDefault();$('q-text').focus();pressKey(e.key);}
+  else if(e.key==='Backspace'){e.preventDefault();pressKey('back');}
   else if(e.key==='Enter'){ if($('hint-card').style.display==='block') dismissHint(); else pressKey('enter'); }
 });
 // stars
@@ -3953,6 +4004,8 @@ function offerAppUpdate(worker){
 }
 function applyAppUpdate(){
   if(!pendingWorker) return;
+  if(quiz){toast('Finish or leave this round before updating');return;}
+  flushProfileSave();
   reloadingForUpdate=true;
   pendingWorker.postMessage({type:'SKIP_WAITING'});
 }
@@ -3966,7 +4019,7 @@ if('serviceWorker' in navigator){
         if(!worker) return;
         worker.addEventListener('statechange',()=>{ if(worker.state==='installed'&&navigator.serviceWorker.controller) offerAppUpdate(worker); });
       });
-      navigator.serviceWorker.ready.then(ready=>setTimeout(()=>ready.active&&ready.active.postMessage({type:'WARM_OPTIONAL'}),5000));
+      navigator.serviceWorker.ready.then(ready=>setTimeout(()=>ready.active&&state&&ready.active.postMessage({type:'WARM_REALM',family:currentFamily()}),1500));
     }).catch(()=>{});
   });
 }

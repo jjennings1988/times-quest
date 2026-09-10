@@ -14,7 +14,7 @@ Use **Camp 1 / Camp 2** at the top to compare with the same profile. Run automat
 checks with `pnpm test` (Camp 2 domain/learning regressions, then existing QA).
 
 Camp 2 saves into `campV2` inside each existing profile. Its schema is independently
-versioned (`v: 2`, world `willowbrook-1`). It has its own layout, backpack, project history, wood, and gems.
+versioned (`v: 3`, world `willowbrook-1`). It has its own layout, backpack, project history, wood, stone, fish, and gems.
 Existing family exports include it automatically. Unsupported or invalid Camp 2
 data is retained and a recovery message offers Camp 1; it is not silently reset.
 
@@ -26,10 +26,12 @@ choose one production economy after the playtest rather than retaining two walle
 
 ## Included
 
-- An original low-poly **3D woodland** with a 12 × 10 building plot inside a
-  larger walkable environment. The camera pans, zooms, and turns in 45° steps.
-- All twelve camp object definitions have procedural 3D models: three shelter
-  stages, fire, bench, lantern, path, deck, pine, feeder, fence, and gate.
+- An original **3D woodland** with a 12 × 10 starting plot and nine
+  additional parcels (771 potential cells before trees, objects, and the Story
+  Stones garden; Homestead Meadow is available immediately).
+  The camera pans, zooms, and turns in 45° steps.
+- All 26 camp object definitions have procedural 3D models, including connected
+  picket/palisade/stone defenses, gates, a lodge, cottage, keep, wells, and moat.
   Catalogue thumbnails are rendered from these models, not imported artwork.
 - A modeled explorer and dog with walking limbs, seated interaction, and wagging
   tail; a bird flies around and visits the feeder. Gates open as the explorer nears.
@@ -42,7 +44,10 @@ choose one production economy after the playtest rather than retaining two walle
 - Select, preview, confirm, move, cancel, rotate supported pieces, store, and
   one-action undo. Commands validate before charging or changing ownership.
 - Separate ground-cover and solid-object layers; furniture can stand on a deck.
-  Construction remains inside the original plot; exploration extends beyond it.
+  Construction extends into parcels opened through mastery and review.
+- A village supply store trades gems, wood, stone and fish; a purchased rod opens
+  fishing reviews. Tree and parcel reviews open space and reward wood. Larger
+  buildings have short, skippable explorer assembly animations.
 - Walking routes avoid camp objects, forest trunks, and water. Water is crossed
   on the bridge. Decorative rocks and grass do not obstruct routes.
 - Three fallen-wood piles, replenished through learning; shelter upgrades and
@@ -52,6 +57,14 @@ choose one production economy after the playtest rather than retaining two walle
 - Backpack object list, location labels, keyboard/button nudges, textual invalid
   feedback, and Journal buttons for gathering and visiting destinations.
 - Camp 1 and the illustrated adventure map remain intact.
+- A continuous build brush for connected pieces; repeated taps place, Done exits,
+  and Undo refunds the last piece. Keyboard/button placement remains available.
+- Ten village buildings, curved roofs and dormers, softened masonry and foliage,
+  ivy, ground contact shading, a river colour gradient and reeds, market stalls,
+  a working waterwheel, fountain gardens, and flowered gateway arches.
+- Thirteen original guardian models in Guardian Grove. Residents are derived
+  from the active profile's conquered realms, never gems or tester inventory.
+  Visits offer a practice link for that family; unearned residents remain absent.
 
 ## Learning and integrity improvements in this build
 
@@ -106,10 +119,11 @@ There are no remote runtime requests for this renderer. Server compression must 
 measured on the eventual host; the simple local server serves uncompressed files.
 
 Save migration accepts the first prototype's valid schema-1 layout, inventory,
-upgrades, project history, gems, wood, and view. It writes schema 2 with the fixed
-world ID and discovery history. Stable object IDs and grid coordinates survive.
+upgrades, project history, gems, wood, and view, as well as schema-2 woodland saves.
+It writes schema 3 with defaults for mastery, parcels, tools, resources, cleared
+trees, pending reviews, and construction. Stable object IDs and coordinates survive.
 Invalid/unknown schemas or worlds are retained, not replaced with a starter save.
-Schema 2 supports explorer positions outside the old building grid. Returning to
+Schemas 2 and 3 support explorer positions outside the old building grid. Returning to
 Camp 1 is supported; rolling back the application to the old Camp 2 code is not a
 supported save downgrade. Export a family backup before release testing.
 
@@ -138,7 +152,8 @@ portrait/landscape, 200% zoom, screen reader, airplane-mode reload, service-work
 update, 20-minute battery/frame pacing, and 10 scene entry/exit memory cycles.
 Desktop viewport checks are not evidence of iOS frame rate or offline reliability.
 
-Implementation verification: automated tests cover old-save migration, unsupported
+Historical 0.13 verification (see CAMP-UPGRADE-STRATEGY.md for 0.14 measurements):
+automated tests cover old-save migration, unsupported
 worlds, outside-plot save/reload, reachable destinations, river crossing, trunks,
 and continuing learning after exploration. Desktop browser viewport checks cover
 phone/tablet/desktop layouts and the build/edit/discover flows. An initial starter
@@ -164,3 +179,7 @@ art/animation, thirteen biome packs, reducing existing explorer choices, cloud s
 wholesale module extraction, and new mathematics beyond multiplication. No Camp 1
 or adventure-map artwork is replaced. The original 2.5D experiment has evolved into
 this 3D Camp 2; the comparison remains Camp 1 versus Camp 2.
+
+## 0.16 world refinement
+
+Camp territory is now 1,312 potential cells (2×), plus 115 unchanged village cells. Roads follow the terrain and every town entrance; Guardian Grove has moved to a fenced woodland clearing reached by a lantern trail. All-sided architecture, forest/mountain boundaries and anchored camera orbit are included. See CAMP-UPGRADE-STRATEGY.md for dimensions, compatibility and current validation. Earlier measurements above describe earlier prototype revisions.
