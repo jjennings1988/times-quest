@@ -71,6 +71,25 @@
   const inZone=(z,x,y)=>x>=z.x&&x<z.x+z.w&&y>=z.y&&y<z.y+z.h;
   function mask(objects,o,defs){const family=defs[o.type]?.connect;if(!family)return 0;return [[0,-1,1],[1,0,2],[0,1,4],[-1,0,8]].reduce((m,[dx,dy,bit])=>m|(objects.some(n=>n.id!==o.id&&n.x===o.x+dx&&n.y===o.y+dy&&defs[n.type]?.connect===family)?bit:0),0);}
   const corner=m=>[3,6,9,12].includes(m);
-  root.CampContent={order,milestones,catalog,zones,town,locations,guardianPads,grove,groveFence,guardianTrail,bounds,roads,roadAt,civic,offers,inZone,mask,corner};
+  // Land ownership, not tree removal, determines the grid. Keep the Story Stones
+  // outside both layers. Shared edges belong to open land to avoid double lines.
+  function landGrid(save){
+    const cells=new Map(),edges=new Map();
+    for(const z of [{x:0,y:0,w:12,h:10,need:0},...zones]){
+      const open=z.need===0||save.land.includes(z.id);
+      for(let x=z.x;x<z.x+z.w;x++)for(let y=z.y;y<z.y+z.h;y++){
+        if(x>=-7&&x<-3&&y>=0&&y<4)continue;
+        const k=x+','+y;cells.set(k,{x,y,open:open||!!cells.get(k)?.open});
+      }
+    }
+    for(const {x,y,open} of cells.values())for(const e of [[x,y,x+1,y],[x,y,x,y+1],[x,y+1,x+1,y+1],[x+1,y,x+1,y+1]]){
+      const key=e.join(',');if(!edges.has(key)||open)edges.set(key,{e,open});
+    }
+    const result={open:[],future:[],openCells:0,futureCells:0};
+    for(const {e,open} of edges.values())result[open?'open':'future'].push(e);
+    for(const {open} of cells.values())result[open?'openCells':'futureCells']++;
+    return result;
+  }
+  root.CampContent={order,milestones,catalog,zones,town,locations,guardianPads,grove,groveFence,guardianTrail,bounds,roads,roadAt,civic,offers,inZone,mask,corner,landGrid};
   if(typeof module!=='undefined'&&module.exports)module.exports=root.CampContent;
 })(typeof window!=='undefined'?window:globalThis);

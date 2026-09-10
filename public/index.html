@@ -867,6 +867,7 @@ body.calm .stars{display:none}
 body.reduce-motion .camp-viewport{scroll-snap-type:none}
 </style>
 <link rel="stylesheet" href="journey.css">
+<link rel="stylesheet" href="opening.css">
 </head>
 <body>
 <div id="app">
@@ -975,6 +976,7 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
     </div>
   </div>
 
+  <div class="screen" id="screen-title" role="main" aria-label="Welcome to Times Quest"></div>
   <div class="screen" id="screen-journey" role="main" aria-label="Guided learning adventure"><div id="journey-body"></div></div>
   <!-- ============ RESULTS SCREEN ============ -->
   <div class="screen" id="screen-results" role="main" aria-label="Round results">
@@ -1030,8 +1032,12 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
 <script src="camp-content.js"></script>
 <script src="learning-journey.js"></script>
 <script src="math-visuals.js"></script>
+<script src="camp-guide.js"></script>
 <script src="camp-v2.js"></script>
 <script src="journey-ui.js"></script>
+<script src="opening.js"></script>
+<script src="guardian-chapters.js"></script>
+<script src="guardian-ui.js"></script>
 <script>
 /* =====================================================
    TIMES QUEST — game engine
@@ -1114,6 +1120,7 @@ async function createProfile(){
   const snapshot=qa?allAccessState():defaultState();
   const p={id,name:qa?'Summit Tester':name,avatar:profileDraftAvatar,created:Date.now(),qa,...profileSummary(snapshot)};
   profileBook.profiles.push(p); activeProfileId=id; state=snapshot; migrateState();
+  if(!qa)state.journey.openingEdition=true;
   await storageSet(profileSaveKey(id),JSON.stringify(state)); await persistProfileBook();
   closeProfileGate(); applyCalm(); checkDaily(); showScreen('screen-map');
   if(qa) toast('QA profile ready: every realm and camp item is unlocked');else startWelcome();
@@ -1411,7 +1418,7 @@ const RATING_LABEL = ["undiscovered","discovered","befriending","befriending","c
    Defaults below reproduce the game's original behaviour exactly, so an
    existing save that predates settings plays identically until something
    is changed on purpose. */
-const APP_VERSION = '0.17.0-beta.1';
+const APP_VERSION = '0.18.0-beta.1';
 const FAST_MS = 4000;          // default bonus window
 const WINDOW_CHOICES = [3000,4000,6000,8000];
 const ROUND_CHOICES  = [8,12,16];
@@ -1927,13 +1934,13 @@ function checkDaily(){
     saveState();
   }
 }
-function questText(){return {t:'A small expedition',s:'Complete a round with 4 correct answers, supported or independent. +10 gems once today.'};}
+function questText(){return {t:'A small expedition',s:'Complete a round with 3 correct answers, supported or independent. +10 gems once today.'};}
 
 function completeRound(correctCount, fams){
   // daily quest
   if(!state.questDone){
     const fam=currentFamily();
-    if(correctCount>=4){
+    if(correctCount>=3){
       state.questDone=true; state.gems+=10; toast("📜 Daily Quest complete! +10 💎"); sfx.gem();
     }
   }
@@ -1971,7 +1978,7 @@ function realmProgress(fam){
     {
       title:'Restore the realm',done:st.conquered,
       detail:st.conquered?'Realm restored':st.trial?`${bossName(fam)} is ready for battle`:'Pass the Realm Challenge to unlock the battle',
-      short:st.conquered?'Realm restored':st.trial?'Realm encounter ready':'Pass the Trial first',reward:rewards[1]
+      short:st.conquered?'Realm restored':st.trial?'Realm encounter ready':'Pass the Realm Challenge first',reward:rewards[1]
     },
     {
       title:'Catch all 13 Fact Monsters',done:st.conquered&&base.caught===13,
@@ -2008,7 +2015,7 @@ function claimRealmStarRewards(fam){
 /* One button that picks the right next thing, so opening the app to a menu of
    four modes he has no basis for choosing between is optional, not mandatory. */
 function nextAction(){
-  if(!state.journey.onboardingDone)return {icon:'learn',label:'Start my expedition',sub:'Meet Twix and build a bridge',fn:startWelcome,args:[]};
+  if(!state.journey.onboardingDone)return {icon:'learn',label:'Start my expedition',sub:'Meet Poof in Zero Marsh',fn:startWelcome,args:[]};
   if(state.journey.resume)return {icon:'learn',label:'Resume my round',sub:'Your completed answers are saved',fn:resumeRound,args:[]};
   if(state.journey.current)return {icon:'learn',label:'Continue my lesson',sub:'Your guardian is waiting',fn:resumeLesson,args:[]};
   if(allConquered()){
@@ -2143,15 +2150,11 @@ function openRealm(fam){
         : {label:conquered?'Rematch the realm boss':'Face the realm boss',sub:conquered?'Help your guardian in another encounter.':'Win to unlock the next destination.',fn:`startBoss(${fam})`,icon:'boss'};
   $('realm-title-top').textContent=r.name;
   $('realm-body').innerHTML=`
-    <div class="realm-hero" style="background:linear-gradient(160deg, ${r.color}, ${r.color}CC)">
-      ${realmCharacter(fam,'big')}
-      <h2>${r.name}</h2>
-      <div class="fam">The ×${fam} family • ${r.petName}</div>
-      <div class="realm-guide">
-        ${realmCharacter(fam)}
-        <div><div class="hello">Meet ${r.petName}</div><p>${lore.intro}</p><button class="guardian-card-button" onclick="openGuardianCard(${fam})">View guardian Quest Card</button></div>
-      </div>
-    </div>
+    <section class="realm-hero illustrated-realm">
+      <h2>${r.name}</h2><div class="fam">The ×${fam} family · ${r.petName}</div>
+      ${illustratedGuardian(fam)}
+      <div class="realm-guide"><div><div class="hello">Meet ${r.petName}</div><p>${lore.intro}</p><button class="guardian-card-button" onclick="openGuardianCard(${fam})">View guardian Quest Card</button></div></div>
+    </section>
     ${realmProgressGuide(fam)}
     <div class="realm-next-card"><div class="eyebrow">Recommended next</div><div class="next-title">${recommended.label}</div><button class="btn" onclick="${recommended.fn}">${icon(recommended.icon)}<span>${recommended.label}<small style="display:block;font:700 10px var(--body);opacity:.75">${recommended.sub}</small></span></button></div>
     <div class="card" style="display:flex;align-items:center;gap:10px;justify-content:space-between">
@@ -2454,6 +2457,7 @@ function finishQuiz(failed=false){
     const next=unlockedFamilies(); const newest=next[next.length-1];
     sub = first && newest!==fam ? `${REALMS[newest].name} (the ×${newest}s) is unlocked! ⛰️` : "The realm is yours!";
     if(first){
+      if(fam===0&&state.journey.zeroChapter)state.journey.zeroKit=true;
       newPiece=REALM_PIECES[fam];
       newBlueprints=blueprintsAt(conquestCount());
     }
@@ -2515,6 +2519,7 @@ function finishQuiz(failed=false){
     ${qz.caughtThis.length?`<div class="sub" style="margin-bottom:6px">Monsters ${qz.caughtThis.some(c=>c.shiny)?'caught & shined':'caught'}!</div>
     <div class="caught-list">${qz.caughtThis.slice(0,6).map(c=>`<div class="caught-monster ${c.shiny?'shiny':''}"><span class="em">${c.shiny?'✨':''}${monsterFor(c.a,c.b)}</span>${Math.min(c.a,c.b)}×${Math.max(c.a,c.b)}</div>`).join('')}</div>`:''}
     ${qz.mode==='lesson'&&qz.fams[0]===2?'<div class="piece-reveal"><div class="pnm">Twix’s building kit</div><p>Six path stones, two deck pieces, and a lantern are ready for Camp 2. Build a crossing of your own.</p></div>':''}
+    ${qz.mode==='boss'&&qz.fams[0]===0&&passed&&state.journey.zeroKit?zeroRewardMarkup():''}
     <div id="result-camp-goal">${campGoalMarkup()}</div>
     <div class="result-next">
       <button class="btn gold" onclick="${journeyOutcome?journeyOutcome.action:qz.mode==='trial'&&passed?'startBoss('+qz.fams[0]+')':failed?'startLearn('+qz.fams[0]+')':'doContinue()'}">${journeyOutcome?journeyOutcome.label:qz.mode==='trial'&&passed?'Help my guardian':failed?'Learn with my guardian':'Continue adventure'}</button>
@@ -2609,6 +2614,8 @@ function updateBossBattleUI(){
   if(!quiz||!quiz.battle) return;
   const battle=quiz.battle,phase=battlePhaseIndex(battle),c=battle.config;
   battle.phase=phase;
+  zeroEncounterScenery();
+  guardianEncounterScenery();
   $('q-count').textContent=`${battle.maxHP-battle.hp} / ${battle.maxHP} restored`;
   const hpPct=Math.max(0,Math.round(battle.hp/battle.maxHP*100));
   $('battle-hp').style.width=`${hpPct}%`;
@@ -2642,9 +2649,10 @@ function animateBattle(action){
 function resolveBossTurn(outcome,fast=false,retry=false){
   if(!quiz||!quiz.battle) return;
   const battle=quiz.battle,oldPhase=battle.phase;
+  const restoring=quiz.mode==='boss'&&!!GuardianChapters.chapters[quiz.fams[0]];
   if(outcome==='correct'&&retry){
     battle.charge=0; battle.lastAction='parry';
-    announceBattle('Attack blocked','A retry holds your ground. First-try answers deal damage.');
+    announceBattle(restoring?'A useful practice step':'Attack blocked',restoring?'Your work is safe. New independent answers restore the next section.':'A retry holds your ground. First-try answers deal damage.');
     animateBattle('hero-hit');
   } else if(outcome==='correct'){
     battle.hp=Math.max(0,battle.hp-1);
@@ -2656,18 +2664,19 @@ function resolveBossTurn(outcome,fast=false,retry=false){
     animateBattle(special?'special-hit':'hero-hit');
   } else {
     battle.position=Math.max(0,battle.position-1); battle.charge=0; battle.lastAction='boss';
-    announceBattle(`${battle.config.name} attacks!`,'Use the strategy hint, then block it on the retry.');
+    announceBattle(restoring?'Let’s build the idea together':`${battle.config.name} attacks!`,restoring?'Your guardian will show a strategy. Try it, then keep exploring.':'Use the strategy hint, then block it on the retry.');
     animateBattle('boss-hit');
   }
   quiz.bossHP=battle.hp;
   updateBossBattleUI();
   const newPhase=battlePhaseIndex(battle);
   if(outcome==='correct'&&!retry&&!battle.lastAction.includes('special')&&newPhase!==oldPhase){
-    announceBattle(battle.config.phases[newPhase],newPhase===2?'The threat is weakening. Restore the realm!':'The battle has changed. Keep climbing!');
+    announceBattle(battle.config.phases[newPhase],restoring?'Your discoveries are bringing this place to life.':newPhase===2?'The threat is weakening. Restore the realm!':'The battle has changed. Keep climbing!');
   }
 }
 function startBoss(fam){
   if(!canStartBoss(fam)){toast("Complete the Realm Challenge to meet this threat");return;}
+  if(fam===0&&state.journey.zeroChapter){startZeroEncounter();return;}
   lastConfig={fn:startBoss,args:[fam]};
   // boss mixes hardest facts of this family + previously conquered hard facts
   const queue=encounterQuestions(fam,Math.max(4,roundLen()-3));
@@ -2678,8 +2687,10 @@ function startBoss(fam){
   }
   // Hearts are the gate — needCorrect is set to match so there is exactly one
   // rule to understand: run out of hearts and the boss wins.
-  startQuiz({mode:'boss',fams:[fam],queue,timed:false,hearts:heartCt(),needCorrect:queue.length-heartCt(),boss:bossEmoji(fam),battle:true,title:'Realm Showdown'});
-  toast(`${bossName(fam)} guards the path. Win the showdown!`);
+  const chapter=GuardianChapters.chapters[fam];
+  const config=chapter?{...bossBattleConfig(fam),name:chapter.goal,kicker:`×${fam} · GUARDIAN RESTORATION`,healthLabel:'Restoration remaining',mechanic:'Your discoveries restore the realm',intro:`${REALMS[fam].petName} is beside you. ${chapter.goal}.`,phases:chapter.phases}:undefined;
+  startQuiz({mode:'boss',fams:[fam],queue,timed:false,hearts:heartCt(),needCorrect:queue.length-heartCt(),boss:bossEmoji(fam),battle:true,battleConfig:config,title:chapter?chapter.goal:'Realm Showdown'});
+  toast(chapter?`${REALMS[fam].petName} is ready. Restore this place together.`:`${bossName(fam)} guards the path. Win the showdown!`);
 }
 function startCampSiege(){
   const fams=conqueredFamilies();
@@ -2909,7 +2920,7 @@ function renderParent(){
     : `${escapeHtml(nextAction().label)}. Follow the Adventure button for this next step, then use the supplies at camp or finish for today.`;
 
   $('parent-body').innerHTML=`
-    <div class="card"><h3>${icon('parent')} Current player</h3><p><b>${profileById()?escapeHtml(profileById().name):'Climber'}</b> has a separate map, camp, cards, gems, and settings.</p><button class="btn secondary small" style="margin-top:9px" onclick="openProfileChooser()">Switch or add player</button><button class="btn ghost small" onclick="editExplorer()">Change my explorer</button></div>
+    <div class="card"><h3>${icon('parent')} Current player</h3><button class="btn ghost small" onclick="showTitle()">Title screen</button><p><b>${profileById()?escapeHtml(profileById().name):'Climber'}</b> has a separate map, camp, cards, gems, and settings.</p><button class="btn secondary small" style="margin-top:9px" onclick="openProfileChooser()">Switch or add player</button><button class="btn ghost small" onclick="editExplorer()">Change my explorer</button></div>
     <div class="card"><h3>${icon('target')} Suggested next session</h3><p>${plan}</p></div>
     <div class="card"><h3>${icon('repeat')} Retention across days</h3>
       <p>Facts return after gradually longer gaps. A miss shortens the gap so it is practiced again soon.</p>
@@ -3521,7 +3532,7 @@ function enterCampV2(){
   if(campV2Session)return;
   const host=$('screen-camp-v2');
   if(!window.CampV2){host.innerHTML='<div class="card" style="margin:30px"><h2>Camp 2 is not downloaded yet</h2><p>Go online and update the app to try the new clearing.</p><button class="btn" onclick="showScreen(\'screen-camp\')">Back to Camp 1</button></div>';return;}
-  if(!state.campV2)state.campV2=CampV2.fresh();
+  if(!state.campV2)state.campV2=state.journey.openingEdition?CampV2.freshExpedition():CampV2.fresh();
   deliverCampGrants();
   if(!CampV2.validSave(state.campV2)){host.innerHTML='<div class="card" style="margin:30px"><h2>This clearing needs recovery</h2><p>Your saved Camp 2 has been kept intact. Camp 1 is still available.</p><button class="btn" onclick="showScreen(\'screen-camp\')">Back to Camp 1</button></div>';return;}
   state.campV2=CampV2.syncProgress(state.campV2,campMasteredCount(),isCampTester());
@@ -3988,11 +3999,12 @@ document.addEventListener('keydown',e=>{
 
 (async function init(){
   await loadState();
-  if(!state){ renderProfileGate('choose'); return; }
+  if(!state){ showTitle(); return; }
   applyCalm();
   checkDaily();
   renderMap();
   updateChips();
+  showTitle();
 })();
 
 /* ---------- PWA: service worker, explicit updates, and install button ---------- */

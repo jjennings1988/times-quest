@@ -14,6 +14,9 @@ public/
 ├── index.html              Learning, progression, profiles, Camp 1
 ├── learning-journey.js    Authored ideas, independent evidence, journey migration
 ├── journey-ui.js          Lessons, starting routes, encounters, resumable rewards
+├── opening.js             Illustrated title and Zero Marsh expedition
+├── opening.css            Title and interactive guardian scenes
+├── camp-guide.js          Parcel map and shelter upgrade previews
 ├── journey.css            Learning, identity, results and parent surfaces
 ├── math-visuals.js        Operation-aware, accessible mathematical models
 ├── camp-v2.js              Camp commands, saves, controls, exploration
@@ -85,30 +88,24 @@ for the 3D scene; Backpack controls and Camp 1 remain available without it.
 Accurate answers now progress at any speed. Earned creatures and realm stars stay
 earned, and returning after a break never deducts gems.
 
-## Learning expedition upgrade — 0.17 beta
+## First expedition — 0.18 beta
 
-New climbers choose **Show me how** for Twix’s Double River lesson, **I’ve multiplied
-before** for an untimed starting check, or explore the illustrated map. Existing
-climbers keep their progress and can open any realm preview for a starting check.
-Learn now demonstrates an idea, lets the child build equal groups, and checks four
-new problems. Thirteen authored family strategies share this teaching framework.
+The new illustrated title screen leads into **Zero Marsh**. Create a climber,
+choose **Show me how**, and help Poof explore three empty baskets and zero baskets
+of four. Three independent problems complete the opening challenge; three more
+successes clear the fog, open One Woods and earn a free Cozy Pup Tent renovation.
+All other families retain their six-question, five-success Realm Challenges.
+Adventure has no timer, and optional starting checks remain available.
 
-Realm Challenges need five independent answers out of six. A completed guided
-lesson, a passing starting check, or ten caught creatures enables the challenge.
-Challenges, ordinary practice, and encounters have no timer; optional Speed Rounds
-remain separate. Three map stars still mean challenge, realm victory, and the full
-family collection. Supported corrections never masquerade as independent recall.
+New ordinary profiles start with a modest pup-tent camp. Existing saves, balances,
+opened routes, and both camp versions remain intact. Camp 2 now has **My land**
+and **Upgrades** controls. Homestead Meadow is free; later parcels unlock through
+Realm Challenges. Clear trees only where they obstruct a desired building.
 
-A new climber’s Camp button opens Camp 2; older profiles start with Camp 1 until
-choosing otherwise. Both versions remain available. The Double River lesson grants
-a one-time path/deck/lantern kit. Results offer the next adventure, camp, or a clear
-stopping point. Interrupted lessons and rounds can resume without repeating grants.
-
-See [the implementation checklist](LEARNING-UPGRADE-CHECKLIST.md) for the completed
-review initiatives, assessment definitions, verification, and remaining playtests.
-The automated suite includes test/learning-journey.js alongside the camp and
-headless checks. No server account, telemetry, new artwork, or external runtime is
-required for these learning changes.
+See [the opening slice and verification guide](OPENING-EXPEDITION.md),
+[the follow-up audit](FOLLOW-UP-EXPERIENCE-AUDIT.md), and
+[the prior learning upgrade checklist](LEARNING-UPGRADE-CHECKLIST.md).
+Tests now include test/opening.js for the complete first expedition.
 
 ## Deployment
 
@@ -192,3 +189,11 @@ be invited to Base Camp, with up to six favorites living in the scene at once.
 ### Camp 2 world refinement (0.16)
 
 Camp building territory is doubled, town roads now connect to each entrance, and Guardian Grove sits beyond a woodland trail inside its own decorative fence. Buildings have side/rear detail and the valley has forest/mountain boundaries. Existing Camp 1 and Camp 2 saves are retained. See [CAMP-UPGRADE-STRATEGY.md](CAMP-UPGRADE-STRATEGY.md) for the review and validation.
+
+### Guardian chapters and land visibility
+
+All thirteen guardians now have guided discoveries. The twelve later chapters
+use authored group transformations and illustrated restoration scenes. Camp 2
+shows solid owned-land grids and dashed future parcels during exploration.
+See [Guardian and land update](GUARDIAN-AND-LAND-UPDATE.md) for behaviour,
+validation, and the proposed Camp 1 retirement sequence. Both camps remain available.

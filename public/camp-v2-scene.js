@@ -86,9 +86,13 @@ export function createScene(canvas, {catalog, footprint, sources, world, avatar,
   instance(bridgeGroup);
   const story=new THREE.Group();for(let i=0;i<13;i++){const a=i/13*Math.PI*2;piece(story,rockG,i%3?'#8e9d8c':'#b4baa0',-5+Math.sin(a)*1.7,world.groundHeight(-5,2)+.4,2+Math.cos(a)*1.7,.27,.45,.24);}instance(story);
   world.discoveries.forEach(d=>{const g=new THREE.Group();g.position.set(d.x+.5,world.walkHeight(d.x+.5,d.y+.5),d.y+.5);g.userData.discovery=d.id;box(g,'#76573c',0,.52,0,.10,1.05,.1);box(g,'#d4b780',0,.97,0,.8,.42,.1);piece(g,rockG,'#70a6a0',0,.98,.09,.15,.15,.06);markers.add(g);});
-  // Build lines appear only while editing, so the camp reads as a place in Explore.
-  const gridPoints=[];for(let x=0;x<=12;x++)gridPoints.push(x,.115,0,x,.115,10);for(let z=0;z<=10;z++)gridPoints.push(0,.115,z,12,.115,z);
-  const gridG=new THREE.BufferGeometry();gridG.setAttribute('position',new THREE.Float32BufferAttribute(gridPoints,3));extraGeometries.add(gridG);const gridM=new THREE.LineBasicMaterial({color:'#fff2b6',transparent:true,opacity:.32});extraMaterials.add(gridM);const grid=new THREE.LineSegments(gridG,gridM);scene.add(grid);
+  // Ground-following open / future land stays readable while exploring.
+  const gridG=new THREE.BufferGeometry(),futureGridG=new THREE.BufferGeometry();
+  extraGeometries.add(gridG);extraGeometries.add(futureGridG);
+  const gridM=new THREE.LineBasicMaterial({color:'#fff6d7',transparent:true,opacity:.19,depthWrite:false});
+  const futureGridM=new THREE.LineDashedMaterial({color:'#ebc68e',transparent:true,opacity:.23,depthWrite:false,dashSize:.18,gapSize:.16});
+  extraMaterials.add(gridM);extraMaterials.add(futureGridM);
+  const grid=new THREE.LineSegments(gridG,gridM),futureGrid=new THREE.LineSegments(futureGridG,futureGridM);scene.add(grid,futureGrid);
   const highlightM=new THREE.MeshBasicMaterial({color:'#ffdc84',transparent:true,opacity:.42,depthWrite:false});extraMaterials.add(highlightM);const highlight=piece(scene,boxG,highlightM,0,.14,0,1,.025,1);highlight.castShadow=false;
   const ghostGood=new THREE.MeshLambertMaterial({color:'#b5e6c4',transparent:true,opacity:.6,depthWrite:false});const ghostBad=new THREE.MeshLambertMaterial({color:'#ec7968',transparent:true,opacity:.65,depthWrite:false});extraMaterials.add(ghostGood);extraMaterials.add(ghostBad);
   function roofGeometry(w,h,d){return geo('curved-roof'+w+':'+h+':'+d,()=>{const vertices=[],indices=[],n=12;for(const z of [-d/2,d/2])for(let i=0;i<=n;i++){const u=i/n*2-1;vertices.push(u*w/2,h*(1-Math.pow(Math.abs(u),.82)),z);}for(let i=0;i<n;i++){const j=i+n+1;indices.push(i,j,j+1,i,j+1,i+1);}const profile=Array.from({length:n+1},(_,i)=>new THREE.Vector2(vertices[i*3],vertices[i*3+1]));for(let [a,b,c] of THREE.ShapeUtils.triangulateShape(profile,[])){const u=profile[a],v=profile[b],w=profile[c];if((v.x-u.x)*(w.y-u.y)-(v.y-u.y)*(w.x-u.x)>0)[b,c]=[c,b];indices.push(a,b,c,a+n+1,c+n+1,b+n+1);}indices.push(0,n,n*2+1,0,n*2+1,n+1);const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));g.setIndex(indices);g.computeVertexNormals();return g.toNonIndexed();});}
@@ -161,8 +165,28 @@ export function createScene(canvas, {catalog, footprint, sources, world, avatar,
   function syncForest(save){const key=JSON.stringify(save.cleared||[]);if(key===lastCleared&&forestScene)return;lastCleared=key;if(forestScene){scene.remove(forestScene);forestScene.traverse(m=>m.isInstancedMesh&&m.dispose());}const chunks=new Map();treesToPick.clear();
     for(const t of world.forest){if(!world.treePresent(save,t))continue;const key=Math.floor(t.x/12)+','+Math.floor(t.z/12);if(!chunks.has(key))chunks.set(key,new THREE.Group());tree(chunks.get(key),t.x,world.groundHeight(t.x,t.z),t.z,t.scale,t.kind==='oak');const hit=new THREE.Mesh(cylinderG,mat('#ffffff'));hit.position.set(t.x,world.groundHeight(t.x,t.z)+1.3,t.z);hit.scale.set(.8*t.scale,3*t.scale,.8*t.scale);hit.userData.tree=world.treeKey(t);treesToPick.add(hit);}treesToPick.updateMatrixWorld(true);forestScene=new THREE.Group();for(const chunk of chunks.values())forestScene.add(instance(chunk,false));scene.add(forestScene);renderer.shadowMap.needsUpdate=true;
   }
-  function syncLand(save){const key=JSON.stringify(save.land);if(key===lastLand)return;lastLand=key;const points=[];for(const z of [{x:0,y:0,w:12,h:10},...content.zones.filter(z=>save.land.includes(z.id))]){for(let x=z.x;x<=z.x+z.w;x++)points.push(x,world.groundHeight(x,z.y)+.04,z.y,x,world.groundHeight(x,z.y+z.h)+.04,z.y+z.h);for(let y=z.y;y<=z.y+z.h;y++)points.push(z.x,world.groundHeight(z.x,y)+.04,y,z.x+z.w,world.groundHeight(z.x+z.w,y)+.04,y);}gridG.setAttribute('position',new THREE.Float32BufferAttribute(points,3));gridG.computeBoundingSphere();landMarkers.clear();for(const z of content.zones){const g=new THREE.Group();g.position.set(z.x,world.groundHeight(z.x,z.y),z.y);g.userData.land=z.id;box(g,'#96764c',0,.55,0,.08,1.1,.08);box(g,save.land.includes(z.id)?'#c4d8ac':'#e5c68c',0,.97,0,.85,.38,.08);landMarkers.add(g);} }
+  function syncLand(save){
+    const key=JSON.stringify(save.land);if(key===lastLand)return;lastLand=key;
+    const land=content.landGrid(save);
+    for(const [kind,lines] of [['open',grid],['future',futureGrid]]){
+      const points=[];
+      // Unit edges coincide with the triangulated ground, unlike long parcel lines.
+      for(const [x,y,u,v] of land[kind])points.push(x,world.groundHeight(x,y)+.055,y,u,world.groundHeight(u,v)+.055,v);
+      lines.geometry.setAttribute('position',new THREE.Float32BufferAttribute(points,3));lines.geometry.computeBoundingSphere();
+    }
+    futureGrid.computeLineDistances();landMarkers.clear();
+    for(const z of content.zones){const g=new THREE.Group();g.position.set(z.x,world.groundHeight(z.x,z.y),z.y);g.userData.land=z.id;box(g,'#96764c',0,.55,0,.08,1.1,.08);box(g,z.need===0||save.land.includes(z.id)?'#c4d8ac':'#e5c68c',0,.97,0,.85,.38,.08);landMarkers.add(g);}
+  }
   function model(type,mask=0,color=0){const g=new THREE.Group(),roofColor=['#52877e','#ac715e','#8e84a5','#bd9858','#53788b'][color%5];
+    if(type==='trailtent'){
+      const home=model('tent',mask,color);home.scale.set(.92,.92,.82);g.add(home);
+      for(let i=0;i<5;i++)box(g,i%2?'#b99865':'#ceb27b',-.36+i*.18,.13,.82,.17,.13,.32);
+      box(g,'#425f57',.51,.24,.63,.31,.14,.48);piece(g,cylinderG,'#d7c79d',.51,.34,.43,.13,.12,.13);
+      box(g,'#6c583d',-.63,.55,.66,.045,.95,.045);box(g,'#705739',-.52,1.02,.66,.27,.05,.05);
+      piece(g,boxG,mat('#ffd98b',true),-.42,.87,.66,.14,.21,.14);box(g,'#526b5b',-.42,1,.66,.2,.045,.2);
+      for(const side of [-1,1])for(const end of [-1,1])box(g,'#dbca98',side*.71,.23,end*.61,.06,.12,.06);
+      return g;
+    }
     if(['palisade','stonewall','fortgate','stonegate','fence','gate'].includes(type))return wallModel(type,mask,color);
     if(['path','cobble','moat','drawbridge'].includes(type))return pathModel(type,mask,color);
     if(['lodge','stonehome','keep','well','stonewell','tower','flowerbed','store','townhouse','townhall'].includes(type))return newBuilding(type,roofColor);
@@ -174,6 +198,11 @@ export function createScene(canvas, {catalog, footprint, sources, world, avatar,
       if(cabin)sideDetails(g,w,d,1.2,roofColor,false);
       else{piece(g,roofGeometry(w*.35,h*.53,.028),'#9d885e',0,.18,-d/2-.018);for(const side of [-1,1])for(const end of [-1,1]){beam(g,'#e5d6ae',[side*w*.31,h*.30,end*d*.39],[side*(w/2+.16),.11,end*(d/2+.03)],.015);box(g,'#8c7150',side*(w/2+.16),.13,end*(d/2+.03),.045,.24,.045);}for(const end of [-1,1])beam(g,'#eee0ba',[0,h+.2,end*d/2],[0,.22,end*(d/2+.06)],.018);}
       if(type!=='tent'){box(g,'#e0c28a',0,.2,1.1,.8,.14,.38);box(g,'#c4a16c',0,.12,1.35,.85,.12,.22);}
+      if(type==='canvas'){
+        for(const side of [-1,1]){box(g,'#71583b',side*.68,.62,.95,.06,1.15,.06);beam(g,'#e3d5ae',[side*.68,1.2,.95],[0,1.68,.48],.02);}
+        box(g,'#d6ba87',0,1.24,.85,1.44,.05,.48);box(g,'#5a7465',-.53,.33,.5,.34,.25,.32);
+        for(const z of [-.5,0,.5])for(const side of [-1,1])beam(g,'#d6c6a0',[0,1.98,z],[side*.87,.21,z],.015);
+      }
     }else if(type==='pine')tree(g,0,0,0,1.02);
     else if(type==='fire'){
       for(let i=0;i<9;i++){const a=i/9*Math.PI*2;piece(g,rockG,i%2?'#93978a':'#a7a897',Math.sin(a)*.38,.13,Math.cos(a)*.38,.14,.13,.13);}
@@ -250,17 +279,18 @@ export function createScene(canvas, {catalog, footprint, sources, world, avatar,
     if(wasNight!==save.night){wasNight=save.night;scene.background.set(save.night?'#718e99':'#c7ded5');scene.fog.color.copy(scene.background);ambient.intensity=save.night?1.5:2.1;ambient.color.set(save.night?'#a8c5dd':'#fff3d7');sun.intensity=save.night?.7:2.5;sun.color.set(save.night?'#bdd7e9':'#fff1cb');renderer.shadowMap.needsUpdate=true;}
     townResidents.forEach((g,i)=>{const t=calm?0:time*.00018+i*2;g.position.set(25+Math.sin(t)*2,world.walkHeight(25,6),6+Math.cos(t)*.7);g.rotation.y=Math.cos(t)>0?Math.PI/2:-Math.PI/2;g.userData.limbs.forEach((l,j)=>l.rotation.x=calm?0:Math.sin(time*.008+j%2*Math.PI)*.25);});
     const fire=save.objects.find(o=>o.type==='fire');fireLight.visible=save.night&&!!fire;if(fire)fireLight.position.set(fire.x+.5,1,fire.y+.5);
-    grid.visible=mode==='build'||!!preview;highlight.visible=!!preview||!!selected;
+    grid.visible=true;futureGrid.visible=true;gridM.opacity=(mode==='build'||!!preview)? .36:.19;futureGridM.opacity=mode==='build'? .30:.23;highlight.visible=!!preview||!!selected;
     const p=preview||save.objects.find(o=>o.id===selected);if(p){const f=footprint(p.type,p.r);highlight.position.set(p.x+f.w/2,world.groundHeight(p.x+f.w/2,p.y+f.h/2)+.065,p.y+f.h/2);highlight.scale.set(f.w,.025,f.h);}
     const previewKey=JSON.stringify([preview,lastObjects]);if(previewKey!==lastPreview){if(ghost)scene.remove(ghost);ghost=null;if(preview){ghost=locate(model(preview.type,content.mask(save.objects.filter(o=>o.id!==preview.id),preview,catalog),preview.color||0),preview);scene.add(ghost);}lastPreview=previewKey;}
     if(ghost){const reason=placementReason(save,preview.type,preview.x,preview.y,preview.r,preview.id);highlight.material.color.set(reason?'#f07865':'#fae7a0');ghost.traverse(m=>{if(m.isMesh){m.material=reason?ghostBad:ghostGood;m.castShadow=false;}});}else highlight.material.color.set('#ffdc84');
     explorerActor.position.set(explorer.x+.5,world.walkHeight(explorer.x+.5,explorer.y+.5),explorer.y+.5);explorerActor.rotation.y=heading;
-    if(seated){const f=footprint(seated.type,seated.r);explorerActor.position.set(seated.x+f.w/2,.13,seated.y+f.h/2);explorerActor.rotation.y=-(seated.r||0)*Math.PI/2;}
+    if(seated){const f=footprint(seated.type,seated.r);explorerActor.position.set(seated.x+f.w/2,.13,seated.y+(seated.type==='bench'?f.h/2:f.h+.12));explorerActor.rotation.y=-(seated.r||0)*Math.PI/2;}
     if(save.construction){const g=objectMap.get(save.construction.objectId);if(g)g.scale.y=building?.id===save.construction.objectId?Math.max(.08,building.progress):.08;}
     hammer.visible=!!building;
     fishingRig.visible=save.challenge?.kind==='fish';if(fishingRig.visible){fishingRig.position.copy(explorerActor.position).add(new THREE.Vector3(.15,.45,.2));fishingRig.rotation.y=-Math.PI/2;line.scale.y=calm?1:1+Math.sin(time*.003)*.025;}
     explorerActor.userData.limbs.forEach((limb,i)=>{limb.rotation.x=building&&i<2?-1+Math.sin(time*.025+i)*.45:seated&&i>1?-1.25:walking&&!calm?Math.sin(time*.013+(i%2)*Math.PI)*.5:0;});
     petActor.position.set(pet.x+.5,world.walkHeight(pet.x+.5,pet.y+.5),pet.y+.5);petActor.rotation.y=heading+.08;
+    if(seated&&seated.type!=='bench'){petActor.position.copy(explorerActor.position).add(new THREE.Vector3(.6,-.05,.18));petActor.rotation.y=-.3;}
     petActor.userData.limbs.forEach((limb,i)=>{limb.rotation.x=walking&&!calm?Math.sin(time*.018+i%2*Math.PI)*.4:0;});petActor.userData.tail.rotation.z=calm?0:Math.sin(time*.009)*.35;
     for(const [shadow,a] of [[explorerShadow,explorerActor],[petShadow,petActor]]){shadow.position.set(a.position.x,world.walkHeight(a.position.x,a.position.z)+.02,a.position.z);shadow.castShadow=false;}
     flames.forEach((f,i)=>f.scale.setScalar(calm?1:1+Math.sin(time*.009+i)*.1));
