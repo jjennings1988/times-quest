@@ -1,11 +1,17 @@
 /* Times Quest service worker — offline-first app shell */
-const CACHE = 'times-quest-v49';
-const CAMP_3D = ['./camp-v2-scene.js','./vendor/three/three.module.min.js','./vendor/three/three.core.min.js'];
+const CACHE = 'times-quest-v68';
+const CAMP_3D = ['./camp-v2-scene.js','./camp-world-details.js','./vendor/three/three.module.min.js','./vendor/three/three.core.min.js'];
 const CORE = [
   './',
   './index.html',
   './camp-v2.js',
   './camp-v2.css',
+  './camp-content.js',
+  './math-visuals.js',
+  './math-visuals.css',
+  './learning-journey.js',
+  './journey-ui.js',
+  './journey.css',
   './manifest.webmanifest',
   './icons/icon-192.png',
   './icons/icon-512.png',
@@ -234,19 +240,26 @@ self.addEventListener('install', (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(CORE)));
 });
 
-async function warmOptionalCache() {
+async function warmOptionalCache(source) {
   const cache = await caches.open(CACHE);
+  let failed=0;
   for (let i = 0; i < OPTIONAL.length; i += 12) {
     const batch = OPTIONAL.slice(i, i + 12);
-    await Promise.allSettled(batch.map(async (path) => {
+    const outcomes=await Promise.allSettled(batch.map(async (path) => {
       if (!(await cache.match(path))) await cache.add(path);
     }));
+    failed+=outcomes.filter(r=>r.status==='rejected').length;
+    source?.postMessage({type:'OFFLINE_PROGRESS',count:Math.min(i+12,OPTIONAL.length),total:OPTIONAL.length,done:i+12>=OPTIONAL.length,failed});
   }
 }
 
 self.addEventListener('message', (e) => {
   if (e.data && e.data.type === 'SKIP_WAITING') self.skipWaiting();
-  if (e.data && e.data.type === 'WARM_OPTIONAL') e.waitUntil(warmOptionalCache());
+  if (e.data && e.data.type === 'WARM_OPTIONAL') e.waitUntil(warmOptionalCache(e.source));
+  if(e.data?.type==='WARM_REALM'&&Number.isInteger(e.data.family)&&e.data.family>=0&&e.data.family<=12){
+    const f=e.data.family,assets=[`./art/realm/pet-${f}.png`,`./art/boss/boss-${f}.png`,`./art/battle/bg-battle-x${f}-portrait.webp`];
+    e.waitUntil(caches.open(CACHE).then(cache=>Promise.allSettled(assets.map(async path=>{if(!(await cache.match(path)))await cache.add(path);})))) ;
+  }
   if (e.data && e.data.type === 'CACHE_CAMP_3D') e.waitUntil(caches.open(CACHE).then(cache=>Promise.all(CAMP_3D.map(async path=>{if(!(await cache.match(path)))await cache.add(path);}))).catch(()=>{}));
 });
 

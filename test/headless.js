@@ -41,7 +41,7 @@ function legacySave() {
 }
 
 async function boot(saveObj, seededStorage={}) {
-  const source=fs.readFileSync(HTML,'utf8').replace('<script src="camp-v2.js"></script>',()=>`<script>${fs.readFileSync(require('path').join(PUBLIC,'camp-v2.js'),'utf8')}</script>`);
+  const source=fs.readFileSync(HTML,'utf8').replace(/<script src="([^"]+\.js)"><\/script>/g,(_,name)=>`<script>${fs.readFileSync(require('path').join(PUBLIC,name),'utf8')}</script>`);
   const dom = new JSDOM(source, {
     runScripts:'dangerously', pretendToBeVisual:true, url:'https://example.test/',
     beforeParse(win){
@@ -498,8 +498,8 @@ async function boot(saveObj, seededStorage={}) {
   }
   win.showScreen('screen-map');
   ok('continue button has a label', ($('continue-btn').textContent||'').length > 5, $('continue-btn').textContent);
-  ok('continue prioritizes due review for a returning climber',
-     /Daily Review/.test($('continue-btn').textContent), $('continue-btn').textContent);
+  ok('continue preserves adventure while due review remains available',
+     !/Daily Review/.test($('continue-btn').textContent) && $('journey-map-controls').textContent.includes('Revisit'), $('continue-btn').textContent);
   ok('adventure renders one map destination per realm plus the summit',
      win.document.querySelectorAll('#map-trail .realm-node').length === 13 && !!win.document.querySelector('#map-trail .summit-node'));
   ok('adventure route has one curved segment between every destination',
@@ -526,7 +526,7 @@ async function boot(saveObj, seededStorage={}) {
   ok('realm opens', $('realm-title-top').textContent === 'Double River');
   ok('boss card locked before trial', $('realm-body').innerHTML.includes('Pass the Trial first'));
   ok('realm progress explains all three star goals and the current catch gate',
-     ['Pass the Mastery Trial','Defeat the realm guardian','Catch all 13','Catch 10 to unlock the Trial'].every(text=>$('realm-body').textContent.includes(text)),
+     ['Pass the Realm Challenge','Restore the realm','Catch all 13','Learn with your guardian to open the challenge'].every(text=>$('realm-body').textContent.includes(text)),
      $('realm-body').textContent);
   ok('realm progress exposes three visible milestone steps and an x/3 total',
      win.document.querySelectorAll('#realm-body .realm-star-step').length===3 && $('realm-body').textContent.includes('/3'));
@@ -562,7 +562,7 @@ async function boot(saveObj, seededStorage={}) {
      win.document.querySelectorAll('#monster-grid .monster-realm-section').length === ev('unlockedFamilies().length'));
   const visibleUniqueFacts=ev("new Set(unlockedFamilies().flatMap(f=>Array.from({length:13},(_,b)=>fkey(f,b)))).size");
   ok('collection header counts canonical creatures rather than reversed card duplicates',
-     $('monster-count').textContent.includes('unique creatures') && $('monster-count').textContent.includes(`of ${visibleUniqueFacts}`));
+     $('monster-count').textContent.includes('91 in the world') && $('monster-count').textContent.includes(`${visibleUniqueFacts} discoverable here`));
   ok('each unlocked realm exposes all 13 collectible fact cards',
      Array.from(win.document.querySelectorAll('#monster-grid .monster-realm-section .monster-grid')).every(g => g.querySelectorAll('.monster-cell').length === 13));
   ok('zero-based monster identities map to one-based art filenames without drift',
@@ -584,10 +584,10 @@ async function boot(saveObj, seededStorage={}) {
   const firstMonsterCard = win.document.querySelector('#monster-grid .monster-cell');
   firstMonsterCard.click();
   ok('fact monster card opens with fact, strategy, and performance stats',
-     $('card-modal').classList.contains('on') && $('card-modal-body').textContent.includes('Accuracy') &&
-     $('card-modal-body').textContent.includes('Best time') && $('card-modal-body').textContent.includes('Status'));
+     $('card-modal').classList.contains('on') && $('card-modal-body').textContent.includes('Independent accuracy') &&
+     $('card-modal-body').textContent.includes('Recorded first attempts') && $('card-modal-body').textContent.includes('Status'));
   ok('Fact Monster cards use stable named PNG artwork',
-     $('card-modal-body').querySelector('.fact-monster-image') && $('card-modal-body').textContent.includes('Base Camp'));
+     $('card-modal-body').querySelector('.fact-monster-image') && $('card-modal-body').textContent.includes('expedition team'));
   const favoriteBefore=ev('state.campMonsterFavorites.length');
   const favoriteButton=$('card-modal-body').querySelector('.monster-favorite-btn');
   if(favoriteButton) favoriteButton.click();
@@ -627,7 +627,7 @@ async function boot(saveObj, seededStorage={}) {
   ev('state').facts[k2] = {c:0,w:0,streak:0,rating:3,slow:0,last:null,bt:null};
   answer(q2.ans, false);
   ok('slow correct reaches caught status', ev('state').facts[k2].rating === 4 && ev('state').facts[k2].caught===true, `got ${ev('state').facts[k2].rating}`);
-  ok('slow counter incremented', ev('state').facts[k2].slow === 1);
+  ok('slow accurate answers do not gain a weakness penalty', ev('state').facts[k2].slow === 0);
   await new Promise(r => setTimeout(r, 700));
 
   /* ---------------------------------------------------------------- */
@@ -641,16 +641,16 @@ async function boot(saveObj, seededStorage={}) {
   await new Promise(r => setTimeout(r, 600));
   ok('hint card shown', $('hint-card').style.display === 'block');
   ok('every miss includes a named realm strategy', !!$('hint-body').querySelector('.hint-strategy-label') && $('hint-body').textContent.includes('strategy'));
-  ok('strategy coach explains how to build the answer', $('hint-body').querySelectorAll('b').length > 0, $('hint-body').textContent);
+  ok('strategy coach explains how to build the answer', $('hint-body').querySelectorAll('.mv-equation strong').length > 0, $('hint-body').textContent);
   ok('worked hint pairs words with an accessible visual group model',
-     !!$('hint-body').querySelector('.worked-example[role="img"]') &&
-     (!!$('hint-body').querySelector('.worked-groups') || $('hint-body').textContent.includes('no groups')));
+     !!$('hint-body').querySelector('.math-visual svg[role="img"]') &&
+     (!!$('hint-body').querySelector('.mv-row') || $('hint-body').textContent.includes('Nothing to count')));
   ok('button offers a retry', $('hint-btn').textContent.includes('try again'), $('hint-btn').textContent);
   ok('title is the coaching one, not the answer', $('hint-title').textContent.includes('tricky'));
   ok('missed fact is added to the end of the round', ev('quiz').total === totalAtMiss + 1 &&
      ev('quiz').queue.at(-1).a === q3.a && ev('quiz').queue.at(-1).b === q3.b,
      `${totalAtMiss} → ${ev('quiz').total}`);
-  ok('hint explains that the fact will return', $('hint-body').textContent.includes('added to the end'));
+  ok('hint explains that the fact will return', $('hint-body').textContent.includes('revisit this fact once'));
   ok('learn, practice, and mastery trials use the review queue',
      ev("['learn','practice','trial'].every(mode=>REVIEW_QUEUE_MODES.has(mode))") &&
      ev("!['boss','siege','summit'].some(mode=>REVIEW_QUEUE_MODES.has(mode))"));
@@ -948,7 +948,7 @@ async function boot(saveObj, seededStorage={}) {
   ok('first boss defeat reveals newly unlocked blueprints',
      $('results-body').textContent.includes('New camp blueprints') && $('results-body').textContent.includes('Canvas Tent'));
   ok('first boss defeat pays an incremental realm-star reward instead of a flat 50-gem bonus',
-     $('results-body').textContent.includes('realm mastery gems') && !$('results-body').textContent.includes('+50 boss bonus'));
+     $('results-body').textContent.includes('realm milestone gems') && !$('results-body').textContent.includes('+50 boss bonus'));
   win.goPlace('trophy-x2');
   ok('goPlace routes to camp holding the piece',
      ev('heldPiece') === 'trophy-x2' && $('screen-camp').classList.contains('active'));
@@ -1059,7 +1059,7 @@ async function boot(saveObj, seededStorage={}) {
   win.pressKey('enter');
   ok('5s answer progresses even outside a 3s bonus window', ev('state').facts[wk2].rating === 5,
      `rating ${ev('state').facts[wk2].rating}`);
-  ok('slow counter rose instead', ev('state').facts[wk2].slow === 1);
+  ok('thinking time does not raise a weakness counter', ev('state').facts[wk2].slow === 0);
   await new Promise(r => setTimeout(r, 700));
   win.quitQuiz();
   win.setPref('window', 4000);
@@ -1073,8 +1073,8 @@ async function boot(saveObj, seededStorage={}) {
     ok(`practice at ${n} (plus warm-ups)`, withWarmup >= n && withWarmup <= n + 3, `got ${withWarmup}`);
     win.quitQuiz();
     win.startTrial(2);
-    ok(`trial queue is ${n}`, ev('quiz').queue.length === n, `got ${ev('quiz').queue.length}`);
-    ok(`trial needs ${n-1}`, ev('quiz').needCorrect === n - 1, `got ${ev('quiz').needCorrect}`);
+    ok(`challenge stays six questions with round setting ${n}`, ev('quiz').queue.length === 6, `got ${ev('quiz').queue.length}`);
+    ok(`challenge needs five independent successes with round setting ${n}`, ev('quiz').needCorrect === 5, `got ${ev('quiz').needCorrect}`);
     win.quitQuiz();
     win.startMixedMayhem();
     ok(`mixed mayhem is ${n}`, ev('quiz').queue.length === n, `got ${ev('quiz').queue.length}`);
@@ -1179,7 +1179,7 @@ async function boot(saveObj, seededStorage={}) {
   try { win.showScreen('screen-parent'); } catch(e){ pErr = e.message; }
   ok('parent dashboard renders', !pErr, pErr);
   ok('parent dashboard explains due, upcoming, secure, and recent retrieval performance',
-     ['Due today','Due next 7 days','Recalled after 14+ days','7-day retrieval'].every(label=>$('parent-body').textContent.includes(label)));
+     ['Due today','Due next 7 days','Recalled after 14+ days','Recent independent retrieval'].every(label=>$('parent-body').textContent.includes(label)));
   ok('heatmap has 169 cells + headers',
      win.document.querySelectorAll('.heat-cell').length === 169,
      String(win.document.querySelectorAll('.heat-cell').length));

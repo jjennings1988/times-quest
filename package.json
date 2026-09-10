@@ -1,12 +1,12 @@
 {
   "name": "times-quest",
-  "version": "0.13.0-beta.1",
+  "version": "0.17.0-beta.1",
   "private": true,
   "description": "A mobile-first multiplication adventure PWA for children.",
   "scripts": {
     "start": "node tools/dev-server.js",
-    "test": "node test/camp-v2.js && node test/camp-3d.js && node test/headless.js",
-    "qa": "node test/camp-v2.js && node test/camp-3d.js && node test/headless.js",
+    "test": "node test/camp-v2.js && node test/camp-3d.js && node test/camp-expansion.js && node test/headless.js && node test/learning-journey.js",
+    "qa": "pnpm test",
     "vendor:three": "node tools/vendor-three.js"
   },
   "devDependencies": {

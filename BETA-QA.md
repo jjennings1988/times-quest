@@ -22,16 +22,20 @@ The GitHub Actions workflow runs the same suite on every pull request and on pus
 
 ## Core journey
 
-1. Create a normal child profile and verify it starts at ×0 with zero gems.
-2. Open the current realm and confirm the three-step progress card explains each star.
-3. Verify Mastery Trial is locked before 10 monsters are caught.
-4. Complete Learn and Practice; miss a fact and confirm the hint includes words plus a visual equal-groups model, then confirm the fact returns at the end.
-5. Catch 10 monsters, pass the Trial, and confirm star one appears on both realm and map.
-6. Defeat the guardian and confirm star two and the camp blueprint reveal.
-7. Catch all 13 facts and confirm star three.
-8. Open a caught Fact Monster, invite it to Base Camp, and verify it appears in the scene and Climber tray.
-9. Export a backup and verify the Parents tab records the export time.
-10. Close, relaunch, switch profiles, and confirm both children retain separate progress.
+1. Create a normal child profile. Verify eight initial explorer choices, More explorers, selected-state announcement, and a reachable Begin quest action.
+2. Choose Show me how. Twix’s ×2 lesson should show a model, ask for two equal groups, then offer four new problems without a timer. Tap primary actions in the center before and after a toast.
+3. Choose an experienced starting check on another profile. A pass opens that route without awarding a realm victory, creature collection, or retention mastery.
+4. Before lesson/readiness/ten catches, confirm the Realm Challenge is locked. A completed lesson opens its six-question, five-independent-success requirement. A locked boss must also reject keyboard Enter.
+5. Miss a multiplication, division, and missing-factor question. Help must explain the actual unknown; supported answers must not raise independent accuracy or collection. Rescue questions are capped at two.
+6. Complete the challenge for star one. Restore the encounter for star two; victory happens on the answer that empties threat strength. On the last lost heart, help must appear before the result.
+7. Check build, split-choice, and missing-part tasks. Guardian is the ally; speed is never needed. Keypad and help must remain reachable in both orientations.
+8. Results show independent successes separately from supported corrections and reviews. Visit Camp 2 and confirm pending earnings plus the once-only Double River path/deck/lantern kit. Revisit/reload: no duplicate grants.
+9. Complete the full collection for star three. Choose an expedition-team creature; its card should be reachable during lessons and in the Camp 2 Journal.
+10. Leave or reload a partially answered round and a lesson. Resume the next unanswered task; an interrupted correction returns to help and remains supported. Earned supplies remain saved.
+11. Use Finish for today, return on another day, and find a short review. There must be no lost-streak or lost-reward message.
+12. Change explorer identity, cancel with Escape, then create another climber. Neither action should overwrite the prior profile. Export/restore and switch profiles to verify isolated progress.
+13. Inspect Parents: recent independent accuracy includes its denominator/time window, collection does not claim retention, and slower accurate answers are not classified as weak.
+14. After a battle, navigate to map/results/camp: inactive battle controls must disappear from the accessibility tree. Check focus, text contrast, and the normal-flow phone battle layout.
 
 ## Protected family backup
 
@@ -58,7 +62,7 @@ The GitHub Actions workflow runs the same suite on every pull request and on pus
 
 1. Load the app online once, including Map, one Realm, Field Guide, and Camp.
 2. Enable airplane mode and relaunch the installed app.
-3. Confirm the map, 40 monster images, current realm, keypad, and camp render without broken art.
+3. Confirm the map, visited realm art, keypad, lessons, and previously loaded camp work. Full optional artwork requires Parents → Download all adventure artwork before disconnecting; confirm progress, completion, and retry after interruption.
 4. Reconnect, deploy a test build with a new service-worker cache number, and confirm the in-app “update ready” card appears.
 5. Finish or leave the active round, tap **Update**, and confirm the new build loads once while profiles, progress, and camp placement remain intact.
 
@@ -106,3 +110,43 @@ Follow [CAMP-V2-PROTOTYPE.md](CAMP-V2-PROTOTYPE.md) for scope and learning chang
 - No critical layout clipping at 390×844 or 820×1180.
 - A child can state how to earn the next star and start that activity without adult explanation.
 - Automated tests are green and the service-worker cache name changed for any `public/` update.
+# Camp expansion release checks (0.14)
+
+## Additional 0.15 world and brush checks
+
+- [ ] Place four connected fences by four ground taps without reopening Build.
+- [ ] Tap an occupied/locked square; confirm no charge. Drag to pan; confirm no placement.
+- [ ] Undo the last brush piece, exit with Done, and use Build more on an existing wall.
+- [ ] Visit an open parcel from Journal; build there without the camera returning to the old plot.
+- [ ] Verify Homestead Meadow is free, other parcels follow milestones, and Story Stones stay clear.
+- [ ] Normal child: only defeated realm guardians appear; locked guardians cannot launch practice.
+- [ ] Summit Tester: visit all thirteen guardian habitats and the correct family practice link.
+- [ ] Inspect the village, gardens, river and grove in low power and gentle motion.
+- [ ] Reload offline after downloading the new camp-world-details module.
+- [ ] Profile dense brush-built camps and repeated scene edits on real iOS/school hardware.
+
+- [ ] Compare Camp 1 and Camp 2 on the same child; verify independent wallets/layouts.
+- [ ] Import schema-1 and schema-2 Camp 2 saves; verify owned upgrades and coordinates.
+- [ ] Normal child: complete trials at any speed; confirm blueprint and parcel milestones.
+- [ ] Summit Tester: verify wood, stone, fish, rod, land, inventory, and Journal refill.
+- [ ] Place connected straight/corner/T/cross paths and mixed-tier walls; move/store one.
+- [ ] Upgrade a shelter; watch the explorer assemble it; test Finish now and Undo.
+- [ ] Travel across the bridge; buy wood/stone/rod; trade fish; reject unaffordable trades.
+- [ ] Fish and clear a tree/parcel: miss a fact, count groups, retry, finish, reload.
+- [ ] Leave a review midway, reload it, and finish without duplicate resource rewards.
+- [ ] Build a moat; reject overlapping paths; cross via a drawbridge.
+- [ ] Test 390 × 844, 820 × 1180, and desktop; real iOS keyboard and pinch gestures.
+- [ ] Test gentle motion, low power, VoiceOver, WebGL loss, and no-WebGL controls.
+- [ ] Visit camp online, go offline, reload, edit and complete a review, then reconnect.
+- [ ] Stress 100/240 placed objects and long editing sessions on physical school hardware.
+- [ ] Observe five child sessions before deciding final prices and fishing-trip limits.
+
+## 0.16 world review checks
+
+- [ ] Compare a pre-update Camp 2 backpack: object IDs, positions, upgrades and supplies must survive.
+- [ ] Rotate through eight camera steps while visiting the store, grove and expanded camp: keep the same view center and inspect side/rear windows, roofs and gate hardware.
+- [ ] Follow roads from the bridge to all ten front doors, including the mill; check continuous paving on sloped streets.
+- [ ] Visit Guardian Grove through the woodland lantern trail. Check its fence blocks crossing, its arch stays open and all thirteen habitats are reachable.
+- [ ] Open Westwood Reach, Cedar Rise and Fern Hollow through untimed reviews; clear trees, build at the parcel edges and reload.
+- [ ] Verify forest and mountain boundaries when panning and rotating at the world edges.
+- [ ] Test iPhone portrait, iPad landscape, low power, gentle motion, pinch, and tap placement. Measure real-device GPU time and a 20-minute battery session before broad release.

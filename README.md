@@ -12,6 +12,10 @@ locally vendored Three.js runtime; `jsdom` is used by the regression suite.
 ```
 public/
 ├── index.html              Learning, progression, profiles, Camp 1
+├── learning-journey.js    Authored ideas, independent evidence, journey migration
+├── journey-ui.js          Lessons, starting routes, encounters, resumable rewards
+├── journey.css            Learning, identity, results and parent surfaces
+├── math-visuals.js        Operation-aware, accessible mathematical models
 ├── camp-v2.js              Camp commands, saves, controls, exploration
 ├── camp-v2-scene.js        Procedural 3D woodland and models
 ├── vendor/three/           Pinned offline renderer and MIT license
@@ -55,8 +59,23 @@ a stream, a bridge, and three discoveries. Turn the camera with the arrow button
 drag to pan and pinch or use buttons to zoom. The Camp 1 / Camp 2 switch keeps both
 versions available. The previous 2.5D prototype's layout and supplies migrate.
 Camp 2 has separate layout and building supplies inside each profile; spending
-there does not touch Camp 1 savings. Learning rounds reward both camps after Camp 2
-is first opened. See [the prototype specification and playtest guide](CAMP-V2-PROTOTYPE.md).
+there does not touch Camp 1 savings. Learning earnings for Camp 2 are recorded before its first visit and delivered
+once when it opens; later rounds credit the camp immediately. See [the prototype specification and playtest guide](CAMP-V2-PROTOTYPE.md).
+
+The next camp expansion adds a supply-store village, four unlockable building
+parcels, connected paths and defenses, tree-clearing and fishing reviews, and
+explorer construction animations. Progress from picket fencing through timber
+and stone to moat channels across thirteen completed Realm Challenges. Summit Tester
+receives gems, wood, stone, fish, a rod, all parcels, and a refill button in the
+Journal. See [the upgrade strategy and milestone table](CAMP-UPGRADE-STRATEGY.md).
+
+The 0.15 world pass adds a continuous build brush: choose a fence, wall, path or
+moat, then tap successive squares until **Done**. Existing connected pieces also
+offer **Build more**. Nine parcels provide 771 potential building cells, including
+a free Homestead Meadow; the Story Stones remain a shared garden. The larger
+village has ten buildings, a market, watermill, fountain gardens and **Guardian
+Grove**, with original 3D residents unlocked by actual realm-battle victories.
+Use the Journal to visit destinations or jump to an opened building parcel.
 
 Three.js 0.180.0 is pinned in the lockfile and copied into `public/vendor/three`.
 After an intentional dependency change, run `pnpm vendor:three`. There is no CDN
@@ -65,6 +84,31 @@ for the 3D scene; Backpack controls and Camp 1 remain available without it.
 
 Accurate answers now progress at any speed. Earned creatures and realm stars stay
 earned, and returning after a break never deducts gems.
+
+## Learning expedition upgrade — 0.17 beta
+
+New climbers choose **Show me how** for Twix’s Double River lesson, **I’ve multiplied
+before** for an untimed starting check, or explore the illustrated map. Existing
+climbers keep their progress and can open any realm preview for a starting check.
+Learn now demonstrates an idea, lets the child build equal groups, and checks four
+new problems. Thirteen authored family strategies share this teaching framework.
+
+Realm Challenges need five independent answers out of six. A completed guided
+lesson, a passing starting check, or ten caught creatures enables the challenge.
+Challenges, ordinary practice, and encounters have no timer; optional Speed Rounds
+remain separate. Three map stars still mean challenge, realm victory, and the full
+family collection. Supported corrections never masquerade as independent recall.
+
+A new climber’s Camp button opens Camp 2; older profiles start with Camp 1 until
+choosing otherwise. Both versions remain available. The Double River lesson grants
+a one-time path/deck/lantern kit. Results offer the next adventure, camp, or a clear
+stopping point. Interrupted lessons and rounds can resume without repeating grants.
+
+See [the implementation checklist](LEARNING-UPGRADE-CHECKLIST.md) for the completed
+review initiatives, assessment definitions, verification, and remaining playtests.
+The automated suite includes test/learning-journey.js alongside the camp and
+headless checks. No server account, telemetry, new artwork, or external runtime is
+required for these learning changes.
 
 ## Deployment
 
@@ -144,3 +188,7 @@ camps migrate into the center of the wider clearing automatically.
 
 The Field Guide contains 40 stable Fact Monster designs. A caught creature can
 be invited to Base Camp, with up to six favorites living in the scene at once.
+
+### Camp 2 world refinement (0.16)
+
+Camp building territory is doubled, town roads now connect to each entrance, and Guardian Grove sits beyond a woodland trail inside its own decorative fence. Buildings have side/rear detail and the valley has forest/mountain boundaries. Existing Camp 1 and Camp 2 saves are retained. See [CAMP-UPGRADE-STRATEGY.md](CAMP-UPGRADE-STRATEGY.md) for the review and validation.
