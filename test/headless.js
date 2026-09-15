@@ -439,23 +439,24 @@ async function boot(saveObj, seededStorage={}) {
   const swInstallBlock=swSource.slice(swSource.indexOf("addEventListener('install'"),swSource.indexOf('async function warmOptionalCache'));
   ok('large optional artwork no longer blocks first service-worker install',
      swInstallBlock.includes('c.addAll(CORE)') && !swInstallBlock.includes('OPTIONAL'));
-  ok('offline shell pre-caches every Batch 1 asset', Object.keys(batch1).every(n=>swSource.includes(`./art/camp/${n}`)));
-  ok('offline shell pre-caches every Batch 2 asset', Object.keys(batch2).every(n=>swSource.includes(`./art/camp/${n}`)));
-  ok('offline shell pre-caches every Batch 3 asset', Object.keys(batch3).every(n=>swSource.includes(`./art/camp/${n}`)));
-  ok('offline shell pre-caches every Batch 4 asset', Object.keys(batch4).every(n=>swSource.includes(`./art/camp/${n}`)));
-  ok('offline shell pre-caches every Batch 5 asset', Object.keys(batch5).every(n=>swSource.includes(`./art/camp/${n}`)));
+  ok('legacy recovery catalog retains every Batch 1 asset', Object.keys(batch1).every(n=>swSource.includes(`./art/camp/${n}`)));
+  ok('legacy recovery catalog retains every Batch 2 asset', Object.keys(batch2).every(n=>swSource.includes(`./art/camp/${n}`)));
+  ok('legacy recovery catalog retains every Batch 3 asset', Object.keys(batch3).every(n=>swSource.includes(`./art/camp/${n}`)));
+  ok('legacy recovery catalog retains every Batch 4 asset', Object.keys(batch4).every(n=>swSource.includes(`./art/camp/${n}`)));
+  ok('legacy recovery catalog retains every Batch 5 asset', Object.keys(batch5).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('offline shell pre-caches every realm character', Object.keys(realmCharacters).every(n=>swSource.includes(`./art/realm/${n}`)));
   ok('offline shell pre-caches every boss portrait', Object.keys(bossCharacters).every(n=>swSource.includes(`./art/boss/${n}`)));
   ok('offline shell pre-caches the climber sprite', swSource.includes('./art/climber.png'));
   ok('offline shell pre-caches all avatar gear', Object.keys(avatarGear).every(n=>swSource.includes(`./art/${n}`)));
   ok('offline shell pre-caches all nineteen profile explorers', Object.keys(profileAvatars).every(n=>swSource.includes(`./art/${n}`)));
-  ok('offline shell pre-caches every selectable camp background', Object.keys(campBackgrounds).every(n=>swSource.includes(`./art/camp/${n}`)));
+  ok('legacy recovery catalog retains earlier camp backgrounds', Object.keys(campBackgrounds).every(n=>swSource.includes(`./art/camp/${n}`)));
   ok('offline shell pre-caches all 78 non-square Fact Monsters', Object.keys(factMonsters).every(n=>swSource.includes(`./art/mon/${n}`)));
   ok('retired hats are not loaded into the live offline shell', !swSource.includes('./art/hat/') && !swSource.includes('./art/archive/hat-upgrades/'));
   ok('runtime cache never stores missing future-batch art', swSource.includes('if (res.ok)'));
   ok('offline misses return a valid error response',swSource.includes('Response.error()'));
   ok('offline shell pre-caches the scrolling adventure map', swSource.includes('./art/map/bg-adventure-map.png'));
-  fresh.win.showScreen('screen-camp');
+  // Explicit archive-renderer fixture: ordinary navigation now opens Willowbrook.
+  fresh.win.enterCamp();
   ok('camp opens as a scene-first experience with collapsed menus',
      !!fresh.$('camp-experience') && !fresh.win.document.querySelector('.camp-sheet'));
   ok('camp dock exposes six focused tools including Siege',
@@ -728,11 +729,11 @@ async function boot(saveObj, seededStorage={}) {
   ok('Camp Siege mixes conquered families', ev('quiz').fams.length>1 && new Set(ev('quiz').queue.map(q=>q.a)).size>1);
   ok('Camp Siege is a bonus and does not increment wins merely by launching', ev('state').siegeWins===siegeWinsBefore);
   win.quitQuiz();
-  ok('quitting Camp Siege returns to camp', $('screen-camp').classList.contains('active'));
+  ok('quitting Camp Siege returns to camp', $('screen-camp-v2').classList.contains('active'));
 
   /* ---------------------------------------------------------------- */
   section('Camp — tap-tap placement');
-  win.showScreen('screen-camp');
+  win.showScreen('screen-map');win.document.body.classList.add('camp-world-open');win.enterCamp();
   const placedCount = () => ev('state').placed.length;
   const n0 = placedCount();
   ok('186 buildable panoramic clearing locations rendered', win.document.querySelectorAll('.camp-cell').length === 186,
@@ -950,8 +951,8 @@ async function boot(saveObj, seededStorage={}) {
   ok('first boss defeat pays an incremental realm-star reward instead of a flat 50-gem bonus',
      $('results-body').textContent.includes('realm milestone gems') && !$('results-body').textContent.includes('+50 boss bonus'));
   win.goPlace('trophy-x2');
-  ok('goPlace routes to camp holding the piece',
-     ev('heldPiece') === 'trophy-x2' && $('screen-camp').classList.contains('active'));
+  ok('legacy reward links route to Willowbrook',
+     $('screen-camp-v2').classList.contains('active'));
   win.putAway();
 
   /* ---------------------------------------------------------------- */

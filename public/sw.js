@@ -1,10 +1,11 @@
 /* Times Quest service worker — offline-first app shell */
-const CACHE = 'times-quest-v78';
+const CACHE = 'times-quest-v82';
 const CAMP_3D = ['./camp-v2-scene.js','./camp-world-details.js','./vendor/three/three.module.min.js','./vendor/three/three.core.min.js'];
 const CORE = [
   './',
   './index.html',
   './camp-v2.js',
+  './camp-recovery.js',
   './camp-guide.js',
   './camp-v2.css',
   './camp-content.js',
@@ -238,7 +239,7 @@ const OPTIONAL = [
   './art/camp/camp-trophy-x11.png',
   './art/camp/camp-trophy-x12.png',
   './art/camp/camp-trophy-summit.png',
-].filter((path) => !CORE.includes(path));
+].filter((path) => !CORE.includes(path) && !path.startsWith('./art/camp/')); // Legacy art loads only when a keepsake is viewed.
 
 self.addEventListener('install', (e) => {
   // Make the app usable as soon as the compact shell is ready. The larger art

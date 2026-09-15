@@ -95,7 +95,7 @@ async function main(){
     const legacy={v:7,gems:321,facts:{'6*7':{c:4,w:1,rating:4,caught:true}},realms:{0:{trial:true,conquered:true}},owned:['cat'],settings:{timer:true,roundLen:16}};
     ev(`state=${JSON.stringify(legacy)};migrateState()`);
     check('legacy save keeps gems, ownership and progression',ev('state.gems')===321&&ev("state.owned.includes('cat')")&&ev('state.realms[0].conquered')&&ev('state.settings.roundLen')===16);
-    check('legacy camp choice and no retroactive currency windfall',ev('state.journey.preferredCamp')==='v1'&&ev('state.journey.pendingGems')===0);
+    check('returning players use Willowbrook without inventing pending learning rewards',ev('state.journey.preferredCamp')==='v2'&&ev('state.journey.pendingGems')===0);
     check('no uncaught runtime errors across journeys',errors.length===0);
     console.log(`${checks} learning journey checks passed`);
   }finally{dom.window.close();}

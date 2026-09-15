@@ -41,7 +41,7 @@ function deliverCampGrants(){
   const entries=Object.entries(state.journey.grants);entries.forEach(([,g])=>g.claimed=true);
   if(entries.length>120)state.journey.grants=Object.fromEntries(entries.slice(-120));
 }
-function visitCamp(){showScreen(state.journey.preferredCamp==='v2'?'screen-camp-v2':'screen-camp');}
+function visitCamp(){showScreen('screen-camp-v2');}
 function finishToday(){
   flushProfileSave();
   $('results-body').innerHTML=`<div class="journey-rest">${avatarStr()}<h2>Your expedition is saved</h2><p>Your creatures and buildings will be here when you return. There is nothing to lose by taking a break.</p><button class="btn gold" onclick="visitCamp()">Visit my camp</button><button class="btn ghost" onclick="showScreen('screen-map')">Back to the adventure</button></div>`;
@@ -160,7 +160,7 @@ function chooseEncounterSplit(a,b,showGroups=false){
 function campGoalMarkup(){
   const choices=['gate','canvas','feeder'],type=choices.includes(state.journey.goal)?state.journey.goal:'gate',item=CampV2.catalog[type],camp=state.campV2;
   const owned=!!camp&&(camp.objects.some(o=>o.type===type)||(camp.inventory[type]||0)>0);
-  return `<section class="camp-goal-preview"><h3>${owned?'Ready to build':'My next camp idea'} · ${item.name}</h3><p>${owned?'You own this piece. Find it in your Camp 2 backpack.':`${item.price} gems · ${item.wood||0} wood${item.need?' · '+item.need+' completed Realm Challenges':''}. Learning brings supplies; there is no speed requirement.`}</p><div class="goal-choices">${choices.map(id=>`<button onclick="pinCampGoal('${id}')" aria-pressed="${id===type}">${CampV2.catalog[id].name}</button>`).join('')}</div></section>`;
+  return `<section class="camp-goal-preview"><h3>${owned?'Ready to build':'My next camp idea'} · ${item.name}</h3><p>${owned?'You own this piece. Find it in your Willowbrook backpack.':`${item.price} gems · ${item.wood||0} wood${item.need?' · '+item.need+' completed Realm Challenges':''}. Learning brings supplies; there is no speed requirement.`}</p><div class="goal-choices">${choices.map(id=>`<button onclick="pinCampGoal('${id}')" aria-pressed="${id===type}">${CampV2.catalog[id].name}</button>`).join('')}</div></section>`;
 }
 function pinCampGoal(id){if(!['gate','canvas','feeder'].includes(id))return;state.journey.goal=id;saveState();const host=$('result-camp-goal');if(host)host.innerHTML=campGoalMarkup();toast('Your camp idea is saved');}
 function guardianLetter(){
@@ -198,5 +198,5 @@ async function downloadFullAdventure(){
   try{const ready=await navigator.serviceWorker.ready;ready.active?.postMessage({type:'WARM_OPTIONAL'});}catch(e){if(status)status.textContent='Download could not start. Try again when connected.';}
 }
 if('serviceWorker' in navigator)navigator.serviceWorker.addEventListener('message',event=>{
-  if(event.data?.type==='OFFLINE_PROGRESS'){const status=$('offline-download-status');if(status)status.textContent=event.data.done?(event.data.failed?'Some art could not download. You can retry when connected.':'Adventure art downloaded. Camp 2 downloads when opened. Your browser may clear offline storage if the device is full.'):`Downloading art: ${event.data.count} of ${event.data.total}`;}
+  if(event.data?.type==='OFFLINE_PROGRESS'){const status=$('offline-download-status');if(status)status.textContent=event.data.done?(event.data.failed?'Some art could not download. You can retry when connected.':'Adventure art downloaded. Willowbrook downloads when opened. Your browser may clear offline storage if the device is full.'):`Downloading art: ${event.data.count} of ${event.data.total}`;}
 });
