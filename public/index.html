@@ -1013,7 +1013,7 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
   </div>
 
   <!-- ============ NAV ============ -->
-  <div class="screen" id="screen-camp-v2" role="main" aria-label="Camp 2 woodland"></div>
+  <div class="screen" id="screen-camp-v2" role="main" aria-label="Willowbrook camp"></div>
   <div id="nav" role="navigation" aria-label="Main destinations">
     <button data-s="screen-map" class="on" aria-current="page"><span class="em" data-icon="map"></span>Adventure</button>
     <button data-s="screen-hall"><span class="em" data-icon="training"></span>Training</button>
@@ -1034,6 +1034,7 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
 <script src="math-visuals.js"></script>
 <script src="camp-guide.js"></script>
 <script src="camp-v2.js"></script>
+<script src="camp-recovery.js"></script>
 <script src="journey-ui.js"></script>
 <script src="opening.js"></script>
 <script src="guardian-chapters.js"></script>
@@ -1418,7 +1419,7 @@ const RATING_LABEL = ["undiscovered","discovered","befriending","befriending","c
    Defaults below reproduce the game's original behaviour exactly, so an
    existing save that predates settings plays identically until something
    is changed on purpose. */
-const APP_VERSION = '0.18.0-beta.1';
+const APP_VERSION = '0.19.0-beta.1';
 const FAST_MS = 4000;          // default bonus window
 const WINDOW_CHOICES = [3000,4000,6000,8000];
 const ROUND_CHOICES  = [8,12,16];
@@ -1462,7 +1463,7 @@ const defaultState = () => ({
   bought: {},      // stable piece ID -> quantity in camp inventory
   campDiscovered: {}, // consumed upgrade tiers remain visible in progression history
   campStarted: false,
-  campV2: null, // independent experimental layout, supplies, and command revision
+  campV2: null, // Willowbrook layout, supplies, and command revision
   campTutorial: [],
   campSeen: null,  // toDateString() of last camp visit
   campBackground: 'dusk',
@@ -1863,6 +1864,7 @@ function syncCampAmbience(){
 /* ---------- UI helpers ---------- */
 function $(id){ return document.getElementById(id); }
 function showScreen(id){
+  if(id==='screen-camp')id='screen-camp-v2';
   const renderStarted=performance.now();
   if(id!=='screen-camp-v2'&&campV2Session){campV2Session.dispose();campV2Session=null;}
   if(id==='screen-camp-v2'){
@@ -2500,12 +2502,12 @@ function finishQuiz(failed=false){
     ${newPiece?`<div class="piece-reveal">
       <div class="pem">${newPiece.em}</div>
       <div class="pnm">${newPiece.name} unlocked!</div>
-      <div class="psub">A treasure for your camp</div>
-      <button class="btn gold small" style="margin-top:10px" onclick="goPlace('${newPiece.id}')">Place it at camp →</button>
+      <div class="psub">A keepsake from your restored realm</div>
+      <button class="btn gold small" style="margin-top:10px" onclick="goPlace('${newPiece.id}')">Visit Guardian Grove →</button>
     </div>`:''}
     ${newBlueprints.length?`<div class="piece-reveal blueprint-reveal">
       <div class="pnm">New camp blueprints!</div>
-      <div class="psub">${newBlueprints.map(p=>p.name).join(' · ')}</div>
+      <div class="psub">${CampV2.content.milestones[Math.max(0,campMasteredCount()-1)]||'Explore your camp toolkit'}</div>
       <button class="btn secondary small" style="margin-top:10px" onclick="visitCamp()">See camp upgrades →</button>
     </div>`:''}
     <div class="reward-row">
@@ -2518,7 +2520,7 @@ function finishQuiz(failed=false){
     </div>
     ${qz.caughtThis.length?`<div class="sub" style="margin-bottom:6px">Monsters ${qz.caughtThis.some(c=>c.shiny)?'caught & shined':'caught'}!</div>
     <div class="caught-list">${qz.caughtThis.slice(0,6).map(c=>`<div class="caught-monster ${c.shiny?'shiny':''}"><span class="em">${c.shiny?'✨':''}${monsterFor(c.a,c.b)}</span>${Math.min(c.a,c.b)}×${Math.max(c.a,c.b)}</div>`).join('')}</div>`:''}
-    ${qz.mode==='lesson'&&qz.fams[0]===2?'<div class="piece-reveal"><div class="pnm">Twix’s building kit</div><p>Six path stones, two deck pieces, and a lantern are ready for Camp 2. Build a crossing of your own.</p></div>':''}
+    ${qz.mode==='lesson'&&qz.fams[0]===2?'<div class="piece-reveal"><div class="pnm">Twix’s building kit</div><p>Six path stones, two deck pieces, and a lantern are ready in Willowbrook. Build a crossing of your own.</p></div>':''}
     ${qz.mode==='boss'&&qz.fams[0]===0&&passed&&state.journey.zeroKit?zeroRewardMarkup():''}
     <div id="result-camp-goal">${campGoalMarkup()}</div>
     <div class="result-next">
@@ -2977,6 +2979,7 @@ function renderParent(){
 
       <div class="toggle-row" style="margin-top:6px"><span class="lbl">${icon('trash')} Reset all progress</span><button class="btn coral small" onclick="resetAll()">Reset</button></div>
     </div>
+    <div class="card"><h3>Willowbrook Camp</h3><p>Your earlier camp layout and collection are preserved in backups. Compatible supplies move to Willowbrook once.</p><button class="btn small" onclick="openCampArchive()">Earlier camp collection</button><button class="btn small" onclick="openCampDiagnostics()">Camp diagnostics</button></div>
     <div class="card backup-vault"><h3>${icon('backpack')} Protected family backup</h3>
       <p>Save every climber and all progress in one password-protected file. Use it to recover this device or move the whole family to another one.</p>
       <p class="backup-privacy">Private by design: encryption happens on this device. Times Quest does not receive the file, the passphrase, or any child profile information.</p>
@@ -3531,12 +3534,14 @@ function resetCampEditor(){
 function enterCampV2(){
   if(campV2Session)return;
   const host=$('screen-camp-v2');
-  if(!window.CampV2){host.innerHTML='<div class="card" style="margin:30px"><h2>Camp 2 is not downloaded yet</h2><p>Go online and update the app to try the new clearing.</p><button class="btn" onclick="showScreen(\'screen-camp\')">Back to Camp 1</button></div>';return;}
+  if(!window.CampV2){campRecoveryScreen('missing-module');return;}
   if(!state.campV2)state.campV2=state.journey.openingEdition?CampV2.freshExpedition():CampV2.fresh();
   deliverCampGrants();
-  if(!CampV2.validSave(state.campV2)){host.innerHTML='<div class="card" style="margin:30px"><h2>This clearing needs recovery</h2><p>Your saved Camp 2 has been kept intact. Camp 1 is still available.</p><button class="btn" onclick="showScreen(\'screen-camp\')">Back to Camp 1</button></div>';return;}
+  if(!CampV2.validSave(state.campV2)){campRecoveryScreen('invalid-save');return;}
   state.campV2=CampV2.syncProgress(state.campV2,campMasteredCount(),isCampTester());
+  migrateToWillowbrook();
   const owner=activeProfileId;
+  try{
   campV2Session=CampV2.mount(host,{profileId:owner,currentProfileId:()=>activeProfileId,
     getSave:()=>state.campV2,setSave:next=>{if(owner===activeProfileId){state.campV2=next;saveState();}},
     guardians:REALM_ORDER.map(family=>({family,name:REALMS[family].petName,color:REALMS[family].color,defeated:!!state.realms[family].conquered})),
@@ -3544,8 +3549,10 @@ function enterCampV2(){
     onCompanion:(a,b)=>{showScreen('screen-monsters');openMonsterCard(a,b);},
     tester:isCampTester(),reviewQuestions:campReviewQuestions,onReview:recordCampReview,
     avatar:profileAvatar(),reducedMotion:()=>state.settings.calm||prefersReducedMotion(),
+    onRestart:restartCamp,onReload:reloadCampApp,onDiagnostic:recordCampDiagnostic,
     onExit:showScreen,onPractice:family=>{showScreen('screen-hall');if(Number.isInteger(family)&&state.realms[family]?.conquered)startPractice(family);}
   });
+  }catch(error){campV2Session=null;campRecoveryScreen('controller-error',String(error.message||error));}
   saveState();
 }
 let campPanel=null,campCategory='all',campFilter='all',campCamera={left:null,top:null},campPreviewCell=null,campAutoPanTimer=null,campSheetDrag=null;
@@ -3931,7 +3938,7 @@ function shopTap(id,type,price,locked){
   saveState(); updateChips(); renderCamp();
 }
 /* Routed here from the boss results screen with the new piece already in hand. */
-function goPlace(id){ if(state.journey.preferredCamp==='v2'){visitCamp();return;} heldPiece=id; showScreen('screen-camp'); }
+function goPlace(id){ visitCamp(); }
 
 /* =====================================================
    CREATE-A-QUIZ (parent tool)

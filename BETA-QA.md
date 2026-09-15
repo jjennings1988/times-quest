@@ -164,3 +164,11 @@ Follow [OPENING-EXPEDITION.md](OPENING-EXPEDITION.md). Check the title at phone 
 - Claim land through its review activity: dashed cells become solid without moving any buildings.
 - Verify Story Stones have no interior grid, and trees still block placement within owned land.
 - Check phone/tablet portrait and landscape, gentle motion, low power, and legacy camp recovery.
+
+### 0.19 camp recovery and migration
+
+- Force graphics context loss; verify persistent Fix camp, native restoration, and restart in low power.
+- Confirm failed module loading and invalid saves offer recovery/backup access without resetting anything.
+- Test returning legacy profiles: direct equivalents arrive once, the larger wallet is retained, and existing Willowbrook placements remain unchanged. Export/import and retry must not duplicate grants.
+- All Camp links lead to Willowbrook; Parents retains the earlier collection archive.
+- Test the originally affected hardware and capture Parents → Camp diagnostics if it fails again.

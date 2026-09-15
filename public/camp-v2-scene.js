@@ -3,8 +3,9 @@
 import * as THREE from './vendor/three/three.module.min.js';
 import {createWorldDetails} from './camp-world-details.js';
 
-export function createScene(canvas, {catalog, footprint, sources, world, avatar, guardians=[], placementReason, onContextLost, onContextRestored}) {
-  const renderer = new THREE.WebGLRenderer({canvas, antialias:true, alpha:false, powerPreference:'low-power'});
+export function createScene(canvas, {catalog, footprint, sources, world, avatar, guardians=[], placementReason, lowPower=false, onContextLost, onContextRestored}) {
+  const renderer = new THREE.WebGLRenderer({canvas, antialias:!lowPower, alpha:false, powerPreference:'low-power'});
+  try{
   renderer.outputColorSpace=THREE.SRGBColorSpace;
   renderer.shadowMap.enabled=true;
   renderer.shadowMap.type=THREE.PCFSoftShadowMap;
@@ -304,4 +305,5 @@ export function createScene(canvas, {catalog, footprint, sources, world, avatar,
   canvas.addEventListener('webglcontextlost',lost);canvas.addEventListener('webglcontextrestored',restored);
   function dispose(){if(disposed)return;disposed=true;canvas.removeEventListener('webglcontextlost',lost);canvas.removeEventListener('webglcontextrestored',restored);geometries.forEach(g=>g.dispose());extraGeometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());extraMaterials.forEach(m=>m.dispose());worldDetails.dispose();shadeTexture.dispose();pavingTexture.dispose();scene.traverse(m=>m.isInstancedMesh&&m.dispose());scene.clear();renderer.dispose();renderer.forceContextLoss();}
   return {resize,render,project,cell,pick,focus,follow,thumbnail,stats:()=>({...renderer.info.render,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}),dispose};
+  }catch(error){renderer.dispose();renderer.forceContextLoss();throw error;}
 }

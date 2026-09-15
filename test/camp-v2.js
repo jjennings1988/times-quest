@@ -44,7 +44,7 @@ test('future or damaged saves are refused without mutation',()=>{const s=C.fresh
   test('finishing the learning round credits Camp 2 and restores resource opportunities',()=>{e("state.campV2.harvested=[0,1];finishQuiz();");assert.equal(e('state.campV2.gems'),137);assert.equal(e('state.campV2.harvested.length'),0);});
   e("showScreen('screen-camp-v2')");
   await new Promise(resolve=>setTimeout(resolve,40));
-  test('an unavailable 3D module retains the save and exposes accessible camp controls',()=>{assert(w.document.querySelector('#screen-camp-v2').textContent.includes('3D is unavailable'));assert(w.document.querySelector('[data-action="v1"]'));assert(w.document.querySelector('[data-action="bag"]'));assert.equal(e('state.campV2.gems'),137);});
+  test('an unavailable 3D module retains the save and exposes accessible camp controls',()=>{assert(w.document.querySelector('#screen-camp-v2').textContent.includes('3D is unavailable'));assert(!w.document.querySelector('[data-action="v1"]'));assert(w.document.querySelector('[data-action="help"]'));assert(w.document.querySelector('[data-action="bag"]'));assert.equal(e('state.campV2.gems'),137);});
   test('fence brush places repeatedly without reopening the catalogue and undo refunds one piece',()=>{
     const click=selector=>w.document.querySelector(selector).click();const before=e('state.campV2.objects.length'),stock=e('state.campV2.inventory.fence');
     click('[data-type="fence"]');assert(w.document.querySelector('.cv2-brush'));click('[data-action="confirm"]');assert.equal(e('state.campV2.objects.length'),before+1);assert(w.document.querySelector('.cv2-brush'));assert(w.document.querySelector('[data-action="confirm"]').disabled);

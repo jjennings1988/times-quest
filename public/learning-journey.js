@@ -26,7 +26,7 @@
     const p=parts(a);return p?`${p[0]} groups of ${b} make ${p[0]*b}. ${p[1]<0?'Remove':'Add'} ${Math.abs(p[1])} more group${Math.abs(p[1])===1?'':'s'}: ${p[0]*b} ${p[1]<0?'−':'+'} ${Math.abs(p[1])*b} = ${a*b}.`:`${a} equal groups of ${b} make ${a*b}.`;
   }
   function lesson(fam){return {family:fam,title:ideas[fam][0],idea:ideas[fam][1],each:4,groups:fam,explanation:explanation(fam,4),parts:parts(fam)};}
-  function fresh(isNew=false){return {v:1,onboardingDone:!isNew,preferredCamp:isNew?'v2':'v1',activeFamily:null,routes:[],lessons:{},readiness:{},grants:{},pendingGems:0,current:null,resume:null,days:[],goal:'woodland-gate'};}
+  function fresh(isNew=false){return {v:1,onboardingDone:!isNew,preferredCamp:'v2',activeFamily:null,routes:[],lessons:{},readiness:{},grants:{},pendingGems:0,current:null,resume:null,days:[],goal:'woodland-gate'};}
   function migrate(value){
     const j={...fresh(),...(value&&typeof value==='object'?value:{})};
     j.routes=Array.isArray(j.routes)?[...new Set(j.routes.filter(f=>Number.isInteger(f)&&f>=0&&f<=12))]:[];
@@ -34,7 +34,7 @@
     j.grants=Object.fromEntries(Object.entries(j.grants).filter(([id,g])=>id.length<100&&g&&Number.isFinite(g.gems)&&g.gems>=0).slice(-120));
     j.days=Array.isArray(j.days)?[...new Set(j.days.filter(x=>/^\d{4}-\d{2}-\d{2}$/.test(x)))].sort().slice(-35):[];
     j.pendingGems=Math.max(0,Math.floor(Number(j.pendingGems)||0));
-    j.preferredCamp=j.preferredCamp==='v2'?'v2':'v1';
+    j.preferredCamp='v2';
     if(!Number.isInteger(j.activeFamily)||j.activeFamily<0||j.activeFamily>12)j.activeFamily=null;
     if(j.current&&(!Number.isInteger(j.current.family)||j.current.family<0||j.current.family>12||!['see','build','choose'].includes(j.current.stage)))j.current=null;
     if(j.current?.family===0){j.current.opened=Array.isArray(j.current.opened)?[...new Set(j.current.opened.filter(i=>[0,1,2].includes(i)))]:[];if(!['inspect','remove','compare'].includes(j.current.zeroStep))j.current.zeroStep='inspect';}

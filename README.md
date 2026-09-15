@@ -11,7 +11,7 @@ locally vendored Three.js runtime; `jsdom` is used by the regression suite.
 
 ```
 public/
-├── index.html              Learning, progression, profiles, Camp 1
+├── index.html              Learning, progression, profiles, legacy data
 ├── learning-journey.js    Authored ideas, independent evidence, journey migration
 ├── journey-ui.js          Lessons, starting routes, encounters, resumable rewards
 ├── opening.js             Illustrated title and Zero Marsh expedition
@@ -56,14 +56,12 @@ The local dependency-free server is also available with `pnpm start` at
 
 ## Camp comparison prototype
 
-Open **Camp → Try Camp 2** to enter **Willowbrook Camp**, a playable 3D woodland
-with modeled shelters, furniture, fences, paths, an animated explorer and dog,
-a stream, a bridge, and three discoveries. Turn the camera with the arrow buttons;
-drag to pan and pinch or use buttons to zoom. The Camp 1 / Camp 2 switch keeps both
-versions available. The previous 2.5D prototype's layout and supplies migrate.
-Camp 2 has separate layout and building supplies inside each profile; spending
-there does not touch Camp 1 savings. Learning earnings for Camp 2 are recorded before its first visit and delivered
-once when it opens; later rounds credit the camp immediately. See [the prototype specification and playtest guide](CAMP-V2-PROTOTYPE.md).
+Open **Camp** to enter **Willowbrook**, the game's single playable camp.
+Turn the camera, drag to pan, and pinch or use buttons to zoom. Camp help offers
+restart, low-power restart and reload without clearing progress. Parents retains
+a read-only earlier-camp collection; compatible inventory transfers once and the
+wallet uses the larger balance instead of adding both. See
+[the recovery and migration review](CAMP-RECOVERY-REVIEW.md).
 
 The next camp expansion adds a supply-store village, four unlockable building
 parcels, connected paths and defenses, tree-clearing and fishing reviews, and
@@ -83,7 +81,7 @@ Use the Journal to visit destinations or jump to an opened building parcel.
 Three.js 0.180.0 is pinned in the lockfile and copied into `public/vendor/three`.
 After an intentional dependency change, run `pnpm vendor:three`. There is no CDN
 dependency. Visit Camp 2 online before testing it offline. WebGL 2 is required
-for the 3D scene; Backpack controls and Camp 1 remain available without it.
+for the 3D scene; Backpack controls and Camp help remain available without it.
 
 Accurate answers now progress at any speed. Earned creatures and realm stars stay
 earned, and returning after a break never deducts gems.
@@ -196,4 +194,4 @@ All thirteen guardians now have guided discoveries. The twelve later chapters
 use authored group transformations and illustrated restoration scenes. Camp 2
 shows solid owned-land grids and dashed future parcels during exploration.
 See [Guardian and land update](GUARDIAN-AND-LAND-UPDATE.md) for behaviour,
-validation, and the proposed Camp 1 retirement sequence. Both camps remain available.
+validation, and the earlier Camp 1 retirement proposal. The 0.19 transition is now described in [Camp recovery](CAMP-RECOVERY-REVIEW.md).
