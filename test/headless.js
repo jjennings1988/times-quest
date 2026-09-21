@@ -82,7 +82,7 @@ async function boot(saveObj, seededStorage={}) {
   ok('every fact record preserved',
      Object.keys(before.facts).every(k =>
        S().facts[k] && S().facts[k].c === before.facts[k].c && S().facts[k].rating === before.facts[k].rating));
-  ok('schema version stamped', S().v === 7);
+  ok('schema version stamped', S().v === 8);
   ok('legacy fact history receives additive spaced-review scheduling',
      Object.values(S().facts).filter(f=>f.rating>0).every(f=>f.intervalDays>=1 && /^\d{4}-\d{2}-\d{2}$/.test(f.dueOn)));
   ok('existing stars are marked claimed without changing the saved gem balance',
@@ -525,9 +525,9 @@ async function boot(saveObj, seededStorage={}) {
   section('Realm screen');
   win.openRealm(2);
   ok('realm opens', $('realm-title-top').textContent === 'Double River');
-  ok('boss card locked before trial', $('realm-body').innerHTML.includes('Pass the Trial first'));
-  ok('realm progress explains all three star goals and the current catch gate',
-     ['Pass the Realm Challenge','Restore the realm','Catch all 13','Learn with your guardian to open the challenge'].every(text=>$('realm-body').textContent.includes(text)),
+  ok('boss card locked before trial', $('realm-body').innerHTML.includes('Earn star 1 first'));
+  ok('realm progress explains three explicit goals and optional third star',
+     ['Pass the Realm Challenge','Help your guardian','Complete the Fact Trail','Star 2 opens the next realm'].every(text=>$('realm-body').textContent.includes(text)),
      $('realm-body').textContent);
   ok('realm progress exposes three visible milestone steps and an x/3 total',
      win.document.querySelectorAll('#realm-body .realm-star-step').length===3 && $('realm-body').textContent.includes('/3'));

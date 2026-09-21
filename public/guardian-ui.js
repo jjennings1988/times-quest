@@ -29,7 +29,8 @@ function renderGuardianLesson(){
   $('screen-journey').style.backgroundImage=`url('art/battle/bg-battle-x${fam}-portrait.webp')`;
   let task=done?`<h2>Same strategy. A new amount.</h2><p>${d.discovery}</p><div class="chapter-comparison">${guardianGroupModel(fam,fam,4)}${guardianGroupModel(fam,fam,3)}</div><p>${LearningJourney.explanation(fam,3)}</p><button class="btn gold" onclick="startGuardianTry()">Try four new problems</button>`:
     `<small class="chapter-step">DISCOVER · ${c.step+1} OF ${d.targets.length}</small><h2>Make ${target} equal group${target===1?'':'s'}</h2><p>${d.steps[c.step]}</p><p>Each ${d.group} holds <b>4 ${d.unit}</b>. Aim for <b>${target} equal groups</b>.</p>${guardianGroupModel(fam,c.groups)}<div class="chapter-tools" aria-label="Change the equal groups"><button onclick="changeGuardianGroups('add')" ${c.groups>=12?'disabled':''}>Add one group</button><button onclick="changeGuardianGroups('double')" ${c.groups===0||c.groups>6?'disabled':''}>Double the groups</button><button onclick="changeGuardianGroups('remove')" ${c.groups===0?'disabled':''}>Remove one group</button><button onclick="changeGuardianGroups('half')" ${c.groups===0||c.groups%2?'disabled':''}>Keep half</button></div><p id="guardian-feedback" role="status" tabindex="-1">${c.groups===target?`Ready: ${target} equal groups, with ${target*4} ${d.unit} altogether.`:`You have ${c.groups} group${c.groups===1?'':'s'}. The goal is ${target}.`}</p><button class="btn gold" onclick="advanceGuardianLesson()" ${c.groups!==target?'disabled':''}>${c.step===d.targets.length-1?'Compare a new amount':'See what happens next'}</button>`;
-  $('journey-body').innerHTML=`<div class="guardian-chapter" style="--chapter-color:${d.color}"><div class="chapter-heading"><small>GUARDIAN DISCOVERY · ×${fam}</small><h1>${d.title}</h1><p>${REALMS[fam].petName} needs your ideas. Take all the time you need.</p></div>${illustratedGuardian(fam,guardianLandmark(fam,done?1:c.step/d.targets.length))}<section class="journey-card zero-task">${task}<button class="btn ghost" onclick="saveState();showScreen('screen-map')">Save and explore</button></section></div>`;
+  const scenery=fam===4?squarestoneScene('lesson',done?1:c.step/d.targets.length):illustratedGuardian(fam,guardianLandmark(fam,done?1:c.step/d.targets.length));
+  $('journey-body').innerHTML=`<div class="guardian-chapter" style="--chapter-color:${d.color}"><div class="chapter-heading"><small>GUARDIAN DISCOVERY · ×${fam}</small><h1>${d.title}</h1><p>${REALMS[fam].petName} needs your ideas. Take all the time you need.</p></div>${scenery}<section class="journey-card zero-task">${task}<button class="btn ghost" onclick="saveState();showScreen('screen-map')">Save and explore</button></section></div>`;
 }
 function changeGuardianGroups(action){const c=state.journey.current;if(!c||c.stage!=='see'||!GuardianChapters.chapters[c.family])return;c.chapter=GuardianChapters.manipulate(c.family,c.chapter,action);saveState();renderGuardianLesson();const button=$('journey-body').querySelector(`[onclick="changeGuardianGroups('${action}')"]`);(button&&!button.disabled?button:$('guardian-feedback'))?.focus({preventScroll:true});}
 function advanceGuardianLesson(){const c=state.journey.current;if(!c||c.stage!=='see'||!GuardianChapters.chapters[c.family])return;c.chapter=GuardianChapters.advance(c.family,c.chapter);saveState();renderGuardianLesson();const title=$('journey-body').querySelector('h2');title?.setAttribute('tabindex','-1');title?.focus({preventScroll:true});title?.scrollIntoView({block:'nearest'});}
@@ -37,8 +38,18 @@ function startGuardianTry(){const c=state.journey.current;if(!c||!GuardianChapte
 function guardianEncounterScenery(){
   const stage=$('battle-stage'),fam=quiz?.fams[0],d=GuardianChapters.chapters[fam],active=!!quiz?.battle&&quiz.mode==='boss'&&!!d;
   stage.classList.toggle('guardian-restoration',active);
+  stage.classList.toggle('squarestone-battle',active&&fam===4);
   let layer=$('guardian-restoration-scene');if(!active){layer?.remove();return;}
   if(!layer){layer=document.createElement('div');layer.id='guardian-restoration-scene';stage.append(layer);}
   const p=(quiz.battle.maxHP-quiz.battle.hp)/quiz.battle.maxHP;
+  layer.classList.toggle('ss-encounter-host',fam===4);
+  if(fam===4){
+    const visual=SquarestoneScene.view({context:'encounter',progress:p});
+    // Keep the scene mounted between milestones so glow and image decoding do
+    // not restart on every answer or assisted retry.
+    if(layer.dataset.squarestoneStage!==visual.stage){layer.innerHTML=squarestoneScene('encounter',p);layer.dataset.squarestoneStage=visual.stage;}
+    return;
+  }
+  delete layer.dataset.squarestoneStage;
   layer.innerHTML=`<img src="art/realm/pet-${fam}.png" alt="${REALMS[fam].petName}">${guardianLandmark(fam,p)}<div class="restoration-veil" style="opacity:${(1-p)*.65}" aria-hidden="true"></div><span class="restoration-caption">${d.goal} · ${Math.floor(p*3)} of 3 stages restored</span>`;
 }

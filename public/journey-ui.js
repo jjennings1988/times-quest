@@ -101,7 +101,7 @@ function finishJourneyRound(qz,passed){
     state.journey.lessons[0]={completed:true,day:dateKey(),independent:qz.passCorrect,total:3};
     state.realms[0].trial=true;state.journey.activeFamily=0;
     if(first){state.gems+=12;qz.gems+=12;}
-    return {headline:'You discovered the power of zero!',sub:'Your first Realm Challenge is complete. Help Poof clear the fog with three discoveries.',action:'startBoss(0)',label:'Help Poof clear the marsh'};
+    return {headline:'You discovered the power of zero!',sub:'Star 1 earned! Help Poof clear the fog with three discoveries to earn star 2.',action:'startBoss(0)',label:'Help Poof clear the marsh'};
   }
   if(qz.mode==='lesson'){
     const old=state.journey.lessons[fam];state.journey.lessons[fam]={completed:true,day:dateKey(),independent:qz.passCorrect,total:qz.baseTotal};
@@ -119,11 +119,12 @@ function finishJourneyRound(qz,passed){
 function beginStartingLesson(fam){if(!state.journey.routes.includes(fam))state.journey.routes.push(fam);beginLesson(fam);}
 function showQuestionHelp(){
   if(!quiz||quiz.locked)return;
-  const q=quiz.queue[quiz.idx];q.assisted=true;quiz.locked=true;cancelAnimationFrame(qTimerRAF);showHint(q);
+  const q=quiz.queue[quiz.idx];q.assisted=true;q.restoreSupport=true;quiz.locked=true;cancelAnimationFrame(qTimerRAF);checkpointRound();saveState();showHint(q);
 }
 function renderQuestionContext(q){
   const fam=quiz.fams.length===1?quiz.fams[0]:q.a;
   $('question-context').innerHTML=`${realmCharacter(fam)}<div><strong>${escapeHtml(quiz.title)}</strong><p>${escapeHtml(q.prompt||`Take your time. ${REALMS[fam].petName} can help you think.`)}</p></div>`;
+  if(quiz.mode==='fact-trail')$('question-context').querySelector('div').insertAdjacentHTML('beforeend',`<strong class="trail-quiz-progress">${factTrailProgress(fam).count}/13 checked for star 3</strong>`);
   $('question-help').hidden=false;
   $('question-help').textContent=`Show me · ${REALMS[fam].petName}`;
   $('q-text').setAttribute('aria-label',q.text.replace('×','times').replace('÷','divided by').replace('?','what number'));
