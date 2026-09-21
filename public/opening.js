@@ -13,6 +13,7 @@ function showTitle(){
 function continueFromTitle(){showScreen('screen-map');if(state.journey.resume)resumeRound();else if(state.journey.current)resumeLesson();else if(!state.journey.onboardingDone)startWelcome();}
 function titleParents(){openQuestCard('<section class="journey-card"><h2>An adventure worth growing into</h2><p>Children explore multiplication, practise familiar facts, help guardians and build a personal camp. Adventure has no countdown. Help is always available.</p><p>Each explorer has a separate save on this device. There are no real-money purchases. Export a family backup from Parents to protect your progress.</p><p>The app works offline after its files download. Visit Willowbrook online once to download its 3D world. Learning progress describes observed answers, not a diagnosis or a guarantee of mastery.</p><button class="btn gold" onclick="closeQuestCard()">Back to the adventure</button></section>');}
 function illustratedGuardian(fam,props=''){
+  if(fam===4)return squarestoneScene();
   if(!props&&fam>0&&typeof GuardianChapters!=='undefined')props=guardianLandmark(fam,state?.realms[fam]?.conquered?1:0);
   return `<div class="guardian-scene realm-scene-${fam}" style="--scene-art:url('art/battle/bg-battle-x${fam}-portrait.webp')"><div class="guardian-mist" aria-hidden="true"></div><img class="guardian-resident" src="art/realm/pet-${fam}.png" alt="${escapeHtml(REALMS[fam].petName)}"><span class="guardian-location">${REALMS[fam].name}</span>${props}</div>`;
 }

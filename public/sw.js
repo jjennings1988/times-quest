@@ -1,5 +1,6 @@
 /* Times Quest service worker — offline-first app shell */
-const CACHE = 'times-quest-v82';
+const CACHE = 'times-quest-v84';
+const SQUARESTONE_ART=['landscape','ruins','foundation','walls','restored','celebrated'].map(name=>`./art/realm/squarestone/${name}-v1.webp`);
 const CAMP_3D = ['./camp-v2-scene.js','./camp-world-details.js','./vendor/three/three.module.min.js','./vendor/three/three.core.min.js'];
 const CORE = [
   './',
@@ -12,11 +13,14 @@ const CORE = [
   './math-visuals.js',
   './math-visuals.css',
   './learning-journey.js',
+  './realm-trail.js',
   './journey-ui.js',
   './journey.css',
   './opening.js',
   './guardian-chapters.js',
   './guardian-ui.js',
+  './squarestone-scene.js',
+  './squarestone-scene.css',
   './opening.css',
   './art/battle/bg-battle-x0-portrait.webp',
   './art/realm/pet-0.png',
@@ -30,6 +34,7 @@ const CORE = [
   './art/camp/bg-camp-dusk.png',
 ];
 const OPTIONAL = [
+  ...SQUARESTONE_ART,
   './',
   './index.html',
   './manifest.webmanifest',
@@ -266,6 +271,7 @@ self.addEventListener('message', (e) => {
   if (e.data && e.data.type === 'WARM_OPTIONAL') e.waitUntil(warmOptionalCache(e.source));
   if(e.data?.type==='WARM_REALM'&&Number.isInteger(e.data.family)&&e.data.family>=0&&e.data.family<=12){
     const f=e.data.family,assets=[`./art/realm/pet-${f}.png`,`./art/boss/boss-${f}.png`,`./art/battle/bg-battle-x${f}-portrait.webp`];
+    if(f===4)assets.push(...SQUARESTONE_ART);
     e.waitUntil(caches.open(CACHE).then(cache=>Promise.allSettled(assets.map(async path=>{if(!(await cache.match(path)))await cache.add(path);})))) ;
   }
   if (e.data && e.data.type === 'CACHE_CAMP_3D') e.waitUntil(caches.open(CACHE).then(cache=>Promise.all(CAMP_3D.map(async path=>{if(!(await cache.match(path)))await cache.add(path);}))).catch(()=>{}));

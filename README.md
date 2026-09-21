@@ -13,6 +13,9 @@ locally vendored Three.js runtime; `jsdom` is used by the regression suite.
 public/
 ├── index.html              Learning, progression, profiles, legacy data
 ├── learning-journey.js    Authored ideas, independent evidence, journey migration
+├── realm-trail.js         Explicit third-star fact checks and legacy credit
+├── squarestone-scene.js   Painted ×4 realm, lesson and restoration state selection
+├── squarestone-scene.css  Responsive scene composition and reduced-motion effects
 ├── journey-ui.js          Lessons, starting routes, encounters, resumable rewards
 ├── opening.js             Illustrated title and Zero Marsh expedition
 ├── opening.css            Title and interactive guardian scenes
@@ -32,6 +35,13 @@ BETA-QA.md                  Real-device and child-observation release gate
 ```
 
 All paths inside the app are relative, so it works at any URL depth.
+
+Realm stars follow **Challenge → Guardian → Fact Trail**. Star two opens the
+next realm; star three comes from a visible checklist of thirteen facts in short,
+untimed rounds. See [REALM-STARS.md](REALM-STARS.md) for the rules and save compatibility.
+
+Squarestone Valley is the first painted restoration scene. See
+[SQUARESTONE-SCENE.md](SQUARESTONE-SCENE.md) for artwork, prompts and implementation notes.
 
 ## Local development
 
