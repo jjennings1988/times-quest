@@ -5,6 +5,7 @@ function guardianGroupModel(fam,groups,each=4){
 }
 function renderGuardianLesson(){
   const current=state.journey.current,fam=current.family,d=GuardianChapters.chapters[fam];if(!d)return;
+  if(fam===9){renderNineLesson();return;}
   const c=GuardianChapters.lessonState(fam,current.chapter);current.chapter=c;
   const done=c.step===d.targets.length,target=d.targets[c.step];
   $('screen-journey').style.backgroundImage=`url('art/battle/bg-battle-x${fam}-portrait.webp')`;
@@ -13,11 +14,12 @@ function renderGuardianLesson(){
   const scenery=paintedRealmScene(fam,'lesson',done?1:c.step/d.targets.length);
   SceneTransitions.render($('journey-body'),`<div class="guardian-chapter" style="--chapter-color:${d.color}"><div class="chapter-heading"><small>GUARDIAN DISCOVERY · ×${fam}</small><h1>${d.title}</h1><p>${REALMS[fam].petName} needs your ideas. Take all the time you need.</p></div>${scenery}<section class="journey-card zero-task">${task}<button class="btn ghost" onclick="saveState();showScreen('screen-map')">Save and explore</button></section></div>`);
 }
-function changeGuardianGroups(action){const c=state.journey.current;if(!c||c.stage!=='see'||!GuardianChapters.chapters[c.family])return;c.chapter=GuardianChapters.manipulate(c.family,c.chapter,action);saveState();renderGuardianLesson();const button=$('journey-body').querySelector(`[onclick="changeGuardianGroups('${action}')"]`);(button&&!button.disabled?button:$('guardian-feedback'))?.focus({preventScroll:true});}
-function advanceGuardianLesson(){const c=state.journey.current;if(!c||c.stage!=='see'||!GuardianChapters.chapters[c.family])return;c.chapter=GuardianChapters.advance(c.family,c.chapter);saveState();renderGuardianLesson();const title=$('journey-body').querySelector('h2');title?.setAttribute('tabindex','-1');title?.focus({preventScroll:true});title?.scrollIntoView({block:'nearest'});}
-function startGuardianTry(){const c=state.journey.current;if(!c||!GuardianChapters.chapters[c.family]||GuardianChapters.lessonState(c.family,c.chapter).step!==GuardianChapters.chapters[c.family].targets.length)return;const fam=c.family;state.journey.current=null;saveState();lastConfig={fn:beginLesson,args:[fam]};startQuiz({mode:'lesson',fams:[fam],queue:GuardianChapters.questions(fam),timed:false,title:GuardianChapters.chapters[fam].goal});}
+function changeGuardianGroups(action){const c=state.journey.current;if(!c||c.family===9||c.stage!=='see'||!GuardianChapters.chapters[c.family])return;c.chapter=GuardianChapters.manipulate(c.family,c.chapter,action);saveState();renderGuardianLesson();const button=$('journey-body').querySelector(`[onclick="changeGuardianGroups('${action}')"]`);(button&&!button.disabled?button:$('guardian-feedback'))?.focus({preventScroll:true});}
+function advanceGuardianLesson(){const c=state.journey.current;if(!c||c.family===9||c.stage!=='see'||!GuardianChapters.chapters[c.family])return;c.chapter=GuardianChapters.advance(c.family,c.chapter);saveState();renderGuardianLesson();const title=$('journey-body').querySelector('h2');title?.setAttribute('tabindex','-1');title?.focus({preventScroll:true});title?.scrollIntoView({block:'nearest'});}
+function startGuardianTry(){const c=state.journey.current;if(!c||!GuardianChapters.chapters[c.family]||(c.family===9?!NineLesson.ready(c.nine):GuardianChapters.lessonState(c.family,c.chapter).step!==GuardianChapters.chapters[c.family].targets.length))return;const fam=c.family;state.journey.current=null;saveState();lastConfig={fn:beginLesson,args:[fam]};startQuiz({mode:'lesson',fams:[fam],queue:GuardianChapters.questions(fam),timed:false,title:GuardianChapters.chapters[fam].goal});}
 function guardianEncounterScenery(){
   const stage=$('battle-stage'),fam=quiz?.fams[0],active=!!quiz?.battle&&quiz.mode==='boss'&&Number.isInteger(fam)&&fam>=0&&fam<=12;
+  $('screen-quiz').classList.toggle('guardian-active',active);
   stage.classList.toggle('guardian-restoration',active);
   stage.classList.toggle('squarestone-battle',active);
   stage.classList.toggle('painted-battle',active&&fam!==4);
@@ -29,4 +31,16 @@ function guardianEncounterScenery(){
   const key=`${fam}:${visual.stage}`;
   // Include family in the key so switching realms cannot retain another scene.
   if(layer.dataset.sceneKey!==key){SceneTransitions.render(layer,paintedRealmScene(fam,'encounter',p));layer.dataset.sceneKey=key;}
+}
+
+function updateGuardianEncounterProgress(){
+  if(quiz?.mode!=='boss'||!quiz.battle)return;
+  const b=quiz.battle,fam=quiz.fams[0],done=Math.max(0,Math.min(b.maxHP,b.maxHP-b.hp)),progress=done/b.maxHP,stages=Math.min(3,Math.floor(progress*3+1e-7));
+  $('q-count').textContent=`×${fam} · ${REALMS[fam].petName}`;
+  $('battle-health-title').textContent=`${stages} of 3 stages restored`;
+  $('battle-hp').style.width=`${progress*100}%`;
+  const track=$('battle-hp').parentElement;
+  track.setAttribute('role','progressbar');track.setAttribute('aria-label','Realm restoration');
+  track.setAttribute('aria-valuemin','0');track.setAttribute('aria-valuemax',String(b.maxHP));track.setAttribute('aria-valuenow',String(done));
+  track.setAttribute('aria-valuetext',`${stages} of 3 stages restored. ${done} of ${b.maxHP} discoveries complete.`);
 }

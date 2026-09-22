@@ -1,5 +1,5 @@
 /* Times Quest service worker — offline-first app shell */
-const CACHE = 'times-quest-v86';
+const CACHE = 'times-quest-v88';
 const SQUARESTONE_ART=['landscape','ruins','foundation','walls','restored','celebrated'].map(name=>`./art/realm/squarestone/${name}-v1.webp`);
 const PAINTED_REALM_ART=Object.fromEntries(Array.from({length:13},(_,f)=>[f,f===4?[]:['ruins','foundation','walls','restored','celebrated','landscape'].map(stage=>`./art/realm/scenes/x${f}/${stage}-${stage==='landscape'?'v1':'v2'}.webp`)]));
 const CAMP_3D = ['./camp-v2-scene.js','./camp-world-details.js','./vendor/three/three.module.min.js','./vendor/three/three.core.min.js'];
@@ -9,6 +9,7 @@ const CORE = [
   './camp-v2.js',
   './camp-recovery.js',
   './camp-guide.js',
+  './camp-goals.js',
   './camp-v2.css',
   './camp-content.js',
   './math-visuals.js',
@@ -20,6 +21,10 @@ const CORE = [
   './opening.js',
   './guardian-chapters.js',
   './guardian-ui.js',
+  './nine-lesson.js',
+  './nine-lesson-ui.js',
+  './nine-lesson.css',
+  './guardian-encounter.css',
   './squarestone-scene.js',
   './squarestone-scene.css',
   './realm-scenes.js',

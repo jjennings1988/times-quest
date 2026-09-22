@@ -25,14 +25,15 @@ async function main(){
     await new Promise(r=>setTimeout(r,20));
     for(let f=1;f<=12;f++){
       ev(`quiz=null;state=defaultState();migrateState();state.journey.routes=[${f}];`);w.beginLesson(f);
-      check(`chapter ${f} renders its own scene and interactive groups`,$('journey-body').textContent.includes(Chapters.chapters[f].title)&&!!$('journey-body').querySelector('.squarestone-scene'));
+      check(`chapter ${f} renders its own scene and interactive groups`,$('journey-body').textContent.includes(Chapters.chapters[f].title)&&!!$('journey-body').querySelector(f===9?'.nine-workshop':'.squarestone-scene'));
       w.startGuardianTry();check(`chapter ${f} cannot skip directly to independent check`,ev('quiz')===null);
-      for(const target of Chapters.chapters[f].targets){
+      if(f===9){w.nineAction('rack',0);w.nineAction('reason','group');w.nineAction('next');w.nineAction('predict',7);w.nineAction('rack',3);w.nineAction('total',63);w.nineAction('next');}
+      else for(const target of Chapters.chapters[f].targets){
         let guard=0;while(ev('state.journey.current.chapter.groups')!==target&&guard++<20)w.changeGuardianGroups(ev('state.journey.current.chapter.groups')<target?'add':'remove');
         w.advanceGuardianLesson();
       }
       const saved=JSON.stringify(ev('state'));ev(`state=JSON.parse(${JSON.stringify(saved)});migrateState()`);w.resumeLesson();
-      check(`chapter ${f} reload keeps completed manipulation and comparison`,$('journey-body').textContent.includes('Same strategy. A new amount.')&&$('journey-body').querySelectorAll('.chapter-model').length===2);
+      check(`chapter ${f} reload keeps completed manipulation and comparison`,$('journey-body').textContent.includes('Same strategy. A new amount.')&&(f===9?!!$('nine-each'):$('journey-body').querySelectorAll('.chapter-model').length===2));
       w.startGuardianTry();check(`chapter ${f} starts four untimed transfer questions`,ev('quiz.queue.length')===4&&!ev('quiz.timed'));
       check(`chapter ${f} teaching does not award a challenge star`,!ev(`state.realms[${f}].trial`));
       ev(`quiz=null;state.realms[${f}].trial=true;`);w.startBoss(f);

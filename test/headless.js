@@ -947,7 +947,8 @@ async function boot(saveObj, seededStorage={}) {
      $('results-body').innerHTML.slice(0,160));
   ok('reveal has a place-it button', $('results-body').innerHTML.includes('goPlace('));
   ok('first boss defeat reveals newly unlocked blueprints',
-     $('results-body').textContent.includes('New camp blueprints') && $('results-body').textContent.includes('Canvas Tent'));
+     $('results-body').querySelector('.blueprint-reveal')?.textContent.includes('New camp blueprints') &&
+     $('results-body').querySelector('.blueprint-reveal')?.textContent.includes(ev('CampV2.content.milestones[Math.max(0,campMasteredCount()-1)]')));
   ok('first boss defeat pays an incremental realm-star reward instead of a flat 50-gem bonus',
      $('results-body').textContent.includes('realm milestone gems') && !$('results-body').textContent.includes('+50 boss bonus'));
   win.goPlace('trophy-x2');
@@ -1201,7 +1202,7 @@ async function boot(saveObj, seededStorage={}) {
   ok('standalone viewport synchronization can use the full device height',
      source.includes('syncAppViewportHeight') && source.includes('--app-height') && source.includes('display-mode: standalone'));
   ok('camp dock and sheet share the corrected bottom safe-area anchor',
-     source.includes('bottom:max(4px,env(safe-area-inset-bottom))') && source.includes('bottom:calc(max(4px,env(safe-area-inset-bottom)) + 70px)'));
+     source.includes('bottom:max(4px,var(--safe-bottom))') && source.includes('bottom:calc(max(4px,var(--safe-bottom)) + 70px)'));
   ok('service-worker updates wait for the explicit in-app update action',
      sw.includes("type === 'SKIP_WAITING'") && sw.indexOf('self.skipWaiting()')>sw.indexOf("addEventListener('message'") && source.includes('applyAppUpdate'));
   ok('system reduced motion controls JS motion as well as CSS animation',

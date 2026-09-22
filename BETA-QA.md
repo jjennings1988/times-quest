@@ -20,6 +20,57 @@ The GitHub Actions workflow runs the same suite on every pull request and on pus
 | Android Chrome / installed PWA | Portrait | Install, offline launch, same core flows | Pending |
 | Desktop Chrome | Responsive 390×844 and 820×1180 | Console clean, keyboard input, focus and dialogs | Pending |
 
+## Connected adventure regression (0.21.0-beta.1)
+
+See [LEARNING-CONNECTIONS.md](LEARNING-CONNECTIONS.md) for behavior and save compatibility.
+
+- Guardian: one prompt and one forward restoration bar; correct answers move it
+  toward three restored stages. Equal groups expand without hiding the exit or
+  making the keypad unreachable. Check ×0, ×4, ×9 and ×12, then ordinary practice
+  and Siege to catch leaked layout or accessibility state.
+- Camp goal: choose an unlocked home renovation, a locked Stone Keep, a stored kit,
+  a path and a wall. Check exact missing supplies, earned kit delivery, and that
+  Preview/Cancel never charge. Confirm once, then verify the saved object ID and
+  wallet after reload. A locked goal should open a realm; missing supplies should
+  show gathering actions.
+- ×9 Learn: move a rack, answer “Just one lantern,” then explain a whole group.
+  Predict one incorrectly, then seven; try 69 before 63. Verify coaching without
+  hearts lost, explore 0 and 12, and put a rack back. Resume mid-lesson, then try the
+  four independent questions. Guided activity must not award mastery evidence.
+- Repeat with Calm on, keyboard navigation, and phone landscape. Check Map and
+  all controls against status bar, home indicator and an open software keyboard.
+- After accepting the update, relaunch offline and repeat these three flows.
+
+Physical Safari/PWA, VoiceOver and child observation remain release checks.
+
+## Safe-area navigation regression (0.20.4-beta.1)
+
+The guardian stylesheet previously replaced the quiz header's safe-area padding
+with 10px. Camp shortcuts used independent absolute top offsets, allowing Camp
+help to cover the back button when the status-bar inset pushed the header down.
+Camp now reserves separate grid rows for its header/shortcuts, world controls and
+dock. Panels scroll inside the remaining world space. Short landscape screens
+place panels alongside navigation. Quiz exits have a minimum 44×44 touch target.
+
+Browser verification on an isolated profile origin used simulated 59px top and
+34px bottom insets, and 59px side/21px bottom insets in landscape:
+
+- 390×844, 320×568, 844×390 and 1024×768: all 13 camp navigation/camera/dock
+  button centers passed hit testing; none were covered by other controls.
+- Camp help and My land remained scrollable; the back button and dock stayed
+  outside the panel. Back to Adventure returned to the map.
+- Guardian exit was below the status bar and remained tappable after scrolling
+  to the last keypad row. Leaving returned to the realm.
+- Practice exit returned to the map on the tablet viewport.
+- Full automated suite: 1,587 checks. Existing saves and camp controls preserved.
+
+Before release, repeat on **physical iPhone Safari and installed PWA**: portrait,
+landscape, after background/relaunch, and with larger text. Check map, lesson and
+profile navigation too. Long rounds may scroll; the exit must stay visible. On
+small phones, scroll Camp help to its final action and confirm Explore still
+closes it. Confirm the build shown in Parents is 0.20.4-beta.1 or newer. Browser
+inset simulation does not establish the actual inset values reported by iOS.
+
 ## Core journey
 
 1. Create a normal child profile. Verify eight initial explorer choices, More explorers, selected-state announcement, and a reachable Begin quest action.

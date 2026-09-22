@@ -131,6 +131,7 @@ function renderQuestionContext(q){
   $('q-text').focus({preventScroll:true});
   $('streak-flame').classList.remove('show');$('streak-flame').hidden=!quiz.timed;
   renderEncounter(q);
+  updateGuardianEncounterProgress();
   const companion=state.campMonsterFavorites[0];
   if(companion){const [a,b]=companion.split('*').map(Number),friend=monsterIdentity(a,b);$('question-context').insertAdjacentHTML('beforeend',`<button class="lesson-companion" aria-label="Visit ${escapeHtml(friend.name)} in your Field Guide" onclick="openMonsterCard(${a},${b})">${monsterVisual(a,b)}</button>`);}
 }
@@ -144,7 +145,18 @@ function encounterQuestions(fam,count){
   });
 }
 function renderEncounter(q){
-  const host=$('encounter-task');host.innerHTML='';if(!q.encounter)return;
+  const host=$('encounter-task');host.innerHTML='';
+  if(quiz.mode==='boss'){
+    const prompt=escapeHtml(q.prompt||`Use what you know about ${q.a} equal groups. How many altogether?`);
+    const groups=`<div class="encounter-sections" aria-label="${q.a} equal groups">${Array.from({length:q.a},()=>`<span>${q.encounter==='missing'?'?':q.b}</span>`).join('')||'<span>No groups · no supplies</span>'}</div>`;
+    let support='';
+    if(q.encounter==='split'&&q.a>1){
+      const left=Math.floor(q.a/2),parts=LearningJourney.parts(q.a),choice=parts&&parts[1]>0?parts:[left,q.a-left];
+      support=`<div class="encounter-options"><button onclick="chooseEncounterSplit(${choice[0]},${choice[1]})">${q.a===2?'Double the amount':`${choice[0]} groups + ${choice[1]} groups`}</button><button onclick="chooseEncounterSplit(${q.a-1},1,true)">${q.a===2?'See two equal groups':`${q.a-1} groups + 1 group`}</button></div><div id="encounter-model" aria-live="polite"></div>`;
+    }else if(q.encounter){support=`<details class="encounter-groups"><summary>See the equal groups</summary>${groups}</details>`;}
+    host.innerHTML=`<p class="encounter-prompt">${prompt}</p>${support}`;return;
+  }
+  if(!q.encounter)return;
   if(q.encounter==='split'&&q.a>1){
     const left=Math.floor(q.a/2),p=LearningJourney.parts(q.a),choice=p&&p[1]>0?p:[left,q.a-left];
     host.innerHTML=`<div class="encounter-title">Choose your strategy</div><div class="encounter-options"><button onclick="chooseEncounterSplit(${choice[0]},${choice[1]})">${q.a===2?'Double the amount':`${choice[0]} groups + ${choice[1]} groups`}</button><button onclick="chooseEncounterSplit(${q.a-1},1,true)">${q.a===2?'See two equal groups':`${q.a-1} groups + 1 group`}</button></div><div id="encounter-model" aria-live="polite">Both routes work. Which helps you?</div>`;
@@ -158,12 +170,45 @@ function chooseEncounterSplit(a,b,showGroups=false){
   q.strategyUsed=true;
   $('encounter-model').innerHTML=showGroups&&q.a===2?`<div class="encounter-sections"><span>${q.b} supplies</span><span>${q.b} supplies</span></div><p>Two matching amounts. How many altogether?</p>`:`<div class="encounter-parts"><span>${a} × ${q.b}</span><b>+</b><span>${b} × ${q.b}</span></div><p>Find each part, then add them together.</p>`;
 }
-function campGoalMarkup(){
-  const choices=['gate','canvas','feeder'],type=choices.includes(state.journey.goal)?state.journey.goal:'gate',item=CampV2.catalog[type],camp=state.campV2;
-  const owned=!!camp&&(camp.objects.some(o=>o.type===type)||(camp.inventory[type]||0)>0);
-  return `<section class="camp-goal-preview"><h3>${owned?'Ready to build':'My next camp idea'} · ${item.name}</h3><p>${owned?'You own this piece. Find it in your Willowbrook backpack.':`${item.price} gems · ${item.wood||0} wood${item.need?' · '+item.need+' completed Realm Challenges':''}. Learning brings supplies; there is no speed requirement.`}</p><div class="goal-choices">${choices.map(id=>`<button onclick="pinCampGoal('${id}')" aria-pressed="${id===type}">${CampV2.catalog[id].name}</button>`).join('')}</div></section>`;
+function campGoalView(type=state.journey.goal){
+  let camp=state.campV2||(state.journey.openingEdition?CampV2.freshExpedition():CampV2.fresh());
+  if(!CampV2.validSave(camp))return {recoveryRequired:true};
+  // Project the same delivery as entering camp, without claiming or spending it.
+  camp=CampV2.syncProgress(camp,campMasteredCount(),isCampTester());
+  const pending=state.journey.pendingGems||0;
+  if(pending)camp=CampV2.awardLearning(camp,pending);
+  const inventory={...camp.inventory};
+  if(state.journey.zeroKit&&!state.journey.zeroKitDelivered)inventory.trailtent=(inventory.trailtent||0)+1;
+  if(state.journey.riverKit&&!state.journey.riverKitDelivered)for(const [id,count] of [['path',6],['deck',2],['lantern',1]])inventory[id]=(inventory[id]||0)+count;
+  return {...CampGoals.view(CampV2.catalog,{...camp,inventory},type),pendingGems:pending};
 }
-function pinCampGoal(id){if(!['gate','canvas','feeder'].includes(id))return;state.journey.goal=id;saveState();const host=$('result-camp-goal');if(host)host.innerHTML=campGoalMarkup();toast('Your camp idea is saved');}
+function campGoalMarkup(){
+  const g=campGoalView();
+  if(g.recoveryRequired)return '<section class="camp-goal-preview"><h3>Your camp save needs a check</h3><p>Your saved world has been kept. Learning can continue while you recover camp.</p><button class="btn secondary" onclick="visitCamp()">Open camp recovery</button></section>';
+  const title=g.constructing?'Being assembled':g.placed?'Built in my camp':g.kit?'Kit in my backpack':g.ready?'Ready to preview':'My next camp project';
+  const needs=g.resources.filter(r=>r.need).map(r=>'<li><strong>'+Math.min(r.have,r.need)+' / '+r.need+'</strong> '+r.key+(r.missing?' · '+r.missing+' more':' · ready')+'</li>').join('');
+  const progress=g.remaining?g.remaining+' more Realm Challenge'+(g.remaining===1?'':'s')+' to unlock this blueprint.':g.kit?'Your owned kit is free to place.':g.placed?'Your project is part of your world. Choose another whenever you like.':'Blueprint unlocked. No speed requirement.';
+  return '<section class="camp-goal-preview" data-camp-goal="'+g.type+'"><small>'+title+'</small><h3>'+g.item.name+'</h3><p>'+progress+'</p>'+(needs?'<ul class="goal-supplies">'+needs+'</ul>':'')+(g.pendingGems&&!g.placed&&!g.kit?'<p class="goal-note">Includes supplies waiting from your learning rounds.</p>':'')+'<p>'+g.item.w+' × '+g.item.h+' spaces'+(g.predecessor&&!g.placed?' · can renovate your '+CampV2.catalog[g.predecessor.type].name:'')+'</p><div class="goal-actions"><button class="btn secondary" onclick="'+(g.remaining?'openGoalRealm()':'openPinnedCampGoal()')+'">'+(g.placed?'Visit my '+g.item.name:g.ready?'Preview my project':g.remaining?'Explore my next realm':'Find supplies at camp')+'</button><button class="btn ghost" onclick="showCampGoalPicker()">Choose a project</button></div></section>';
+}
+function showCampGoalPicker(){
+  if(campGoalView().recoveryRequired){visitCamp();return;}
+  const chosen=CampGoals.normalize(CampV2.catalog,state.journey.goal);
+  openQuestCard('<section class="journey-card goal-picker"><h2>What would you love to build?</h2><p>Choose any blueprint, including a future one. Changing your goal is free.</p>'+CampGoals.groups(CampV2.catalog).map(group=>'<details '+(group.ids.includes(chosen)?'open':'')+'><summary>'+group.name+'</summary><div class="goal-projects">'+group.ids.map(id=>{const g=campGoalView(id);return '<button data-goal="'+id+'" onclick="pinCampGoal(this.dataset.goal)" aria-pressed="'+(id===chosen)+'"><strong>'+g.item.name+'</strong><span>'+g.item.w+' × '+g.item.h+' spaces · '+(g.placed?'Built':g.kit?'Kit owned':g.remaining?g.remaining+' more challenge'+(g.remaining===1?'':'s'):g.ready?'Ready to build':'Gather supplies')+'</span></button>';}).join('')+'</div></details>').join('')+'</section>');
+}
+function pinCampGoal(id){
+  if(!CampGoals.valid(CampV2.catalog,id))return;
+  state.journey.goal=id;saveState();closeQuestCard();
+  document.querySelectorAll('[data-camp-goal]').forEach(el=>{el.outerHTML=campGoalMarkup();});
+  toast(CampV2.catalog[id].name+' is your new project');
+}
+function openGoalRealm(){
+  closeQuestCard();const family=unlockedFamilies().find(f=>!state.realms[f]?.trial)??currentFamily();
+  showScreen('screen-map');openRealm(family);
+}
+function openPinnedCampGoal(){
+  closeQuestCard();const type=CampGoals.normalize(CampV2.catalog,state.journey.goal);
+  visitCamp();campV2Session?.openGoal(type);
+}
 function guardianLetter(){
   const fam=Object.keys(state.journey.lessons).map(Number).find(f=>state.journey.lessons[f].day<dateKey());
   if(fam===undefined)return '';

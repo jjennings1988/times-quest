@@ -1,0 +1,22 @@
+/* Guardian encounter layout has one owner. Siege retains its existing battle UI. */
+#screen-quiz.guardian-active #question-context{display:none}
+#screen-quiz.guardian-active .battle-stage{display:flex;flex-direction:column;height:auto!important;min-height:200px!important;flex:0 0 auto}
+#screen-quiz.guardian-active .battle-hud{position:relative;inset:auto;flex:none;display:grid;grid-template-columns:minmax(0,1fr) 118px;align-items:center;gap:12px;padding:9px 12px!important;background:#173e37f5;min-height:76px}
+#screen-quiz.guardian-active .battle-kicker,#screen-quiz.guardian-active .battle-phase,#screen-quiz.guardian-active #battle-hp-copy{display:none}
+#screen-quiz.guardian-active .battle-name{font-size:16px!important;line-height:1.15}
+#screen-quiz.guardian-active .battle-lives{height:auto;font-size:13px;margin-top:3px}
+#screen-quiz.guardian-active .battle-health-label{font-size:11px;letter-spacing:0;text-transform:none;line-height:1.25;margin-bottom:7px}
+#screen-quiz.guardian-active .battle-health{height:12px;position:relative}
+#screen-quiz.guardian-active .battle-health:after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 32.5%,#173e37 32.5% 34%,transparent 34% 65.8%,#173e37 65.8% 67.3%,transparent 67.3%);pointer-events:none}
+#screen-quiz.guardian-active #battle-hp{background:linear-gradient(90deg,#8ed5b1,#ffe194)}
+#screen-quiz.guardian-active #guardian-restoration-scene{position:relative;inset:auto;height:124px;flex:none;width:100%}
+#screen-quiz.guardian-active .ss-encounter figcaption{display:none}
+#screen-quiz.guardian-active #encounter-task{margin:8px 12px 3px;padding:10px 13px;background:#fff5df;text-align:left}
+#screen-quiz.guardian-active #encounter-task .encounter-prompt{font:700 15px/1.4 var(--body);margin:0}
+#screen-quiz.guardian-active .encounter-groups summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font:800 12px var(--body);color:#345c50}
+#screen-quiz.guardian-active .encounter-groups summary:before{content:'＋';margin-right:6px}.encounter-groups[open] summary:before{content:'−'!important}
+#screen-quiz.guardian-active .encounter-options{margin:8px 0 0}.encounter-options button{min-height:44px}
+#screen-quiz.guardian-active #encounter-model:empty{display:none}
+#screen-quiz.guardian-active #streak-flame[hidden]{display:none}
+#screen-quiz.guardian-active .battle-announcement{display:none}
+@media(min-width:800px){#screen-quiz.guardian-active #guardian-restoration-scene{height:154px}}
