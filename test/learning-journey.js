@@ -47,7 +47,7 @@ async function main(){
     const needed=ev('quiz.battle.maxHP');let count=0;
     while(ev('quiz')&&count++<30)await answer(ev('quiz.queue[quiz.idx].ans'));
     check('encounter ends on the exact success that empties threat strength',count===needed&&ev('quiz')===null&&ev('state.realms[2].conquered'));
-    check('victory counter reaches the same target as the battle', $('q-count').textContent===`${needed} / ${needed} restored`);
+    check('restoration fills all three stages at the exact victory target', $('battle-health-title').textContent==='3 of 3 stages restored'&&$('battle-hp').parentElement.getAttribute('aria-valuenow')===String(needed));
     w.showScreen('screen-map');check('inactive battle leaves the accessibility tree',w.getComputedStyle($('screen-quiz')).display==='none');
     check('Double River opens the next adventure route',ev('unlockedFamilies().includes(5)')&&ev('currentFamily()')===5);
     const pending=ev('state.journey.pendingGems');ev('state.campV2=CampV2.fresh()');const campBefore=ev('state.campV2.gems');w.deliverCampGrants();
