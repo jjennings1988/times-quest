@@ -1,6 +1,8 @@
 /* Painted realm pilot. Visual state is derived from existing learning saves. */
 (function(root){
   'use strict';
+  const registration=typeof module!=='undefined'&&module.exports?require('./realm-scene-registration'):root.RealmSceneRegistration;
+  function placement(f,stage){const p=registration[f][stage];return 'left:'+p.left+'%;top:'+p.top+'%;width:'+(100*p.scale)+'%;height:'+(100*p.scale)+'%';}
   const base='art/realm/squarestone/';
   const stages=['ruins','foundation','walls','restored','celebrated'];
   const titles=['A watchtower waiting for you','The workshop is ready','The walls stand strong','The valley beacon shines','A three-star celebration'];
@@ -22,16 +24,16 @@
       caption:context==='encounter'?['Find the fallen stones','Foundation repaired · 1 of 3','Walls rebuilt · 2 of 3','Beacon lit · 3 of 3'][index]:context==='lesson'&&index<3?'Workshop preview · practise doubling twice':titles[index]};
   }
   function markup(v){
-    return `<figure class="squarestone-scene ss-${v.context} ss-${v.stage}" data-stage="${v.stage}" aria-label="Squarestone Valley: ${v.caption}">
+    return `<figure class="squarestone-scene ss-${v.context} ss-${v.stage}" data-scene data-family="4" data-context="${v.context}" data-stage="${v.stage}" aria-label="Squarestone Valley: ${v.caption}">
       <div class="ss-world" aria-hidden="true">
         <img class="ss-landscape" src="${asset('landscape')}" width="1280" height="853" alt="" decoding="async" onerror="this.hidden=true">
         <div class="ss-waterlight"></div><div class="ss-atmosphere"></div>
-        <div class="ss-tower"><img class="ss-tower-art" src="${v.src}" width="768" height="768" alt="" decoding="async" onerror="this.hidden=true">${v.lit?'<span class="ss-beacon-glow"></span>':''}</div>
+        <div class="ss-tower" data-landmark><img class="ss-tower-art scene-layer" style="${placement(4,v.stage)}" src="${v.src}" width="768" height="768" alt="" decoding="async" onerror="this.hidden=true;this.closest('figure').dataset.artError='true'"><span class="ss-beacon-glow"></span></div>
         <img class="ss-boulder" src="art/realm/pet-4.png" width="512" height="512" alt="" decoding="async">
-        ${v.stage==='celebrated'?'<div class="ss-motes"><i></i><i></i><i></i></div>':''}
+        <div class="ss-motes"><i></i><i></i><i></i></div>
         <div class="ss-vignette"></div>
       </div>
-      <figcaption><span class="ss-location">BOULDER’S WATCHTOWER</span><strong>${v.caption}</strong></figcaption>
+      <figcaption><span class="ss-location">BOULDER’S WATCHTOWER</span><strong>${v.caption}</strong><small class="scene-art-status">Artwork unavailable. Your progress is safe.</small></figcaption>
     </figure>`;
   }
   const api={view,markup,asset,stages,assets:[asset('landscape'),...stages.map(asset)]};

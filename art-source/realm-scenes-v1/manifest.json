@@ -1,0 +1,578 @@
+[
+  {
+    "family": 0,
+    "stage": "ruins",
+    "path": "art/realm/scenes/x0/ruins-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 79524
+  },
+  {
+    "family": 0,
+    "stage": "foundation",
+    "path": "art/realm/scenes/x0/foundation-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 87304
+  },
+  {
+    "family": 0,
+    "stage": "walls",
+    "path": "art/realm/scenes/x0/walls-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 86474
+  },
+  {
+    "family": 0,
+    "stage": "restored",
+    "path": "art/realm/scenes/x0/restored-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 90152
+  },
+  {
+    "family": 0,
+    "stage": "celebrated",
+    "path": "art/realm/scenes/x0/celebrated-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 90904
+  },
+  {
+    "family": 0,
+    "stage": "landscape",
+    "path": "art/realm/scenes/x0/landscape-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 81648
+  },
+  {
+    "family": 1,
+    "stage": "ruins",
+    "path": "art/realm/scenes/x1/ruins-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 101012
+  },
+  {
+    "family": 1,
+    "stage": "foundation",
+    "path": "art/realm/scenes/x1/foundation-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 99422
+  },
+  {
+    "family": 1,
+    "stage": "walls",
+    "path": "art/realm/scenes/x1/walls-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 102388
+  },
+  {
+    "family": 1,
+    "stage": "restored",
+    "path": "art/realm/scenes/x1/restored-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 102068
+  },
+  {
+    "family": 1,
+    "stage": "celebrated",
+    "path": "art/realm/scenes/x1/celebrated-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 103524
+  },
+  {
+    "family": 1,
+    "stage": "landscape",
+    "path": "art/realm/scenes/x1/landscape-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 98678
+  },
+  {
+    "family": 2,
+    "stage": "ruins",
+    "path": "art/realm/scenes/x2/ruins-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 97346
+  },
+  {
+    "family": 2,
+    "stage": "foundation",
+    "path": "art/realm/scenes/x2/foundation-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 96032
+  },
+  {
+    "family": 2,
+    "stage": "walls",
+    "path": "art/realm/scenes/x2/walls-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 95714
+  },
+  {
+    "family": 2,
+    "stage": "restored",
+    "path": "art/realm/scenes/x2/restored-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 95706
+  },
+  {
+    "family": 2,
+    "stage": "celebrated",
+    "path": "art/realm/scenes/x2/celebrated-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 96522
+  },
+  {
+    "family": 2,
+    "stage": "landscape",
+    "path": "art/realm/scenes/x2/landscape-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 94588
+  },
+  {
+    "family": 3,
+    "stage": "ruins",
+    "path": "art/realm/scenes/x3/ruins-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 90964
+  },
+  {
+    "family": 3,
+    "stage": "foundation",
+    "path": "art/realm/scenes/x3/foundation-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 91330
+  },
+  {
+    "family": 3,
+    "stage": "walls",
+    "path": "art/realm/scenes/x3/walls-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 90970
+  },
+  {
+    "family": 3,
+    "stage": "restored",
+    "path": "art/realm/scenes/x3/restored-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 90842
+  },
+  {
+    "family": 3,
+    "stage": "celebrated",
+    "path": "art/realm/scenes/x3/celebrated-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 93808
+  },
+  {
+    "family": 3,
+    "stage": "landscape",
+    "path": "art/realm/scenes/x3/landscape-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 84522
+  },
+  {
+    "family": 5,
+    "stage": "ruins",
+    "path": "art/realm/scenes/x5/ruins-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 93350
+  },
+  {
+    "family": 5,
+    "stage": "foundation",
+    "path": "art/realm/scenes/x5/foundation-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 93164
+  },
+  {
+    "family": 5,
+    "stage": "walls",
+    "path": "art/realm/scenes/x5/walls-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 93418
+  },
+  {
+    "family": 5,
+    "stage": "restored",
+    "path": "art/realm/scenes/x5/restored-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 93812
+  },
+  {
+    "family": 5,
+    "stage": "celebrated",
+    "path": "art/realm/scenes/x5/celebrated-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 99144
+  },
+  {
+    "family": 5,
+    "stage": "landscape",
+    "path": "art/realm/scenes/x5/landscape-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 92064
+  },
+  {
+    "family": 6,
+    "stage": "ruins",
+    "path": "art/realm/scenes/x6/ruins-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 105426
+  },
+  {
+    "family": 6,
+    "stage": "foundation",
+    "path": "art/realm/scenes/x6/foundation-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 106192
+  },
+  {
+    "family": 6,
+    "stage": "walls",
+    "path": "art/realm/scenes/x6/walls-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 104096
+  },
+  {
+    "family": 6,
+    "stage": "restored",
+    "path": "art/realm/scenes/x6/restored-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 105012
+  },
+  {
+    "family": 6,
+    "stage": "celebrated",
+    "path": "art/realm/scenes/x6/celebrated-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 107722
+  },
+  {
+    "family": 6,
+    "stage": "landscape",
+    "path": "art/realm/scenes/x6/landscape-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 100622
+  },
+  {
+    "family": 7,
+    "stage": "ruins",
+    "path": "art/realm/scenes/x7/ruins-v1.webp",
+    "width": 766,
+    "height": 339,
+    "bytes": 90416
+  },
+  {
+    "family": 7,
+    "stage": "foundation",
+    "path": "art/realm/scenes/x7/foundation-v1.webp",
+    "width": 766,
+    "height": 339,
+    "bytes": 83190
+  },
+  {
+    "family": 7,
+    "stage": "walls",
+    "path": "art/realm/scenes/x7/walls-v1.webp",
+    "width": 766,
+    "height": 340,
+    "bytes": 84836
+  },
+  {
+    "family": 7,
+    "stage": "restored",
+    "path": "art/realm/scenes/x7/restored-v1.webp",
+    "width": 766,
+    "height": 340,
+    "bytes": 82320
+  },
+  {
+    "family": 7,
+    "stage": "celebrated",
+    "path": "art/realm/scenes/x7/celebrated-v1.webp",
+    "width": 766,
+    "height": 339,
+    "bytes": 87580
+  },
+  {
+    "family": 7,
+    "stage": "landscape",
+    "path": "art/realm/scenes/x7/landscape-v1.webp",
+    "width": 766,
+    "height": 339,
+    "bytes": 83330
+  },
+  {
+    "family": 8,
+    "stage": "ruins",
+    "path": "art/realm/scenes/x8/ruins-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 95034
+  },
+  {
+    "family": 8,
+    "stage": "foundation",
+    "path": "art/realm/scenes/x8/foundation-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 94222
+  },
+  {
+    "family": 8,
+    "stage": "walls",
+    "path": "art/realm/scenes/x8/walls-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 95794
+  },
+  {
+    "family": 8,
+    "stage": "restored",
+    "path": "art/realm/scenes/x8/restored-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 95062
+  },
+  {
+    "family": 8,
+    "stage": "celebrated",
+    "path": "art/realm/scenes/x8/celebrated-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 96976
+  },
+  {
+    "family": 8,
+    "stage": "landscape",
+    "path": "art/realm/scenes/x8/landscape-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 93282
+  },
+  {
+    "family": 9,
+    "stage": "ruins",
+    "path": "art/realm/scenes/x9/ruins-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 97882
+  },
+  {
+    "family": 9,
+    "stage": "foundation",
+    "path": "art/realm/scenes/x9/foundation-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 93574
+  },
+  {
+    "family": 9,
+    "stage": "walls",
+    "path": "art/realm/scenes/x9/walls-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 95958
+  },
+  {
+    "family": 9,
+    "stage": "restored",
+    "path": "art/realm/scenes/x9/restored-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 93474
+  },
+  {
+    "family": 9,
+    "stage": "celebrated",
+    "path": "art/realm/scenes/x9/celebrated-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 96568
+  },
+  {
+    "family": 9,
+    "stage": "landscape",
+    "path": "art/realm/scenes/x9/landscape-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 92390
+  },
+  {
+    "family": 10,
+    "stage": "ruins",
+    "path": "art/realm/scenes/x10/ruins-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 101878
+  },
+  {
+    "family": 10,
+    "stage": "foundation",
+    "path": "art/realm/scenes/x10/foundation-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 96546
+  },
+  {
+    "family": 10,
+    "stage": "walls",
+    "path": "art/realm/scenes/x10/walls-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 99454
+  },
+  {
+    "family": 10,
+    "stage": "restored",
+    "path": "art/realm/scenes/x10/restored-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 99318
+  },
+  {
+    "family": 10,
+    "stage": "celebrated",
+    "path": "art/realm/scenes/x10/celebrated-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 104178
+  },
+  {
+    "family": 10,
+    "stage": "landscape",
+    "path": "art/realm/scenes/x10/landscape-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 96476
+  },
+  {
+    "family": 11,
+    "stage": "ruins",
+    "path": "art/realm/scenes/x11/ruins-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 92368
+  },
+  {
+    "family": 11,
+    "stage": "foundation",
+    "path": "art/realm/scenes/x11/foundation-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 89316
+  },
+  {
+    "family": 11,
+    "stage": "walls",
+    "path": "art/realm/scenes/x11/walls-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 93892
+  },
+  {
+    "family": 11,
+    "stage": "restored",
+    "path": "art/realm/scenes/x11/restored-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 88302
+  },
+  {
+    "family": 11,
+    "stage": "celebrated",
+    "path": "art/realm/scenes/x11/celebrated-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 90228
+  },
+  {
+    "family": 11,
+    "stage": "landscape",
+    "path": "art/realm/scenes/x11/landscape-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 84400
+  },
+  {
+    "family": 12,
+    "stage": "ruins",
+    "path": "art/realm/scenes/x12/ruins-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 91532
+  },
+  {
+    "family": 12,
+    "stage": "foundation",
+    "path": "art/realm/scenes/x12/foundation-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 88974
+  },
+  {
+    "family": 12,
+    "stage": "walls",
+    "path": "art/realm/scenes/x12/walls-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 93520
+  },
+  {
+    "family": 12,
+    "stage": "restored",
+    "path": "art/realm/scenes/x12/restored-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 96916
+  },
+  {
+    "family": 12,
+    "stage": "celebrated",
+    "path": "art/realm/scenes/x12/celebrated-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 95704
+  },
+  {
+    "family": 12,
+    "stage": "landscape",
+    "path": "art/realm/scenes/x12/landscape-v1.webp",
+    "width": 625,
+    "height": 416,
+    "bytes": 89936
+  }
+]

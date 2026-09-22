@@ -885,6 +885,8 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
 <link rel="stylesheet" href="journey.css">
 <link rel="stylesheet" href="opening.css">
 <link rel="stylesheet" href="squarestone-scene.css">
+<link rel="stylesheet" href="realm-scenes.css">
+<link rel="stylesheet" href="scene-transitions.css">
 </head>
 <body>
 <div id="app">
@@ -1057,7 +1059,10 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
 <script src="opening.js"></script>
 <script src="guardian-chapters.js"></script>
 <script src="guardian-ui.js"></script>
+<script src="realm-scene-registration.js"></script>
+<script src="scene-transitions.js"></script>
 <script src="squarestone-scene.js"></script>
+<script src="realm-scenes.js"></script>
 <script>
 /* =====================================================
    TIMES QUEST — game engine
@@ -1438,7 +1443,7 @@ const RATING_LABEL = ["undiscovered","discovered","befriending","befriending","c
    Defaults below reproduce the game's original behaviour exactly, so an
    existing save that predates settings plays identically until something
    is changed on purpose. */
-const APP_VERSION = '0.20.1-beta.1';
+const APP_VERSION = '0.20.3-beta.1';
 const FAST_MS = 4000;          // default bonus window
 const WINDOW_CHOICES = [3000,4000,6000,8000];
 const ROUND_CHOICES  = [8,12,16];
@@ -2181,11 +2186,11 @@ function openRealm(fam){
             : {label:'Continue my adventure',sub:'All three stars earned here. Your next destination is waiting.',fn:'doContinue()',icon:'map'}
           : {label:'Help my guardian · star 2',sub:'Complete the encounter to open the next realm.',fn:`startBoss(${fam})`,icon:'boss'};
   $('realm-title-top').textContent=r.name;
-  $('realm-body').innerHTML=`
+  SceneTransitions.render($('realm-body'),`
     <section class="realm-hero illustrated-realm">
       <h2>${r.name}</h2><div class="fam">The ×${fam} family · ${r.petName}</div>
       ${illustratedGuardian(fam)}
-      ${fam===4?squarestoneStory():''}
+      ${paintedRealmStory(fam)}
       <div class="realm-guide"><div><div class="hello">Meet ${r.petName}</div><p>${lore.intro}</p><button class="guardian-card-button" onclick="openGuardianCard(${fam})">View guardian Quest Card</button></div></div>
     </section>
     ${realmProgressGuide(fam)}
@@ -2200,7 +2205,7 @@ function openRealm(fam){
       <button class="mode-card" onclick="startPractice(${fam})">${icon('target')}<span class="nm">Practice</span><span class="sub">Warm-up and today's facts</span></button>
       <button class="mode-card ${ready?'':'locked'}" ${ready?'':'disabled'} onclick="startTrial(${fam})">${icon('trial')}<span class="nm">Realm Challenge</span><span class="sub">${trialDone?'Replay for practice · star 1 already earned':ready?`${challengeNeeds()} of ${challengeLength()} on your own · star 1`:'Learn with your guardian first'}</span></button>
       <button class="mode-card ${trialDone?'':'locked'}" ${trialDone?'':'disabled'} onclick="startBoss(${fam})">${icon('boss')}<span class="nm">Guardian encounter</span><span class="sub">${trialDone?(conquered?'Replay for fun · star 2 already earned':'Restore the realm for star 2'):'Earn star 1 first'}</span></button>
-    </div>`;
+    </div>`);
   showScreen('screen-realm');
 }
 function factTrailCard(fam){

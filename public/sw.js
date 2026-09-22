@@ -1,6 +1,7 @@
 /* Times Quest service worker — offline-first app shell */
-const CACHE = 'times-quest-v84';
+const CACHE = 'times-quest-v86';
 const SQUARESTONE_ART=['landscape','ruins','foundation','walls','restored','celebrated'].map(name=>`./art/realm/squarestone/${name}-v1.webp`);
+const PAINTED_REALM_ART=Object.fromEntries(Array.from({length:13},(_,f)=>[f,f===4?[]:['ruins','foundation','walls','restored','celebrated','landscape'].map(stage=>`./art/realm/scenes/x${f}/${stage}-${stage==='landscape'?'v1':'v2'}.webp`)]));
 const CAMP_3D = ['./camp-v2-scene.js','./camp-world-details.js','./vendor/three/three.module.min.js','./vendor/three/three.core.min.js'];
 const CORE = [
   './',
@@ -21,6 +22,11 @@ const CORE = [
   './guardian-ui.js',
   './squarestone-scene.js',
   './squarestone-scene.css',
+  './realm-scenes.js',
+  './realm-scene-registration.js',
+  './scene-transitions.js',
+  './scene-transitions.css',
+  './realm-scenes.css',
   './opening.css',
   './art/battle/bg-battle-x0-portrait.webp',
   './art/realm/pet-0.png',
@@ -35,6 +41,7 @@ const CORE = [
 ];
 const OPTIONAL = [
   ...SQUARESTONE_ART,
+  ...Object.values(PAINTED_REALM_ART).flat(),
   './',
   './index.html',
   './manifest.webmanifest',
@@ -272,6 +279,7 @@ self.addEventListener('message', (e) => {
   if(e.data?.type==='WARM_REALM'&&Number.isInteger(e.data.family)&&e.data.family>=0&&e.data.family<=12){
     const f=e.data.family,assets=[`./art/realm/pet-${f}.png`,`./art/boss/boss-${f}.png`,`./art/battle/bg-battle-x${f}-portrait.webp`];
     if(f===4)assets.push(...SQUARESTONE_ART);
+    else assets.push(...PAINTED_REALM_ART[f]);
     e.waitUntil(caches.open(CACHE).then(cache=>Promise.allSettled(assets.map(async path=>{if(!(await cache.match(path)))await cache.add(path);})))) ;
   }
   if (e.data && e.data.type === 'CACHE_CAMP_3D') e.waitUntil(caches.open(CACHE).then(cache=>Promise.all(CAMP_3D.map(async path=>{if(!(await cache.match(path)))await cache.add(path);}))).catch(()=>{}));

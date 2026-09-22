@@ -16,6 +16,11 @@ public/
 ├── realm-trail.js         Explicit third-star fact checks and legacy credit
 ├── squarestone-scene.js   Painted ×4 realm, lesson and restoration state selection
 ├── squarestone-scene.css  Responsive scene composition and reduced-motion effects
+├── realm-scenes.js       Painted landmarks and earned restoration across all realms
+├── realm-scenes.css      Guardian placement and compact encounter framing
+├── scene-transitions.js  Decoded landmark crossfades with stable scenery
+├── scene-transitions.css Calm and reduced-motion transition rules
+├── realm-scene-registration.js Measured ground anchors for all 65 stages
 ├── journey-ui.js          Lessons, starting routes, encounters, resumable rewards
 ├── opening.js             Illustrated title and Zero Marsh expedition
 ├── opening.css            Title and interactive guardian scenes
@@ -40,8 +45,10 @@ Realm stars follow **Challenge → Guardian → Fact Trail**. Star two opens the
 next realm; star three comes from a visible checklist of thirteen facts in short,
 untimed rounds. See [REALM-STARS.md](REALM-STARS.md) for the rules and save compatibility.
 
-Squarestone Valley is the first painted restoration scene. See
-[SQUARESTONE-SCENE.md](SQUARESTONE-SCENE.md) for artwork, prompts and implementation notes.
+All thirteen realms now have painted restoration scenes, extending the
+Squarestone Valley pilot. See [REALM-SCENES.md](REALM-SCENES.md) for the full art
+catalogue, prompts, performance budgets and verification; the original pilot is
+documented in [SQUARESTONE-SCENE.md](SQUARESTONE-SCENE.md).
 
 ## Local development
 

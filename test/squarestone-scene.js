@@ -45,7 +45,7 @@ async function main(){
     ev('state=JSON.parse(JSON.stringify(state));migrateState();');w.openRealm(4);
     check('scene progress survives save migration without a separate art save',!!$('realm-body').querySelector('.ss-celebrated'));
     w.beginLesson(4);check('revisited lesson keeps the celebrated scene',!!$('journey-body').querySelector('.ss-celebrated'));
-    w.openRealm(2);check('other realm art stays on its existing renderer',!$('realm-body').querySelector('.squarestone-scene')&&!!$('realm-body').querySelector('.guardian-landmark'));
+    w.openRealm(2);check('other realms use their own painted scenes',!!$('realm-body').querySelector('.painted-realm-scene[data-family="2"]')&&!$('realm-body').querySelector('.guardian-landmark'));
     ev('quiz=null;');w.guardianEncounterScenery();check('leaving encounter removes its scene',!$('guardian-restoration-scene'));
     check('no uncaught errors across the illustrated learning flow',errors.length===0);
     console.log(`${checks} Squarestone scene checks passed; ${bytes} bytes of new art`);

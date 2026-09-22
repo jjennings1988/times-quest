@@ -26,8 +26,8 @@ async function main(){
     check('supported completion does not grant the first challenge star',!ev('state.realms[0].trial')&&!ev('canStartBoss(0)'));
     w.startZeroTry();await answer(0);await answer(0);await answer(0);
     check('three independent discoveries grant challenge access',ev('state.realms[0].trial')&&ev('canStartBoss(0)'));
-    w.startBoss(0);check('opening encounter uses three-success target',ev('quiz.battle.maxHP')===3&&!!$('zero-fog-scene'));
-    await answer(0);check('independent answer lights a marsh lantern',w.document.querySelectorAll('.marsh-lights .lit').length===1);
+    w.startBoss(0);check('opening encounter uses three-success target',ev('quiz.battle.maxHP')===3&&!!$('guardian-restoration-scene'));
+    await answer(0);check('independent answer reveals the marsh bank',$('guardian-restoration-scene').querySelector('figure').dataset.stage==='foundation');
     await answer(0);await answer(0);
     check('opening victory immediately opens One Woods',ev('quiz')===null&&ev('state.realms[0].conquered')&&ev('currentFamily()')===1);
     check('victory offers a useful camp renovation',ev('state.journey.zeroKit')&&$('results-body').textContent.includes('Make my tent cozy'));

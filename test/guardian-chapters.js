@@ -25,7 +25,7 @@ async function main(){
     await new Promise(r=>setTimeout(r,20));
     for(let f=1;f<=12;f++){
       ev(`quiz=null;state=defaultState();migrateState();state.journey.routes=[${f}];`);w.beginLesson(f);
-      check(`chapter ${f} renders its own scene and interactive groups`,$('journey-body').textContent.includes(Chapters.chapters[f].title)&&!!$('journey-body').querySelector(f===4?'.squarestone-scene':'.guardian-landmark'));
+      check(`chapter ${f} renders its own scene and interactive groups`,$('journey-body').textContent.includes(Chapters.chapters[f].title)&&!!$('journey-body').querySelector('.squarestone-scene'));
       w.startGuardianTry();check(`chapter ${f} cannot skip directly to independent check`,ev('quiz')===null);
       for(const target of Chapters.chapters[f].targets){
         let guard=0;while(ev('state.journey.current.chapter.groups')!==target&&guard++<20)w.changeGuardianGroups(ev('state.journey.current.chapter.groups')<target?'add':'remove');
@@ -37,7 +37,7 @@ async function main(){
       check(`chapter ${f} teaching does not award a challenge star`,!ev(`state.realms[${f}].trial`));
       ev(`quiz=null;state.realms[${f}].trial=true;`);w.startBoss(f);
       check(`chapter ${f} encounter uses restoration scenery`,$('battle-stage').classList.contains('guardian-restoration')&&$('battle-name').textContent===Chapters.chapters[f].goal);
-      ev('quiz.battle.hp=0');w.updateBossBattleUI();check(`chapter ${f} all three scene stages restore`,f===4?$('guardian-restoration-scene').querySelector('.squarestone-scene')?.dataset.stage==='restored':$('guardian-restoration-scene').querySelectorAll('.restored').length===3);
+      ev('quiz.battle.hp=0');w.updateBossBattleUI();check(`chapter ${f} all three scene stages restore`,$('guardian-restoration-scene').querySelector('.squarestone-scene')?.dataset.stage==='restored');
     }
     ev('quiz=null');w.guardianEncounterScenery();check('restoration scenery cleans up outside a realm battle',!$('guardian-restoration-scene'));
     check('no chapter runtime errors',errors.length===0);
