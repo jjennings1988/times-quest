@@ -1,0 +1,9 @@
+/* One fixed landscape, a registered transparent landmark, and a fixed guardian. */
+.painted-realm-scene{background-image:var(--realm-empty),var(--realm-fallback);background-position:right center,center;background-size:cover}
+.rs-landmark{width:65%;aspect-ratio:3/2;right:0;bottom:22%;filter:drop-shadow(2px 5px 3px #23352b44)}
+.rs-composed .rs-guardian{left:5%;bottom:29%;width:30%;max-height:48%;object-fit:contain;object-position:center bottom}
+.rs-composed.ss-encounter .rs-landmark{width:auto;height:95%;right:8%;bottom:7%;max-width:67%}
+.rs-composed.ss-encounter .rs-guardian{width:25%;height:85%;max-height:85%;left:5%;bottom:5%}
+.rs-composed.ss-encounter figcaption{left:2%;right:2%}
+.rs-composed.ss-encounter figcaption strong{font-size:10px}
+@media(max-height:900px){#screen-quiz.boss-active .battle-stage.painted-battle{height:200px!important;min-height:200px!important;flex-basis:200px}}
