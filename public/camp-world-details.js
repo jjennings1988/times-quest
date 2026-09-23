@@ -75,6 +75,12 @@ export function createWorldDetails(api) {
   for(let side=0;side<4;side++){const dial=new THREE.Group();dial.rotation.y=side*Math.PI/2;clock.add(dial);const face=piece(dial,cylinderG,'#f1e1b9',0,.68,.57,.39,.05,.39);face.rotation.x=Math.PI/2;box(dial,'#627668',0,.8,.62,.035,.26,.02);box(dial,'#627668',.12,.68,.63,.25,.035,.02);}landscape.add(clock);
   const wheel=new THREE.Group();const rim=piece(wheel,ringG,'#896943',0,0,0,1.08,1.08,1);for(let i=0;i<12;i++){const a=i*Math.PI/6,m=box(wheel,'#a28353',Math.cos(a)*.6,Math.sin(a)*.6,0,1.2,.09,.11);m.rotation.z=a;const paddle=box(wheel,'#b39564',Math.cos(a)*1.12,Math.sin(a)*1.12,0,.28,.3,.53);paddle.rotation.z=a;}wheel.position.set(20.75,at(21,14)+1.1,14.5);wheel.rotation.y=Math.PI/2;scene.add(wheel);
 
+  // Realm pennants at the camp's north edge: each restored realm colours one flag, so learning visibly changes home.
+  {const x0=1.5,x1=10.5,z=-.45,postY=Math.max(at(x0,z),at(x1,z));
+    for(const x of [x0,x1])box(landscape,'#7d5f3e',x,at(x,z)+1.15,z,.14,2.3,.14);
+    box(landscape,'#e1d2ad',(x0+x1)/2,postY+2.18,z,x1-x0,.035,.035);
+    [0,1,10,2,5,11,3,4,9,6,12,8,7].forEach((family,i)=>{const g=guardians.find(g=>g.family===family),x=x0+.35+i*(x1-x0-.7)/12;
+      box(landscape,g?.defeated?g.color:'#c9c3b2',x,postY+1.95,z,.24,.36,.03);if(g?.defeated)box(landscape,'#fff6d6',x,postY+1.88,z+.02,.08,.08,.01);});}
   // Thirteen small habitats. Unwon guardians have an empty, numbered welcome bed.
   const numberCanvas=document.createElement('canvas');numberCanvas.width=1024;numberCanvas.height=128;const ctx=numberCanvas.getContext('2d');ctx.font='bold 60px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fff7dc';for(let i=0;i<13;i++)ctx.fillText('×'+i,i*78+39,64);const numberTexture=new THREE.CanvasTexture(numberCanvas);numberTexture.colorSpace=THREE.SRGBColorSpace;textures.push(numberTexture);
   const numberMat=new THREE.MeshBasicMaterial({map:numberTexture,transparent:true,side:THREE.DoubleSide});

@@ -1,5 +1,5 @@
 /* Times Quest service worker — offline-first app shell */
-const CACHE = 'times-quest-v88';
+const CACHE = 'times-quest-v91';
 const SQUARESTONE_ART=['landscape','ruins','foundation','walls','restored','celebrated'].map(name=>`./art/realm/squarestone/${name}-v1.webp`);
 const PAINTED_REALM_ART=Object.fromEntries(Array.from({length:13},(_,f)=>[f,f===4?[]:['ruins','foundation','walls','restored','celebrated','landscape'].map(stage=>`./art/realm/scenes/x${f}/${stage}-${stage==='landscape'?'v1':'v2'}.webp`)]));
 const CAMP_3D = ['./camp-v2-scene.js','./camp-world-details.js','./vendor/three/three.module.min.js','./vendor/three/three.core.min.js'];
@@ -14,6 +14,9 @@ const CORE = [
   './camp-content.js',
   './math-visuals.js',
   './math-visuals.css',
+  './learning-items.js',
+  './device-check.js',
+  './rounds.js',
   './learning-journey.js',
   './realm-trail.js',
   './journey-ui.js',
@@ -21,6 +24,9 @@ const CORE = [
   './opening.js',
   './guardian-chapters.js',
   './guardian-ui.js',
+  './family-lessons.js',
+  './family-lesson-ui.js',
+  './family-lessons.css',
   './nine-lesson.js',
   './nine-lesson-ui.js',
   './nine-lesson.css',
@@ -41,8 +47,7 @@ const CORE = [
   './icons/icon-maskable-512.png',
   './icons/apple-touch-icon.png',
   './art/climber.png',
-  './art/map/bg-adventure-map.png',
-  './art/camp/bg-camp-dusk.png',
+  './art/map/bg-adventure-map.webp',
 ];
 const OPTIONAL = [
   ...SQUARESTONE_ART,
@@ -74,7 +79,7 @@ const OPTIONAL = [
   './art/avatar/profile-17.png',
   './art/avatar/profile-18.png',
   './art/avatar/profile-19.png',
-  './art/map/bg-adventure-map.png',
+  './art/map/bg-adventure-map.webp',
   './art/buddy/cat.png',
   './art/buddy/dog.png',
   './art/buddy/unicorn.png',

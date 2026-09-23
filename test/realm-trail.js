@@ -36,6 +36,9 @@ async function main(){
     await complete();check('four independent answers plus two supported answers do not pass the five-answer challenge',ev('realmStars(2).stars')===0);
 
     twoStars();ev('fact(2,0).caught=true;fact(2,0).rating=1;');
+    check('trail order is shuffled rather than always ascending',[1,2,3,4,5,6].some(seed=>ev(`LearningItems.trail([1,2,3,4,5,6,7,8,9,10,11,12],5,{seed:${seed}}).join()`)!=='1,2,3,4,5'));
+    // An identity shuffle keeps the rest of this scenario readable.
+    ev('Math.random=()=>0.9999');
     w.startFactTrail(2);check('permanent catches are credited; queue targets five different unfinished facts',ev('quiz.queue.length===5&&quiz.queue.map(q=>q.b).join() === "1,2,3,4,5"'));
     check('trail has no timer or lost lives',ev('!quiz.timed&&quiz.hearts===0'));
     await answer(2);check('one independent success checks exactly one fact',ev('factTrailProgress(2).count')===2);

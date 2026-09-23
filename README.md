@@ -12,6 +12,9 @@ locally vendored Three.js runtime; `jsdom` is used by the regression suite.
 ```
 public/
 ├── index.html              Learning, progression, profiles, legacy data
+├── learning-items.js      Unseen, shuffled independent check items
+├── rounds.js              Pass rule, one next step, round summary
+├── device-check.js        Read-only device report for beta testing
 ├── learning-journey.js    Authored ideas, independent evidence, journey migration
 ├── realm-trail.js         Explicit third-star fact checks and legacy credit
 ├── squarestone-scene.js   Painted ×4 realm, lesson and restoration state selection
@@ -121,6 +124,36 @@ See [the opening slice and verification guide](OPENING-EXPEDITION.md),
 [the follow-up audit](FOLLOW-UP-EXPERIENCE-AUDIT.md), and
 [the prior learning upgrade checklist](LEARNING-UPGRADE-CHECKLIST.md).
 Tests now include test/opening.js for the complete first expedition.
+
+## Devices, returns, variety and camp depth — 0.27 beta
+
+- **Device testing:** Parents includes a read-only device report. The camp
+  measures its own frame pacing and offers low power when it runs slowly. See
+  [DEVICE-AND-PILOT-PLAN.md](DEVICE-AND-PILOT-PLAN.md) for the device pass and
+  the ×4/×7 child pilot.
+- **Coming back:** later days open with an optional warm-up of due facts, then a
+  Fact Trail from an earlier adventure. Both can be skipped for the day. Round
+  outcomes live in `rounds.js`. Parents asks a grown-up question first and shows
+  independent, supported and remembered-later evidence separately.
+- **Lesson variety:** each strategy group has its own planning decision before
+  the prediction, plus an optional "another way" link between strategies. A
+  child who already knows a related strategy can jump straight to planning.
+- **Camp:** river stones join fishing as river trips, stone income starts at
+  three realms, new homes get a moving-in moment, restored realms raise pennants
+  at camp, and each project suggests one small idea for today.
+
+## Every answer counts — 0.23 beta
+
+This release makes independent evidence trustworthy and each lesson step a real
+decision. `learning-items.js` chooses check items from amounts the child has not
+just seen, reverses one item and never repeats a set on retry. Lessons use a
+varied 6–8 prediction amount, predictions that are not printed in their own
+question, and a required build-and-total with the child's own amount. Guardian
+encounters have no hearts; misses bring fresh facts and five misses pause kindly.
+Results show one next step. Passing a starting check earns star 1. Camp wood and
+stone come from the world rather than the store, and gathering uses two due
+facts. The adventure map ships as a 470 KB WebP (was a 3.4 MB PNG), and the
+legacy camp background is no longer part of the install download.
 
 ## Deployment
 

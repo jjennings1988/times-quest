@@ -26,7 +26,7 @@
     const p=parts(a);return p?`${p[0]} groups of ${b} make ${p[0]*b}. ${p[1]<0?'Remove':'Add'} ${Math.abs(p[1])} more group${Math.abs(p[1])===1?'':'s'}: ${p[0]*b} ${p[1]<0?'−':'+'} ${Math.abs(p[1])*b} = ${a*b}.`:`${a} equal groups of ${b} make ${a*b}.`;
   }
   function lesson(fam){return {family:fam,title:ideas[fam][0],idea:ideas[fam][1],each:4,groups:fam,explanation:explanation(fam,4),parts:parts(fam)};}
-  function fresh(isNew=false){return {v:1,onboardingDone:!isNew,preferredCamp:'v2',activeFamily:null,routes:[],lessons:{},readiness:{},grants:{},pendingGems:0,current:null,resume:null,days:[],goal:'woodland-gate'};}
+  function fresh(isNew=false){return {v:1,onboardingDone:!isNew,preferredCamp:'v2',activeFamily:null,routes:[],lessons:{},readiness:{},grants:{},pendingGems:0,current:null,resume:null,days:[],goal:'woodland-gate',lastItems:{}};}
   function migrate(value){
     const j={...fresh(),...(value&&typeof value==='object'?value:{})};
     j.routes=Array.isArray(j.routes)?[...new Set(j.routes.filter(f=>Number.isInteger(f)&&f>=0&&f<=12))]:[];
@@ -38,8 +38,10 @@
     if(!Number.isInteger(j.activeFamily)||j.activeFamily<0||j.activeFamily>12)j.activeFamily=null;
     if(j.current&&(!Number.isInteger(j.current.family)||j.current.family<0||j.current.family>12||!['see','build','choose'].includes(j.current.stage)))j.current=null;
     if(j.current?.family===0){j.current.opened=Array.isArray(j.current.opened)?[...new Set(j.current.opened.filter(i=>[0,1,2].includes(i)))]:[];if(!['inspect','remove','compare'].includes(j.current.zeroStep))j.current.zeroStep='inspect';}
+    if(j.current?.stage==='build'&&j.current.family>0)j.current.stage='see';
+    if(!j.dayOffers||typeof j.dayOffers!=='object'||!/^\d{4}-\d{2}-\d{2}$/.test(j.dayOffers.day))j.dayOffers=null;else j.dayOffers={day:j.dayOffers.day,review:j.dayOffers.review===true,trail:j.dayOffers.trail===true};
+    j.lastItems=Object.fromEntries(Object.entries(j.lastItems&&typeof j.lastItems==='object'&&!Array.isArray(j.lastItems)?j.lastItems:{}).filter(([f,v])=>/^([0-9]|1[0-2])$/.test(f)&&Array.isArray(v)).map(([f,v])=>[f,v.filter(b=>Number.isInteger(b)&&b>=0&&b<=12).slice(0,6)]));
     if(j.current)j.current.groups=Math.max(0,Math.min(12,Math.floor(Number(j.current.groups)||0)));
-    if(j.current?.chapter){const c=j.current.chapter;j.current.chapter={v:1,step:Math.max(0,Math.min(3,Number.isInteger(c.step)?c.step:0)),groups:Math.max(0,Math.min(12,Number.isInteger(c.groups)?c.groups:0))};}
     if(j.current?.chapter){const c=j.current.chapter;j.current.chapter={v:1,step:Math.max(0,Math.min(3,Number.isInteger(c.step)?c.step:0)),groups:Math.max(0,Math.min(12,Number.isInteger(c.groups)?c.groups:0))};}
     if(j.resume&&!validResume(j.resume))j.resume=null;
     return j;

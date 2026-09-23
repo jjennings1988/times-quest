@@ -1,8 +1,46 @@
-# Connected learning and camp projects — 0.21.0-beta.1
+# Connected learning and camp projects — 0.22.0-beta.1
 
-This release implements three changes, in order: a simpler guardian encounter,
-goals across the complete camp blueprint catalogue, and one interactive ×9 pilot.
-Other families retain their existing guided lessons until this pilot is evaluated.
+The simpler guardian encounter and complete camp goal catalogue from 0.21 remain.
+Version 0.22 extends the interactive ×9 approach to the eleven remaining guardian
+families. Zero Marsh keeps its existing hands-on basket lesson, and ×9 keeps its
+lantern activity. These are implemented learning experiences, not yet validated
+learning outcomes from child studies.
+
+## Interactive family lessons
+
+Each new lesson has discovery with four items in each group, a prediction and
+guided problem using seven, then exploration with any amount from 0–12. After
+exploring, children try four fresh, untimed questions. Manipulating the model does
+not award independent evidence, stars, gems or camp resources.
+
+| Family | What the child changes | Mathematical strategy |
+|---|---|---|
+| ×1 | Delivers one whole seed tray to Echo | One group keeps its amount |
+| ×2 | Makes a matching raft of planks | Double |
+| ×3 | Doubles a vine bundle, then adds a matching bundle | Two groups plus one |
+| ×4 | Copies a stone tray, then copies both trays | Double twice |
+| ×5 | Moves any of ten loaded boats between two docks | Half of ten equal groups |
+| ×6 | Connects another cell rack beside five | Five groups plus one |
+| ×7 | Adds two supply packs beside five | Five groups plus two |
+| ×8 | Doubles crystal clusters from one to two, four and eight | Double three times |
+| ×10 | Regroups ten power rows into columns containing ten cells | Bundles of ten |
+| ×11 | Adds one full tile bundle beside ten | Ten groups plus one |
+| ×12 | Brings two water trays beside ten | Ten groups plus two |
+
+The boat activity preserves every boat and crate, including deliberately unbalanced
+docks; Undo restores the previous move in either direction. The power station
+keeps column colors and numbered bundle labels when regrouping. Neither the ×10
+nor ×11 lesson depends on a digit-copying trick; twelve items per group work too.
+
+New SVG seeds, planks, vines, stones, crates, cells, packs, crystals, tiles and cups
+are individually countable. Zero has empty groups rather than phantom items.
+Wrong totals receive strategy-specific coaching using partial amounts. The final
+guided answer stays hidden until solved. There is no timer or loss penalty.
+
+`family-lessons.js` owns the pure model, content and bounded manipulation history;
+`family-lesson-ui.js` owns rendering, focus and input; `family-lessons.css` owns the
+layout. Existing realm artwork and the separate ×9 model are retained. No new
+framework, external asset dependency or generated illustration is required.
 
 ## Guardian encounters
 
@@ -69,7 +107,11 @@ no new illustration downloads or graphics framework are needed.
 - The lesson's additive `journey.current.nine` state has its own version and input
   validation. Completed legacy ×9 manipulation resumes at exploration. An unfinished
   legacy step starts the new model without altering any earned progress.
-- All new modules and styles are in service-worker core cache v88. Update activation
+- New family progress is additive `journey.current.strategy` state with its own
+  version and family validation. Completed legacy comparisons resume in exploration;
+  unfinished old manipulation begins the new guided lesson. Earned progress stays
+  intact. Existing older `build`-stage saves retain their compatible legacy flow.
+- All new modules and styles are in service-worker core cache v89. Update activation
   continues to use the existing explicit update action.
 
 ## Validation and the next decision
@@ -78,15 +120,16 @@ The automated suite covers conservation of quantities for 0–12, misconception
 feedback, resume, independent-evidence isolation, all blueprint costs and locks,
 projected grant delivery, stable-ID renovations, cancellation, corrupt camp recovery,
 and forward restoration thresholds. Existing learning, save, camp, scene registration
-and transition regressions remain in the full suite.
+and transition regressions remain in the full suite. Version 0.22 passes 2,254
+checks, including 567 checks for the eleven new family models and their UI flows.
 
-Browser checks used an isolated origin with simulated safe areas: 390×844, 320×568
-and 1024×768. They exercised prediction, incorrect subtraction, exploration, undo,
-transfer, project selection and cancellation. This is not physical iPhone Safari,
-VoiceOver or child-learning validation.
+Browser checks for the new lessons used an isolated origin with simulated safe
+areas: 390×844, 320×568, 844×390 and 1024×768. They exercised doubling, two docks,
+column regrouping, incorrect ideas, exploration, exact undo, transfer, keyboard
+input and calm mode. At 320px, boat targets were over 47px wide without horizontal
+overflow. This is not physical iPhone Safari, VoiceOver or child-learning validation.
 
-Before extending this treatment, observe children using ×9 without adult directions:
-can they explain why the subtraction is the size of a group, solve a fresh amount,
-and use the strategy again on another day? Record where they seek help, rather than
-judging by speed. If they merely follow highlighted buttons, improve the pilot before
-producing the remaining family interactions.
+Before public rollout, observe children using these lessons without adult directions:
+can they explain the change in whole groups, solve a fresh amount, and use the
+strategy again on another day? Record where they seek help, rather than judging by
+speed. If they merely follow buttons, refine the interaction and its questions.

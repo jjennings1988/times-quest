@@ -6,13 +6,16 @@ async function main(){
   let n=Nine.fresh();check('cannot skip the first model',Nine.change(n,'next').stage===0);
   n=Nine.change(n,'rack',6);check('a full group moves and nine stay equal',Nine.counts(n).left===36&&Nine.counts(n).moved===4);
   n=Nine.change(n,'reason','one');check('one lantern misconception cannot unlock next step',!n.reason&&Nine.change(n,'next').stage===0);
-  n=Nine.change(n,'reason','group');n=Nine.change(n,'next');check('new amount requires a prediction',n.stage===1&&Nine.change(n,'rack',2).removed===null);
-  n=Nine.change(n,'predict',1);check('incorrect group size stays in coaching',!n.predicted);
-  n=Nine.change(n,'predict',7);n=Nine.change(n,'rack',2);n=Nine.change(n,'total',69);check('subtracting one lantern cannot finish',!n.solved&&Nine.change(n,'next').stage===1);
-  n=Nine.change(n,'total',63);n=Nine.change(n,'next');check('successful explanation opens transfer exploration',Nine.ready(n));
-  for(let each=0;each<=12;each++){n=Nine.change(n,'each',each);n=Nine.change(n,'rack',5);let c=Nine.counts(n);check(`nine × ${each}: all lanterns conserved`,c.before===c.left+c.moved&&c.left===9*each&&c.moved===each);n=Nine.change(n,'rack',5);c=Nine.counts(n);check(`nine × ${each}: undo restores ten groups`,c.left===10*each&&c.moved===0);}
+  n=Nine.change(n,'reason','group');n=Nine.change(n,'next',7);check('new amount requires a prediction',n.stage===1&&Nine.change(n,'rack',2).removed===null);
+  check('prediction waits for the ten-group plan',!Nine.change(n,'predict',70).predicted);check('adding a rack is coached as a plan',!Nine.change(n,'plan',2).planned);n=Nine.change(n,'plan',0);
+  n=Nine.change(n,'predict',7);check('predicting one rack instead of ten stays in coaching',!n.predicted);
+  n=Nine.change(n,'predict',70);n=Nine.change(n,'rack',2);n=Nine.change(n,'total',69);check('subtracting one lantern cannot finish',!n.solved&&Nine.change(n,'next').stage===1);
+  n=Nine.change(n,'total',63);n=Nine.change(n,'next');check('successful explanation opens the own-amount stage',n.stage===2&&!Nine.ready(n));
+  n=Nine.change(n,'rack',1);check('exploration waits for a chosen amount',n.removed===null);
+  for(let each=0;each<=12;each++){n=Nine.change(n,'each',each);check(`nine × ${each}: chosen amount is recorded as shown`,Nine.shown(n).includes(each));n=Nine.change(n,'rack',5);let c=Nine.counts(n);check(`nine × ${each}: all lanterns conserved`,c.before===c.left+c.moved&&c.left===9*each&&c.moved===each);n=Nine.change(n,'rack',5);c=Nine.counts(n);check(`nine × ${each}: undo restores ten groups`,c.left===10*each&&c.moved===0);}
   check('malformed lesson state cannot advance',Nine.normalize({v:99,stage:2}).stage===0);
   check('legacy completed manipulation keeps access to transfer',Nine.normalize(null,{step:1}).stage===2);
+  {let t=Nine.change(Nine.change(Nine.change({...Nine.fresh(),stage:2,each:3},'each',6),'rack',4),'total',54);check('own amount, moved rack and total make the check ready',Nine.ready(t));}
   const save=Camp.fresh(),before=JSON.stringify(save),all=Goals.groups(Camp.catalog).flatMap(g=>g.ids);
   check('every blueprint appears once',new Set(all).size===Object.keys(Camp.catalog).length&&all.length===new Set(all).size);
   check('legacy goal has a safe default',Goals.normalize(Camp.catalog,'woodland-gate')==='gate'&&!Goals.valid(Camp.catalog,'__proto__'));
@@ -29,16 +32,17 @@ async function main(){
     w.startBoss(9);const max=ev('quiz.battle.maxHP');
     for(const [fraction,count] of [[0,0],[1/3,1],[2/3,2],[1,3]]){ev(`quiz.battle.hp=quiz.battle.maxHP*(1-${fraction})`);w.updateBossBattleUI();check(`restoration ${count}: single forward progress agrees with art`,$('battle-health-title').textContent===`${count} of 3 stages restored`&&Math.abs(parseFloat($('battle-hp').style.width)-fraction*100)<1e-6&&Math.abs(Number($('battle-hp').parentElement.getAttribute('aria-valuenow'))-max*fraction)<1e-6);}
     ev('quiz.battle.hp=quiz.battle.maxHP;quiz.idx=2');w.nextQ();check('missing task has one prompt and an optional group model',$('encounter-task').querySelectorAll('.encounter-prompt').length===1&&!!$('encounter-task').querySelector('details')&&$('q-count').textContent.includes('Sensei'));
-    ev('quiz.idx=1');w.nextQ();w.chooseEncounterSplit(5,4);check('strategy support does not reveal final answer or earn evidence',ev('quiz.queue[1].strategyUsed')&&!ev('quiz.queue[1].assisted')&&$('encounter-model').textContent.includes('5 × 4'));
+    ev('quiz.idx=1');w.nextQ();w.chooseEncounterSplit(5,4);check('strategy support does not reveal final answer or earn evidence',ev('quiz.queue[1].strategyUsed')&&!ev('quiz.queue[1].assisted')&&$('encounter-model').textContent.includes(`5 × ${ev('quiz.queue[1].b')}`));
     w.startPractice(9);check('ordinary practice restores its own layout',!$('screen-quiz').classList.contains('guardian-active'));
     ev('quiz=null;state.realms[9].trial=false');w.beginLesson(9);const learningBefore=ev('JSON.stringify(state.facts)');
     w.startGuardianTry();check('pilot cannot skip into independent questions',ev('quiz')===null);
-    w.nineAction('rack',4);w.nineAction('reason','group');w.nineAction('next');w.nineAction('predict',7);w.nineAction('rack',8);
+    w.nineAction('rack',4);w.nineAction('reason','group');w.nineAction('next',7);w.nineAction('plan',0);w.nineAction('predict',70);w.nineAction('rack',8);
     const saved=ev('JSON.stringify(state)');ev(`state=JSON.parse(${JSON.stringify(saved)});migrateState()`);w.resumeLesson();
     check('resume retains the rack and unsolved seven-groups task',ev('state.journey.current.nine.removed')===8&&!!$('nine-total')&&!$('journey-body').textContent.includes('= 63'));
     check('storage contains exactly one full group and total object count is conserved',$('journey-body').querySelectorAll('.nine-storage svg').length===7&&$('journey-body').querySelectorAll('.nine-lanterns svg').length===70);
-    w.nineAction('total',69);check('wrong answer retains coaching',!!$('nine-total')&&$('nine-feedback').textContent.includes('seven'));
+    w.nineAction('total',69);check('wrong answer retains coaching',!!$('nine-total')&&$('nine-feedback').textContent.includes('storage'));
     w.nineAction('total',63);w.nineAction('next');w.nineAction('each',0);w.nineAction('rack',1);
+    check('own-amount total stays hidden until the child finds it',$('journey-body').textContent.includes('Find their total'));w.nineAction('total',0);
     check('zero explorer distinguishes nine empty groups',$('journey-body').querySelectorAll('.nine-racks button').length===10&&$('journey-body').querySelectorAll('.nine-lanterns svg').length===0&&$('journey-body').textContent.includes('9 equal groups × 0 = 0'));
     check('guided pilot neither earns a star nor changes fact evidence',!ev('state.realms[9].trial')&&ev('JSON.stringify(state.facts)')===learningBefore);
     w.startGuardianTry();check('four fresh questions are untimed and not marked assisted',ev('quiz.queue.length')===4&&!ev('quiz.timed')&&ev('quiz.queue.every(q=>!q.assisted)'));

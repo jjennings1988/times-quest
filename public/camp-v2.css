@@ -76,3 +76,7 @@
   .cv2-play-space{grid-column:2;grid-row:1 / 3}.cv2-dock{grid-column:1;grid-row:2;align-self:end}
   .cv2-world-notes{display:none}.cv2-camera{grid-template-columns:repeat(5,44px);gap:4px}.cv2-overlay{top:52px}
 }
+/* 0.23: a quieter first view. The land key appears while building; exploring shows more of the world. */
+.cv2-land-legend{display:none}.cv2-show-land .cv2-land-legend{display:flex}
+.cv2-welcome-note{font-size:12px;opacity:.8;margin:8px 0 0}
+@media(max-width:430px){.cv2-shortcuts button{padding:6px 10px;font-size:11px;min-height:44px}.cv2-welcome{padding:14px!important}.cv2-welcome p{margin:6px 0}}

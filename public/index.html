@@ -157,7 +157,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[role="button"]:
   box-shadow:inset 0 0 42px rgba(63,31,14,.22);
 }
 .map-world{position:relative;left:50%;width:clamp(720px,184vw,1044px);aspect-ratio:864/1821;transform:translateX(-50%);isolation:isolate}
-.map-art{position:absolute;z-index:0;inset:0;background:url('art/map/bg-adventure-map.png') center/100% 100% no-repeat}
+.map-art{position:absolute;z-index:0;inset:0;background:url('art/map/bg-adventure-map.webp') center/100% 100% no-repeat}
 .map-route{position:absolute;z-index:1;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;filter:drop-shadow(0 2px 0 rgba(255,244,205,.42))}
 .map-route-segment{fill:none;stroke:#6A482E;stroke-width:4;stroke-dasharray:2 10;stroke-linecap:round;vector-effect:non-scaling-stroke;opacity:.52}
 .map-route-segment.complete{stroke:#F6C344;stroke-width:5;opacity:1;filter:drop-shadow(0 1px 1px rgba(82,48,13,.72))}
@@ -200,6 +200,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[role="button"]:
 .map-continue-wrap{position:fixed;z-index:11;left:50%;bottom:calc(74px + var(--safe-bottom));width:min(596px,calc(100vw - 24px));transform:translateX(-50%);pointer-events:none}
 .map-continue-wrap .continue-btn{pointer-events:auto;margin:0;padding:11px 16px;border-radius:16px;box-shadow:0 5px 0 #A66C09,0 9px 22px rgba(29,15,10,.38);font-size:16px;border:1.5px solid rgba(255,255,255,.38)}
 .map-continue-wrap .continue-btn small{font-size:10px}
+.continue-skip{pointer-events:auto;display:block;margin:8px auto 0;min-height:36px;padding:6px 16px;border-radius:12px;border:1px solid #fff7;background:#1d1a38cc;color:#fff3d6;font:800 13px var(--body)}.continue-skip[hidden]{display:none}
 .map-quest-toggle{position:relative;width:42px;height:38px;flex:0 0 42px;border-radius:13px;border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.1);color:#fff;font-size:19px;cursor:pointer}
 .map-quest-toggle .dot{display:none;position:absolute;right:4px;top:3px;width:8px;height:8px;border-radius:50%;background:var(--gold);box-shadow:0 0 0 2px #2A1C16}
 .map-quest-toggle.has-reward .dot{display:block}
@@ -386,7 +387,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[role="button"]:
   position:absolute;z-index:0;inset:0;display:block;width:100%;height:100%;min-height:100%;
   flex:none;border:0;box-shadow:none;
 }
-.battle-backdrop{position:absolute;inset:-18px;background-image:linear-gradient(180deg,rgba(10,10,28,.08),rgba(10,8,24,.2) 47%,rgba(9,7,22,.9)),var(--battle-bg,url('art/map/bg-adventure-map.png'));background-size:auto,var(--battle-bg-size,132% auto);background-repeat:no-repeat;background-position:center,var(--battle-bg-position,50% 50%);filter:saturate(1.2) contrast(1.04);transform:scale(1.035)}
+.battle-backdrop{position:absolute;inset:-18px;background-image:linear-gradient(180deg,rgba(10,10,28,.08),rgba(10,8,24,.2) 47%,rgba(9,7,22,.9)),var(--battle-bg,url('art/map/bg-adventure-map.webp'));background-size:auto,var(--battle-bg-size,132% auto);background-repeat:no-repeat;background-position:center,var(--battle-bg-position,50% 50%);filter:saturate(1.2) contrast(1.04);transform:scale(1.035)}
 .battle-atmosphere{position:absolute;inset:0;background:radial-gradient(circle at 78% 44%,color-mix(in srgb,var(--battle-accent) 44%,transparent),transparent 30%),linear-gradient(90deg,rgba(10,8,30,.5),transparent 45%,rgba(10,8,30,.22));pointer-events:none}
 .battle-atmosphere::before,.battle-atmosphere::after{content:"";position:absolute;pointer-events:none}
 .battle-stage.effect-river .battle-atmosphere::before{left:-10%;right:-10%;bottom:0;height:41%;opacity:.74;background:repeating-radial-gradient(ellipse at 50% 110%,transparent 0 23px,rgba(89,213,255,.28) 25px 28px,transparent 30px 49px);animation:riverFlow 4s linear infinite}
@@ -553,6 +554,11 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[role="button"]:
 .results-wrap h2{font-family:var(--display);font-weight:800;font-size:30px;color:#fff;margin:8px 0 2px}
 .results-wrap .sub{color:#B7AEE8;font-weight:700;margin-bottom:14px}
 .result-stars{font-size:38px;letter-spacing:6px;margin-bottom:10px}
+.result-alt{background:transparent!important;color:#FFF3D6!important;border:2px solid #FFF3D666!important;box-shadow:none!important}
+.result-star-line{font:800 14px var(--body);color:#F4E6B8;margin:0 0 12px}.result-summary{font:700 13px/1.5 var(--body);color:#E1DCF9;margin:10px 0 12px}.result-news{width:min(100%,420px);margin:0 auto 10px;text-align:left;border-radius:16px;background:#FFFFFF1f;border:1px solid #FFFFFF33;color:#FFF3D6;padding:0 12px}.result-news>summary{min-height:48px;display:flex;align-items:center;cursor:pointer;font:800 14px var(--body)}.result-news .piece-reveal{margin:4px 0 12px}.result-news #result-camp-goal{margin-bottom:10px}.result-news>.btn{margin:0 0 12px}.result-end{margin-top:6px}
+.device-check dl{display:grid;gap:6px;margin:8px 0 10px;font-size:13px}.device-check dl div{display:grid;grid-template-columns:minmax(110px,40%) 1fr;gap:8px}.device-check dt{font-weight:800}.device-check dd{margin:0;overflow-wrap:anywhere}
+.parent-gate form{display:flex;gap:8px;margin:10px 0}.parent-gate input{width:90px;min-height:48px;font:900 22px var(--body);text-align:center;border-radius:12px;border:2px solid #8ca88b}
+.storage-note{font-size:13px;line-height:1.45;font-weight:700;margin:6px 0 10px;padding:9px 11px;border-radius:12px}.storage-note.ok{background:#E3F1E6;color:#25583c}.storage-note.warn{background:#FFF0DB;color:#7a4418}
 .reward-row{display:flex;gap:10px;justify-content:center;margin-bottom:16px;flex-wrap:wrap}
 .reward-pill{background:rgba(255,255,255,.12);border:1.5px solid rgba(255,255,255,.2);border-radius:14px;padding:9px 14px;color:#fff;font-weight:800;font-size:14px}
 .piece-reveal{
@@ -893,6 +899,7 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
 <link rel="stylesheet" href="scene-transitions.css">
 <link rel="stylesheet" href="guardian-encounter.css">
 <link rel="stylesheet" href="nine-lesson.css">
+<link rel="stylesheet" href="family-lessons.css">
 </head>
 <body>
 <div id="app">
@@ -930,7 +937,7 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
       </div>
       <div id="map-trail"></div>
     </div>
-    <div class="map-continue-wrap"><button class="btn gold continue-btn" id="continue-btn" onclick="doContinue()"></button></div>
+    <div class="map-continue-wrap"><button class="btn gold continue-btn" id="continue-btn" onclick="doContinue()"></button><button class="continue-skip" id="continue-skip" hidden onclick="skipDayOffer()">Not today</button></div>
   </div>
 
   <!-- ============ REALM SCREEN ============ -->
@@ -954,7 +961,7 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
       <span class="boss-em" id="boss-em">🐲</span>
       <div class="hp-track"><div class="hp-fill" id="boss-hp" style="width:100%"></div></div>
     </div>
-    <section class="battle-stage" id="battle-stage" aria-label="Realm boss battle">
+    <section class="battle-stage" id="battle-stage" aria-label="Realm encounter">
       <div class="battle-backdrop" aria-hidden="true"></div>
       <div class="battle-atmosphere" aria-hidden="true"></div>
       <div class="battle-hud">
@@ -1055,6 +1062,9 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
 </div>
 <div id="profile-gate" aria-modal="true" role="dialog"><div class="profile-shell" id="profile-gate-body"></div></div>
 <script src="camp-content.js"></script>
+<script src="learning-items.js"></script>
+<script src="rounds.js"></script>
+<script src="device-check.js"></script>
 <script src="learning-journey.js"></script>
 <script src="realm-trail.js"></script>
 <script src="math-visuals.js"></script>
@@ -1067,6 +1077,8 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
 <script src="guardian-chapters.js"></script>
 <script src="nine-lesson.js"></script>
 <script src="nine-lesson-ui.js"></script>
+<script src="family-lessons.js"></script>
+<script src="family-lesson-ui.js"></script>
 <script src="guardian-ui.js"></script>
 <script src="realm-scene-registration.js"></script>
 <script src="scene-transitions.js"></script>
@@ -1155,6 +1167,7 @@ async function createProfile(){
   const p={id,name:qa?'Summit Tester':name,avatar:profileDraftAvatar,created:Date.now(),qa,...profileSummary(snapshot)};
   profileBook.profiles.push(p); activeProfileId=id; state=snapshot; migrateState();
   if(!qa)state.journey.openingEdition=true;
+  requestPersistentStorage();
   await storageSet(profileSaveKey(id),JSON.stringify(state)); await persistProfileBook();
   closeProfileGate(); applyCalm(); checkDaily(); showScreen('screen-map');
   if(qa) toast('QA profile ready: every realm and camp item is unlocked');else startWelcome();
@@ -1452,7 +1465,7 @@ const RATING_LABEL = ["undiscovered","discovered","befriending","befriending","c
    Defaults below reproduce the game's original behaviour exactly, so an
    existing save that predates settings plays identically until something
    is changed on purpose. */
-const APP_VERSION = '0.21.0-beta.1';
+const APP_VERSION = '0.27.0-beta.1';
 const FAST_MS = 4000;          // default bonus window
 const WINDOW_CHOICES = [3000,4000,6000,8000];
 const ROUND_CHOICES  = [8,12,16];
@@ -2059,6 +2072,11 @@ function nextAction(){
   if(!state.journey.onboardingDone)return {icon:'learn',label:'Start my expedition',sub:'Meet Poof in Zero Marsh',fn:startWelcome,args:[]};
   if(state.journey.resume)return {icon:'learn',label:'Resume my round',sub:'Your completed answers are saved',fn:resumeRound,args:[]};
   if(state.journey.current)return {icon:'learn',label:'Continue my lesson',sub:'Your guardian is waiting',fn:resumeLesson,args:[]};
+  // A returning day starts with memory: a short warm-up of due facts, then a Fact Trail from an earlier day. Both can be skipped.
+  const today=dateKey(),offers=dayOffers(),due=offers.review?0:dueFactEntries(4).length;
+  if(!offers.review&&due>=3)return {icon:'heal',label:'Warm up with facts to remember',sub:`${Math.min(4,due)} facts from earlier days · no timer`,fn:startWarmup,args:[],offer:'review'};
+  const trailFam=REALM_ORDER.find(f=>state.realms[f].conquered&&realmStars(f).stars<3&&(state.realms[f].conqueredDay||'')<today);
+  if(!offers.trail&&trailFam!==undefined)return {icon:'target',label:'Fact Trail facts are ready',sub:`×${trailFam} · ${factTrailProgress(trailFam).count}/13 checked · from an earlier adventure`,fn:startFactTrail,args:[trailFam],offer:'trail'};
   if(allConquered()){
     if(!state.summitDone) return {icon:'summit', label:'Climb to the Summit', sub:'The final challenge', fn:startSummit, args:[]};
     return getWeakFacts().length
@@ -2072,7 +2090,7 @@ function nextAction(){
   if(!seen&&!challengeReady(fam))      return {icon:'learn', label:`Learn the ×${fam}s`,       sub:`${r.name} — no timer, with helpers`, fn:startLearn,    args:[fam]};
   if(!challengeReady(fam))  return {icon:'learn', label:`Learn with ${r.petName}`, sub:'Build the idea together, then try new facts', fn:startLearn, args:[fam]};
   if(!st.trial)  return {icon:'trial', label:`Earn star 1: ×${fam}`, sub:`Answer ${challengeNeeds()} of ${challengeLength()} on your own · no timer`, fn:startTrial, args:[fam]};
-  return           {icon:'boss', label:`Fight ${bossName(fam)}`,         sub:`${r.name} — ${heartCt()} hearts`,    fn:startBoss,     args:[fam]};
+  return           {icon:'boss', label:`Help ${r.petName}`,         sub:`${r.name} — restore the realm together`,    fn:startBoss,     args:[fam]};
 }
 function doContinue(){
   const a=nextAction();
@@ -2118,6 +2136,7 @@ function renderMap(){
   const trail=$('map-trail');
   const act=nextAction();
   $('continue-btn').innerHTML=`${icon(act.icon)}<span>${act.label}<small>${act.sub}</small></span>`;
+  $('continue-skip').hidden=!act.offer;$('continue-skip').dataset.offer=act.offer||'';
   const unlocked=unlockedFamilies();
   const completedCount=conquestCount();
   trail.innerHTML=`<div class="map-world"><div class="map-art" aria-hidden="true"></div>${mapRouteSvg(completedCount)}</div>`;
@@ -2293,7 +2312,7 @@ function startQuiz(cfg){
   else if(quiz.boss){ $('boss-em').innerHTML=bossVisual(cfg.fams[0]); $('boss-hp').style.width='100%'; }
   $('hearts').textContent = quiz.hearts?'❤️'.repeat(quiz.hearts):'';
   $('battle-lives').textContent = showdown?'♥'.repeat(quiz.hearts):'';
-  $('battle-lives').setAttribute('aria-label',`${quiz.hearts} hearts remaining`);
+  if(quiz.hearts)$('battle-lives').setAttribute('aria-label',`${quiz.hearts} hearts remaining`);else $('battle-lives').removeAttribute('aria-label');
   $('timer-track').style.visibility = quiz.timed?'visible':'hidden';
   $('hint-card').style.display='none';
   $('keypad').style.display='grid';
@@ -2438,7 +2457,14 @@ function checkAnswer(){
       quiz.wrong++; f.w++; f.rating=Math.max(1,f.rating-1);
       scheduleRetrieval(q,f,false,false);
       queueMissedFactForReview(q);
-      if(quiz.hearts>0){
+      // Guardian encounters have no lives: a miss brings a fresh fact later in the round.
+      if(quiz.mode==='boss'){
+        quiz.misses=(quiz.misses||0)+1;
+        // After five misses the round pauses kindly; stars and answers are already saved.
+        if(quiz.misses>=5)quiz.failedPending=true;else addRestorationItem(q);
+        if(quiz.battle)resolveBossTurn('wrong',false,false);
+      }
+      else if(quiz.hearts>0){
         quiz.hearts--;
         $('hearts').textContent='❤️'.repeat(quiz.hearts);
         $('battle-lives').textContent='♥'.repeat(quiz.hearts);
@@ -2452,6 +2478,14 @@ function checkAnswer(){
     const missedQuiz=quiz;
     setTimeout(()=>{if(quiz===missedQuiz)showHint(q);},450);
   }
+}
+function addRestorationItem(missed){
+  if(!quiz||quiz.mode!=='boss'||(quiz.extraAdded||0)>=3)return false;
+  const fam=quiz.fams[0],used=quiz.queue.filter(x=>x.a===fam).map(x=>x.b);
+  let next;
+  if(fam===0)next=LearningItems.zero(1,{previous:used})[0];
+  else{const b=LearningItems.pickAmounts(1,{avoid:used})[0],unit=GuardianChapters.chapters[fam]?.unit||'supplies';next={a:fam,b,text:Math.random()<.5?`${fam} × ${b}`:`${b} × ${fam}`,ans:fam*b,prompt:`${REALMS[fam].petName} found another place to restore: ${fam} equal groups of ${b} ${unit}.`};}
+  quiz.queue.push(next);quiz.total=quiz.queue.length;quiz.extraAdded=(quiz.extraAdded||0)+1;return true;
 }
 function strategyHintFor(q){const e=MathVisuals.explain(q);return {label:e.label+' strategy',body:e.body};}
 function workedExample(q){return MathVisuals.explain(q).visual;}
@@ -2503,9 +2537,7 @@ function finishQuiz(failed=false){
   if(!quiz)return;
   cancelAnimationFrame(qTimerRAF);
   const qz=quiz; quiz=null;state.journey.resume=null;
-  const acc = qz.independentAttempts>0 ? qz.passCorrect/qz.independentAttempts : 0;
-  const passCorrect=qz.passCorrect;
-  const passed = !failed && (qz.battle?qz.battle.hp===0:(qz.needCorrect===0 || passCorrect>=qz.needCorrect));
+  const acc=Rounds.accuracy(qz),passed=Rounds.passed(qz,failed);
   const journeyOutcome=finishJourneyRound(qz,passed);
   let headline="", em="🎉", sub="", newPiece=null, newBlueprints=[], starReward={gems:0,stars:[]};
 
@@ -2524,18 +2556,18 @@ function finishQuiz(failed=false){
   } else if(qz.mode==='boss' && passed){
     const fam=qz.fams[0];
     const first=!state.realms[fam].conquered;
-    state.realms[fam].conquered=true;
+    state.realms[fam].conquered=true;if(first)state.realms[fam].conqueredDay=dateKey();
     state.journey.activeFamily=REALM_ORDER[REALM_ORDER.indexOf(fam)+1]??null;
     headline=first?"Second star earned!":"Realm restored again!"; em="⚔️";
     const next=unlockedFamilies(); const newest=next[next.length-1];
-    sub = first && newest!==fam ? `${REALMS[newest].name} (the ×${newest}s) is unlocked! ⛰️` : "The realm is yours!";
+    sub = first && newest!==fam ? `${REALMS[newest].name} (the ×${newest}s) is unlocked! ⛰️` : `${REALMS[fam].petName} is glad you came back.`;
     if(first){
       if(fam===0&&state.journey.zeroChapter)state.journey.zeroKit=true;
       newPiece=REALM_PIECES[fam];
       newBlueprints=blueprintsAt(conquestCount());
     }
   } else if(qz.mode==='boss'){
-    headline="The boss blocked you!"; em="🛡️"; sub="Your progress is saved. Try a guided lesson, visit camp, or return when you are ready.";
+    const pet=REALMS[qz.fams[0]]?.petName||'Your guardian';headline=`${pet} saved your progress`; em="🌿"; sub=`Your stars and answers are saved. Explore ${pet}'s strategy, then help again with new facts whenever you are ready.`;
   } else if(qz.mode==='siege' && passed){
     state.siegeWins++;
     headline="Camp Defended!"; em="🛡️"; sub=`Siege victory ${state.siegeWins}! Your camp is safe and the bonus round is ready for another rematch.`;
@@ -2565,46 +2597,42 @@ function finishQuiz(failed=false){
   const returnButton=qz.mode==='siege'
     ? `<button class="btn ghost" onclick="showScreen('screen-camp')">${icon('camp')} Camp</button>`
     : `<button class="btn ghost" onclick="showScreen('screen-map')">${icon('map')} Map</button>`;
+  const fam1=qz.fams.length===1&&REALMS[qz.fams[0]]?qz.fams[0]:null,next=resultNextSteps(qz,passed,failed,journeyOutcome,fam1);
+  const news=[
+    newPiece?`<div class="piece-reveal"><div class="pem">${newPiece.em}</div><div class="pnm">${newPiece.name} unlocked!</div><div class="psub">A keepsake from your restored realm</div><button class="btn gold small" onclick="goPlace('${newPiece.id}')">Visit Guardian Grove →</button></div>`:'',
+    newBlueprints.length?`<div class="piece-reveal blueprint-reveal"><div class="pnm">New camp blueprints!</div><div class="psub">${CampV2.content.milestones[Math.max(0,campMasteredCount()-1)]||'Explore your camp toolkit'}</div><button class="btn secondary small" onclick="visitCamp()">See camp upgrades →</button></div>`:'',
+    qz.mode==='lesson'&&qz.fams[0]===2&&state.journey.lessons[2]?.completed?'<div class="piece-reveal"><div class="pnm">Twix’s building kit</div><p>Six path stones, two deck pieces, and a lantern are ready in Willowbrook. Build a crossing of your own.</p></div>':'',
+    qz.mode==='boss'&&qz.fams[0]===0&&passed&&state.journey.zeroKit?zeroRewardMarkup():'',
+    qz.caughtThis.length?`<div class="piece-reveal"><div class="pnm">Monsters ${qz.caughtThis.some(c=>c.shiny)?'caught & shined':'caught'}!</div><div class="caught-list">${qz.caughtThis.slice(0,6).map(c=>`<div class="caught-monster ${c.shiny?'shiny':''}"><span class="em">${c.shiny?'✨':''}${monsterFor(c.a,c.b)}</span>${Math.min(c.a,c.b)}×${Math.max(c.a,c.b)}</div>`).join('')}</div></div>`:''
+  ].filter(Boolean);
+  const summary=Rounds.summary(qz,starReward.gems);
+  const starLine=fam1!==null&&state.realms[fam1].conquered?`<p class="result-star-line" aria-label="${realmStars(fam1).stars} of 3 stars">${realmStars(fam1).stars===3?'⭐ 3 of 3 stars · Three-star realm':`⭐ ${realmStars(fam1).stars} of 3 stars · Fact Trail ${factTrailProgress(fam1).count}/13`}</p>`:'';
+  // One primary next step, one alternative, and a calm way to stop. Camp news waits in one row.
   $('results-body').innerHTML=`
     <div class="big-em">${resultVisual}</div>
     <h2>${headline}</h2>
     <div class="sub">${sub}</div>
-    ${qz.fams.length===1&&state.realms[qz.fams[0]].conquered?`<section class="result-star-path"><strong>${realmStars(qz.fams[0]).stars===3?'★ ★ ★ · Three-star realm':`★ ★ ☆ · ${factTrailProgress(qz.fams[0]).count}/13 facts checked for star 3`}</strong><p>${realmStars(qz.fams[0]).stars===3?'Your stars are permanent. Revisit the realm whenever you like.':'Your next realm is open. You can also stay here and finish your Fact Trail.'}</p>${realmStars(qz.fams[0]).stars<3?`<button class="btn gold" onclick="startFactTrail(${qz.fams[0]})">${qz.mode==='fact-trail'?'Continue my Fact Trail':'Earn my third star'} · ${Math.min(5,factTrailProgress(qz.fams[0]).remaining.length)} facts</button>`:''}<button class="btn ghost small" onclick="openRealm(${qz.fams[0]})">See my three-star path</button></section>`:''}
-<p class="result-save-note">Your progress is saved. Map stars are permanent realm milestones.</p>
-    ${newPiece?`<div class="piece-reveal">
-      <div class="pem">${newPiece.em}</div>
-      <div class="pnm">${newPiece.name} unlocked!</div>
-      <div class="psub">A keepsake from your restored realm</div>
-      <button class="btn gold small" style="margin-top:10px" onclick="goPlace('${newPiece.id}')">Visit Guardian Grove →</button>
-    </div>`:''}
-    ${newBlueprints.length?`<div class="piece-reveal blueprint-reveal">
-      <div class="pnm">New camp blueprints!</div>
-      <div class="psub">${CampV2.content.milestones[Math.max(0,campMasteredCount()-1)]||'Explore your camp toolkit'}</div>
-      <button class="btn secondary small" style="margin-top:10px" onclick="visitCamp()">See camp upgrades →</button>
-    </div>`:''}
-    <div class="reward-row">
-      <div class="reward-pill">💎 +${qz.gems} gems</div>
-      ${starReward.gems?`<div class="reward-pill">⭐ +${starReward.gems} realm milestone gems</div>`:''}
-      ${qz.trailStarGems?`<div class="reward-pill">⭐ Includes ${qz.trailStarGems} one-time star gems</div>`:''}
-      <div class="reward-pill">✅ ${qz.passCorrect} independent successes</div>
-      ${qz.recovered?`<div class="reward-pill">💡 ${qz.recovered} with support</div>`:''}
-      ${qz.reviewAdded?`<div class="reward-pill">↻ ${qz.reviewCompleted} later review${qz.reviewCompleted===1?'':'s'} correct</div>`:''}
-      ${qz.wrong?`<div class="reward-pill">🩹 ${qz.wrong} to train</div>`:''}
-    </div>
-    ${qz.caughtThis.length?`<div class="sub" style="margin-bottom:6px">Monsters ${qz.caughtThis.some(c=>c.shiny)?'caught & shined':'caught'}!</div>
-    <div class="caught-list">${qz.caughtThis.slice(0,6).map(c=>`<div class="caught-monster ${c.shiny?'shiny':''}"><span class="em">${c.shiny?'✨':''}${monsterFor(c.a,c.b)}</span>${Math.min(c.a,c.b)}×${Math.max(c.a,c.b)}</div>`).join('')}</div>`:''}
-    ${qz.mode==='lesson'&&qz.fams[0]===2?'<div class="piece-reveal"><div class="pnm">Twix’s building kit</div><p>Six path stones, two deck pieces, and a lantern are ready in Willowbrook. Build a crossing of your own.</p></div>':''}
-    ${qz.mode==='boss'&&qz.fams[0]===0&&passed&&state.journey.zeroKit?zeroRewardMarkup():''}
-    <div id="result-camp-goal">${campGoalMarkup()}</div>
+    ${starLine}
     <div class="result-next">
-      <button class="btn gold" onclick="${journeyOutcome?journeyOutcome.action:qz.mode==='trial'&&passed?'startBoss('+qz.fams[0]+')':failed?'startLearn('+qz.fams[0]+')':'doContinue()'}">${journeyOutcome?journeyOutcome.label:qz.mode==='trial'&&passed?'Help my guardian':failed?'Learn with my guardian':'Continue adventure'}</button>
-      <button class="btn secondary" onclick="visitCamp()">Use my supplies at camp</button>
+      <button class="btn gold" onclick="${next.primary.action}">${next.primary.label}</button>
+      ${next.secondary?`<button class="btn result-alt" onclick="${next.secondary.action}">${next.secondary.label}</button>`:''}
+    </div>
+    <p class="result-summary">${summary}</p>
+    <details class="result-news"${news.length?'':' hidden'}><summary>🎁 New at camp and in your collection (${news.length})</summary>${news.join('')}</details>
+    <details class="result-news"><summary>🏕️ My camp project</summary><div id="result-camp-goal">${campGoalMarkup()}</div><button class="btn secondary small" onclick="visitCamp()">Go to Willowbrook</button></details>
+    <div class="result-next result-end">
       <button class="btn ghost" onclick="finishToday()">Finish for today</button>
       <details><summary>More choices</summary><div class="btn-row">${returnButton}<button class="btn ghost" onclick="repeatLast()">Again</button></div></details>
-    </div>`;
+    </div>
+    <p class="result-save-note">Your progress is saved. Map stars are permanent realm milestones.</p>`;
   lastConfig._repeat=true;
   showScreen('screen-results');
   saveState();
+}
+/* Supplies realm names and progress to the pure Rounds.nextSteps rule. */
+function resultNextSteps(qz,passed,failed,outcome,fam){
+  const upcoming=fam!==null?REALM_ORDER[REALM_ORDER.indexOf(fam)+1]:undefined,trail=fam!==null?factTrailProgress(fam):null;
+  return Rounds.nextSteps({mode:qz.mode,passed,failed,outcome,fam,pet:fam!==null?REALMS[fam].petName:'',upcoming:upcoming!==undefined?{name:REALMS[upcoming].name}:null,stars:fam!==null?realmStars(fam).stars:0,trailCount:trail?.count||0,trailRemaining:trail?.remaining.length||0});
 }
 let lastConfig={};
 function repeatLast(){ if(lastConfig.fn) lastConfig.fn(...lastConfig.args); }
@@ -2628,7 +2656,8 @@ function startFactTrail(fam){
   if(trail.count===13){openRealm(fam);toast('All three stars are already earned here!');return;}
   activeRealm=fam;
   lastConfig={fn:startFactTrail,args:[fam]};
-  const queue=trail.remaining.slice(0,5).map(b=>({a:fam,b,text:`${fam} × ${b}`,ans:fam*b,prompt:'One correct answer on your own checks this fact. Take all the time you need.'}));
+  dayOffers().trail=true;
+  const queue=LearningItems.trail(trail.remaining,5).map(b=>({a:fam,b,text:`${fam} × ${b}`,ans:fam*b,prompt:'One correct answer on your own checks this fact. Take all the time you need.'}));
   startQuiz({mode:'fact-trail',fams:[fam],queue,timed:false,trailStartCount:trail.count,title:`Star 3 · ×${fam} Fact Trail`});
 }
 function challengeLength(){return 6;}
@@ -2681,7 +2710,7 @@ function renderBossBattle(){
   stage.className=`battle-stage on effect-${c.effect}${c.art?' has-battle-art':''}`;
   stage.style.setProperty('--battle-accent',c.accent);
   stage.style.setProperty('--battle-shadow',c.shadow);
-  stage.style.setProperty('--battle-bg',`url('${c.art||'art/map/bg-adventure-map.png'}')`);
+  stage.style.setProperty('--battle-bg',`url('${c.art||'art/map/bg-adventure-map.webp'}')`);
   stage.style.setProperty('--battle-bg-size',c.art?'cover':'132% auto');
   stage.style.setProperty('--battle-bg-position',c.art?(c.bgPosition||'center top'):`${c.mapX}% ${c.mapY}%`);
   stage.style.setProperty('--boss-attack-art',c.attackArt?`url('${c.attackArt}')`:'var(--boss-art)');
@@ -2735,7 +2764,7 @@ function animateBattle(action){
 function resolveBossTurn(outcome,fast=false,retry=false){
   if(!quiz||!quiz.battle) return;
   const battle=quiz.battle,oldPhase=battle.phase;
-  const restoring=quiz.mode==='boss'&&!!GuardianChapters.chapters[quiz.fams[0]];
+  const restoring=quiz.mode==='boss';
   if(outcome==='correct'&&retry){
     battle.charge=0; battle.lastAction='parry';
     announceBattle(restoring?'A useful practice step':'Attack blocked',restoring?'Your work is safe. New independent answers restore the next section.':'A retry holds your ground. First-try answers deal damage.');
@@ -2761,7 +2790,7 @@ function resolveBossTurn(outcome,fast=false,retry=false){
   }
 }
 function startBoss(fam){
-  if(!canStartBoss(fam)){toast("Complete the Realm Challenge to meet this threat");return;}
+  if(!canStartBoss(fam)){toast("Pass the Realm Challenge first. Then your guardian is ready for you.");return;}
   if(fam===0&&state.journey.zeroChapter){startZeroEncounter();return;}
   lastConfig={fn:startBoss,args:[fam]};
   // boss mixes hardest facts of this family + previously conquered hard facts
@@ -2775,7 +2804,7 @@ function startBoss(fam){
   // rule to understand: run out of hearts and the boss wins.
   const chapter=GuardianChapters.chapters[fam];
   const config=chapter?{...bossBattleConfig(fam),name:chapter.goal,kicker:`×${fam} · GUARDIAN RESTORATION`,healthLabel:'Restoration remaining',mechanic:'Your discoveries restore the realm',intro:`${REALMS[fam].petName} is beside you. ${chapter.goal}.`,phases:chapter.phases}:undefined;
-  startQuiz({mode:'boss',fams:[fam],queue,timed:false,hearts:heartCt(),needCorrect:queue.length-heartCt(),boss:bossEmoji(fam),battle:true,battleConfig:config,title:chapter?chapter.goal:'Realm Showdown'});
+  startQuiz({mode:'boss',fams:[fam],queue,timed:false,hearts:0,needCorrect:queue.length-3,boss:bossEmoji(fam),battle:true,battleConfig:config,title:chapter?chapter.goal:'Restore the realm'});
   toast(chapter?`${REALMS[fam].petName} is ready. Restore this place together.`:`${bossName(fam)} guards the path. Win the showdown!`);
 }
 function startCampSiege(){
@@ -2873,6 +2902,16 @@ function getWeakFacts(){
     .filter(([k,f])=> LearningJourney.needsHelp(f))
     .sort((a,b)=>reviewPriority(b)-reviewPriority(a)).map(([k])=>k);
 }
+function dayOffers(){const today=dateKey();if(state.journey.dayOffers?.day!==today)state.journey.dayOffers={day:today,review:false,trail:false};return state.journey.dayOffers;}
+function skipDayOffer(){const kind=$('continue-skip').dataset.offer;if(kind==='review'||kind==='trail'){dayOffers()[kind]=true;saveState();renderMap();}}
+/* A four-fact warm-up from the spaced-review schedule. */
+function startWarmup(){
+  dayOffers().review=true;
+  const due=dueFactEntries(4);if(!due.length){saveState();renderMap();return;}
+  const queue=due.map(([key])=>{const [a,b]=key.split('*').map(Number);return makeQ(a,b);});
+  lastConfig={fn:startDailyReview,args:[]};saveState();
+  startQuiz({mode:'review',fams:unlockedFamilies(),queue,timed:false,title:'Warm-up'});
+}
 function startDailyReview(){
   const due=dueFactEntries(roundLen());
   if(!due.length){ toast('Your spaced review is caught up for today'); return; }
@@ -2960,6 +2999,30 @@ function renderMonsters(){
 /* =====================================================
    PARENT DASHBOARD
    ===================================================== */
+/* Local-only saves: ask the browser to keep them, and tell parents plainly when it may not. */
+let storagePersisted=null;
+async function requestPersistentStorage(){
+  try{if(navigator.storage?.persisted){storagePersisted=await navigator.storage.persisted();if(!storagePersisted&&navigator.storage.persist)storagePersisted=await navigator.storage.persist();}}catch(e){}
+  return storagePersisted;
+}
+function isInstalledApp(){try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;}catch(e){return false;}}
+function storageNote(){
+  if(storagePersisted||isInstalledApp())return '<p class="storage-note ok">This device has been asked to keep Times Quest saves. A backup still protects against a lost or reset device.</p>';
+  const days=state.lastBackupAt?Math.floor((Date.now()-Date.parse(state.lastBackupAt))/864e5):null;
+  return `<p class="storage-note warn">Browsers can clear saves for websites that go unused for a while, especially Safari on iPhone and iPad. Add Times Quest to the Home Screen, and download a family backup${days===null?'':days>14?` (the last one was ${days} days ago)`:''}.</p>`;
+}
+async function refreshDeviceCheck(){const host=$('device-check-summary');if(!host||!window.DeviceCheck)return null;const r=await DeviceCheck.report({version:APP_VERSION});host.innerHTML=DeviceCheck.summary(r);return r;}
+async function copyDeviceCheck(){const r=await refreshDeviceCheck();if(!r)return;try{await navigator.clipboard.writeText(JSON.stringify(r,null,2));toast('Device report copied');}catch(e){toast('Copy is not available here. The report is shown on screen.');}}
+/* A light grown-up check keeps children out of backups and profile tools. It is not security. */
+let parentUnlocked=false,parentGateQuestion=null;
+function openParentGate(){
+  if(parentUnlocked){showScreen('screen-parent');return;}
+  // Beyond the game's ×12 range, so the answer comes from a grown-up rather than from play.
+  const a=13+Math.floor(Math.random()*7),b=3+Math.floor(Math.random()*7);parentGateQuestion=a*b;
+  openQuestCard(`<section class="journey-card parent-gate"><h2>For grown-ups</h2><p>Parents holds backups, profile switching and settings. Please type the answer to <strong>${a} × ${b}</strong>.</p><form onsubmit="event.preventDefault();checkParentGate()"><label for="parent-gate-answer" class="sr-only">Answer</label><input id="parent-gate-answer" inputmode="numeric" autocomplete="off" maxlength="3"><button class="btn gold" type="submit">Open Parents</button></form><p id="parent-gate-feedback" role="status"></p><button class="btn ghost" onclick="closeQuestCard()">Back to the adventure</button></section>`);
+  setTimeout(()=>$('parent-gate-answer')?.focus(),50);
+}
+function checkParentGate(){if(Number($('parent-gate-answer')?.value)===parentGateQuestion){parentUnlocked=true;closeQuestCard();showScreen('screen-parent');}else{$('parent-gate-feedback').textContent='That is not quite it. Please ask a grown-up.';}}
 function backupStatus(){
   if(!state.lastBackupAt) return 'No backup recorded yet';
   const when=new Date(state.lastBackupAt);
@@ -2979,7 +3042,8 @@ function renderParent(){
     const evidence=Array.from({length:13},(_,i)=>LearningJourney.evidence(state.facts[fkey(f,i)])).filter(e=>e&&e.recent.length);
     const attempts=evidence.flatMap(e=>e.recent),right=attempts.filter(e=>e.ok).length;
     const cls=!attempts.length?'untouched':right/attempts.length>=.8?'strong':'mid';
-    const lbl=attempts.length?`${right}/${attempts.length} recent independent`:'No new independent evidence';
+    const facts=Array.from({length:13},(_,i)=>state.facts[fkey(f,i)]).filter(Boolean),supported=facts.reduce((n,x)=>n+(LearningJourney.evidence(x)?.supported||0),0),remembered=facts.filter(x=>x.retentionSpanDays>=14&&x.lastRetrievalOk===true).length;
+    const lbl=attempts.length?`${right}/${attempts.length} on their own · ${supported} with help · ${remembered}/13 remembered later`:supported?`${supported} with help · no independent answers yet`:'No new independent evidence';
     chips+=`<span class="fam-chip ${cls}">×${f} ${lbl}</span>`;
   });
   // weak facts
@@ -3049,7 +3113,7 @@ function renderParent(){
       <div class="toggle-row"><span class="lbl">${icon('learn')} Second chance on a miss</span>${switchButton('Second chance on a miss',st.retry,"toggleSetting('retry')")}</div>
       <div class="pref-note">On: a missed question comes back once, untimed, after the hint. Off: the hint shows the answer and moves on.</div>
 
-      <div class="pref-sub">Boss hearts</div>
+      <div class="pref-sub">Hearts in Camp Siege and the Summit</div>
       <div class="count-pick">${HEART_CHOICES.map(n=>`<button class="${st.hearts===n?'sel':''}" onclick="setPref('hearts',${n})">${'❤️'.repeat(n)}</button>`).join('')}</div>
       <div class="pref-note">How many misses a Boss Battle or the Summit allows before it ends.</div>
 
@@ -3064,7 +3128,9 @@ function renderParent(){
       <div class="toggle-row" style="margin-top:6px"><span class="lbl">${icon('trash')} Reset all progress</span><button class="btn coral small" onclick="resetAll()">Reset</button></div>
     </div>
     <div class="card"><h3>Willowbrook Camp</h3><p>Your earlier camp layout and collection are preserved in backups. Compatible supplies move to Willowbrook once.</p><button class="btn small" onclick="openCampArchive()">Earlier camp collection</button><button class="btn small" onclick="openCampDiagnostics()">Camp diagnostics</button></div>
+    <div class="card device-check"><h3>Device check for testing</h3><p>A read-only report for trying Times Quest on a phone, tablet or school laptop. Nothing about the child is included.</p><dl id="device-check-summary"><div><dt>Checking…</dt><dd></dd></div></dl><div class="btn-row"><button class="btn small" onclick="refreshDeviceCheck()">Check again</button><button class="btn small" onclick="copyDeviceCheck()">Copy report</button></div></div>
     <div class="card backup-vault"><h3>${icon('backpack')} Protected family backup</h3>
+      ${storageNote()}
       <p>Save every climber and all progress in one password-protected file. Use it to recover this device or move the whole family to another one.</p>
       <p class="backup-privacy">Private by design: encryption happens on this device. Times Quest does not receive the file, the passphrase, or any child profile information.</p>
       <div class="backup-pass-row">
@@ -3097,6 +3163,7 @@ function renderParent(){
       <p style="margin-top:10px;font-size:11px;color:#746b8f">Times Quest ${APP_VERSION} · save schema ${state.v}</p>
     </div>`;
   organizeParentPanels();
+  refreshDeviceCheck();
 }
 function applyCalm(){
   document.body.classList.toggle('calm', !!state.settings.calm);
@@ -3606,7 +3673,7 @@ function buyCampUpgrade(chainId){
 let heldPiece=null,pendingUpgrade=null,campUndo=null;
 function campMasteredCount(){return REALM_ORDER.filter(f=>state.realms[f]?.trial||(state.realmRewardStars[f]||0)>=1).length;}
 function isCampTester(){const p=profileBook.profiles.find(p=>p.id===activeProfileId);return !!p?.qa;}
-function campReviewQuestions(){const due=dueFactEntries(40).map(([key])=>{const [a,b]=key.split('*').map(Number);return {a,b};}).filter(q=>unlockedFamilies().includes(q.a)||unlockedFamilies().includes(q.b));const result=due.slice(0,3).map(q=>({a:q.a,b:q.b}));for(const q of weightedFamilyFacts(currentFamily(),3,false))if(result.length<3&&!result.some(p=>fkey(p.a,p.b)===fkey(q.a,q.b)))result.push({a:q.a,b:q.b});while(result.length<3)result.push({a:currentFamily(),b:result.length+1});return result;}
+function campReviewQuestions(){const due=dueFactEntries(40).map(([key])=>{const [a,b]=key.split('*').map(Number);return {a,b};}).filter(q=>unlockedFamilies().includes(q.a)||unlockedFamilies().includes(q.b));const result=due.slice(0,2).map(q=>({a:q.a,b:q.b}));for(const q of weightedFamilyFacts(currentFamily(),3,false))if(result.length<2&&!result.some(p=>fkey(p.a,p.b)===fkey(q.a,q.b)))result.push({a:q.a,b:q.b});while(result.length<2)result.push({a:currentFamily(),b:LearningItems.pickAmounts(1,{avoid:result.map(r=>r.b)})[0]});return result;}
 function recordCampReview(event){if(!event.firstTry)return;const f=fact(event.a,event.b);LearningJourney.record(f,{correct:event.correct,day:dateKey(),operation:'multiply'});if(event.correct){f.c++;f.rating=Math.min(5,f.rating+1);f.streak++;if(f.rating>=4)f.caught=true;if(f.rating>=5)f.shiny=true;}else{f.w++;f.streak=0;f.rating=Math.max(1,f.rating-1);}scheduleRetrieval(event,f,event.correct,false,{mode:'camp-review',retry:false});saveState();}
 let campV2Session=null;
 function resetCampEditor(){
@@ -4070,7 +4137,7 @@ if(window.matchMedia){
   const motionChanged=()=>{ if(state) applyCalm(); };
   motionQuery.addEventListener?motionQuery.addEventListener('change',motionChanged):motionQuery.addListener&&motionQuery.addListener(motionChanged);
 }
-document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>b.dataset.s==='screen-camp'?visitCamp():showScreen(b.dataset.s));
+document.querySelectorAll('#nav button').forEach(b=>b.onclick=()=>b.dataset.s==='screen-camp'?visitCamp():b.dataset.s==='screen-parent'?openParentGate():showScreen(b.dataset.s));
 hydrateIcons();
 $('keypad').addEventListener('click',e=>{ const k=e.target.closest('.key'); if(k) pressKey(k.dataset.k); });
 document.addEventListener('keydown',e=>{
@@ -4091,6 +4158,7 @@ document.addEventListener('keydown',e=>{
 
 (async function init(){
   await loadState();
+  requestPersistentStorage();
   if(!state){ showTitle(); return; }
   applyCalm();
   checkDaily();

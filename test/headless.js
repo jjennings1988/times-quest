@@ -454,7 +454,7 @@ async function boot(saveObj, seededStorage={}) {
   ok('retired hats are not loaded into the live offline shell', !swSource.includes('./art/hat/') && !swSource.includes('./art/archive/hat-upgrades/'));
   ok('runtime cache never stores missing future-batch art', swSource.includes('if (res.ok)'));
   ok('offline misses return a valid error response',swSource.includes('Response.error()'));
-  ok('offline shell pre-caches the scrolling adventure map', swSource.includes('./art/map/bg-adventure-map.png'));
+  ok('offline shell pre-caches the scrolling adventure map', swSource.includes('./art/map/bg-adventure-map.webp'));
   // Explicit archive-renderer fixture: ordinary navigation now opens Willowbrook.
   fresh.win.enterCamp();
   ok('camp opens as a scene-first experience with collapsed menus',
@@ -692,10 +692,10 @@ async function boot(saveObj, seededStorage={}) {
   win.dismissHint();
   ok('advances past the question', ev('quiz').idx === idx4 + 1);
 
-  section('Boss — hearts are the only gate');
+  section('Guardian — no hearts; misses bring fresh facts and five misses pause kindly');
   ev('state').realms[2].trial = true;
   win.startBoss(2);
-  ok('boss has 3 hearts', ev('quiz').hearts === 3);
+  ok('guardian encounter has no hearts', ev('quiz').hearts === 0 && $('battle-lives').textContent === '');
   ok('realm showdown replaces the compact boss strip', $('screen-quiz').classList.contains('boss-active') && $('battle-stage').classList.contains('on'));
   ok('boss battle markup keeps its emoji fallback', $('battle-boss').innerHTML.includes('🌊'));
   ok('boss battle markup points at the stable semantic PNG', $('battle-boss').innerHTML.includes('art/boss/boss-2.png'));
@@ -706,9 +706,11 @@ async function boot(saveObj, seededStorage={}) {
   ok('showdown renders a five-position battle lane', $('battle-lane').children.length === 5);
   ok('all thirteen guardians have configurable battle mechanics', ev('REALM_ORDER').every(f=>ev(`BOSS_BATTLE_CONFIGS[${f}]`) && ev(`BOSS_BATTLE_CONFIGS[${f}].phases.length`)===3));
   ok('all thirteen guardians use dedicated portrait battlefield art', ev('REALM_ORDER').every(f=>ev(`BOSS_BATTLE_CONFIGS[${f}].art`).includes(`bg-battle-x${f}-portrait.webp`) && fs.existsSync(require('path').join(PUBLIC,ev(`BOSS_BATTLE_CONFIGS[${f}].art`)))));
-  ok('needCorrect matches the hearts rule', ev('quiz').needCorrect === ev('quiz').queue.length - 3,
+  ok('restoration needs all but three facts', ev('quiz').needCorrect === ev('quiz').queue.length - 3,
      `need ${ev('quiz').needCorrect} of ${ev('quiz').queue.length}`);
-  for (let i = 0; i < 3; i++) {
+  const startLength = ev('quiz').queue.length;
+  for (let i = 0; i < 5; i++) {
+    if (i === 1) ok('a first-try miss adds one fresh fact to the round', ev('quiz').queue.length === startLength + 1 && ev('quiz').extraAdded === 1);
     const bq = ev('quiz').queue[ev('quiz').idx];
     if (!ev('quiz')) break;
     answer(bq.ans + 1, true);
@@ -717,9 +719,10 @@ async function boot(saveObj, seededStorage={}) {
     await new Promise(r => setTimeout(r, 400));
   }
   await new Promise(r => setTimeout(r, 900));
-  ok('three misses ends the fight', ev('quiz') === null, 'quiz still running');
+  ok('five misses pause the encounter', ev('quiz') === null, 'quiz still running');
   ok('boss result keeps the illustrated portrait', $('results-body').innerHTML.includes('art/boss/boss-2.png'));
-  ok('failure headline shown', $('results-body').innerHTML.includes('blocked you'));
+  ok('pause headline is kind and names the guardian', $('results-body').textContent.includes('saved your progress') && !/boss|blocked|defeat/i.test($('results-body').textContent));
+  ok('pause offers a retry with new facts first', $('results-body').querySelector('.result-next .btn.gold').textContent.includes('new facts'));
 
   section('Camp Siege — replayable mixed-fact bonus round');
   const siegeWinsBefore=ev('state').siegeWins;
@@ -950,7 +953,7 @@ async function boot(saveObj, seededStorage={}) {
      $('results-body').querySelector('.blueprint-reveal')?.textContent.includes('New camp blueprints') &&
      $('results-body').querySelector('.blueprint-reveal')?.textContent.includes(ev('CampV2.content.milestones[Math.max(0,campMasteredCount()-1)]')));
   ok('first boss defeat pays an incremental realm-star reward instead of a flat 50-gem bonus',
-     $('results-body').textContent.includes('realm milestone gems') && !$('results-body').textContent.includes('+50 boss bonus'));
+     $('results-body').textContent.includes('star gems') && !$('results-body').textContent.includes('+50 boss bonus'));
   win.goPlace('trophy-x2');
   ok('legacy reward links route to Willowbrook',
      $('screen-camp-v2').classList.contains('active'));
@@ -1092,12 +1095,15 @@ async function boot(saveObj, seededStorage={}) {
      $('continue-btn').textContent.includes('11 of 12') || !/Mastery/.test($('continue-btn').textContent),
      $('continue-btn').textContent);
 
-  section('Preference: boss hearts');
+  section('Preference: hearts apply to Camp Siege, never to guardians');
   for (const h of [2, 5]) {
     win.setPref('hearts', h);
     ev('state').realms[2].trial = true;
     win.startBoss(2);
-    ok(`boss starts with ${h} hearts`, ev('quiz').hearts === h);
+    ok(`guardian ignores the ${h}-heart preference`, ev('quiz').hearts === 0);
+    win.quitQuiz();
+    win.startCampSiege();
+    ok(`siege starts with ${h} hearts`, ev('quiz').hearts === h);
     ok(`hearts rendered`, $('hearts').textContent.length === h * 2, `"${$('hearts').textContent}"`);
     ok(`needCorrect tracks hearts`, ev('quiz').needCorrect === ev('quiz').queue.length - h);
     win.quitQuiz();

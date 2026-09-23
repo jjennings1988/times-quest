@@ -67,7 +67,8 @@
   const roads=[...roadMap.values()];
   const roadAt=(x,y)=>roadMap.get(roadKey(x,y));
   const civic=(x,y)=>(x>=20&&x<=56&&y>=-11&&y<=9)||(x>=20&&x<=57&&y>=18&&y<=27)||(x>=47&&x<=57&&y>=9&&y<=18)||(x>=34&&x<=35&&y>=9&&y<=24)||(x>=grove.x&&x<grove.x+grove.w&&y>=grove.y&&y<grove.y+grove.h)||!!roadAt(x,y);
-  const offers={wood:{name:'6 wood',price:8,wood:6},stone:{name:'4 stone',price:10,stone:4},rod:{name:'Fishing rod',price:30,woodCost:4,need:2,tool:'rod'},trade:{name:'Trade 1 fish for 4 stone',fishCost:1,stone:4},sell:{name:'Trade 1 fish for 6 gems',fishCost:1,gems:6}};
+  // Wood and stone are earned in the world (clearing, gathering, fishing trades), not bought with gems.
+  const offers={rod:{name:'Fishing rod',price:30,woodCost:4,need:2,tool:'rod'},trade:{name:'Trade 1 fish for 4 stone',fishCost:1,stone:4},sell:{name:'Trade 1 fish for 6 gems',fishCost:1,gems:6}};
   const inZone=(z,x,y)=>x>=z.x&&x<z.x+z.w&&y>=z.y&&y<z.y+z.h;
   function mask(objects,o,defs){const family=defs[o.type]?.connect;if(!family)return 0;return [[0,-1,1],[1,0,2],[0,1,4],[-1,0,8]].reduce((m,[dx,dy,bit])=>m|(objects.some(n=>n.id!==o.id&&n.x===o.x+dx&&n.y===o.y+dy&&defs[n.type]?.connect===family)?bit:0),0);}
   const corner=m=>[3,6,9,12].includes(m);
