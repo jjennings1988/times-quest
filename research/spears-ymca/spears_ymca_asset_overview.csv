@@ -1,0 +1,16 @@
+Section,Topic,Presentation Value,Qualification
+Site,Address,"3216 Horse Pen Creek Road, Greensboro, NC 27410",Official YMCA branch address
+Site,County / Census Tract,"Guilford County | Census Tract 160.06 | GEOID 37081016006",U.S. Census geocoder
+Site,Ownership / Lease Terms,"YMCA-owned / owner-occupied","County owner of record is Young Mens Christian Association of Greensboro Incorporated; no ground lease indicated by tax record"
+Site,Parcel / Lot Size,"8.52 AC | 371,131 SF","One YMCA-owned parcel; REID 241419; PIN 7847035436-000"
+Site,Zoning,"CD-PI — Conditional District, Public & Institutional","Check conditional zoning conditions, approved plans, and overlays for expansion"
+Site,Traffic Volume (AADT),"13,000 (2024)",NCDOT data for Horse Pen Creek Road adjacent to the property
+Site,Location Scores,"12 walk | — transit | 19 bike",Walk Score; no Transit Score published for the address
+Site,Supplemental Funding Sources,"None identified: NMTC — appears no | OZ — no | 2026 QCT — no | 2026 DDA — no",Recheck at financing using the then-current official program maps
+Facility,Size,"74,348 SF",Guilford County appraisal record; one story
+Facility,By-right FAR,"N/A — no numeric FAR maximum in PI table","Conditional district conditions, setbacks, height, parking, landscaping, overlays, and other site standards govern"
+Facility,Parking Stalls,"~275 stalls",Aerial estimate; confirm against current survey or approved site plan
+Facility,Geography,"Suburban | Northwest Greensboro",Descriptive market/location classification
+Facility,Vintage,Early-2000s / established,"Main facility and pool 2002; storage 2003; additional paving 2004; no remodeling year listed"
+Facility,Type,"Membership | Full Facility",Official YMCA branch amenities
+Facility,Facility Age,"2002 main facility | 24 years (as of 2026)",Supporting improvements date to 2003–2004
