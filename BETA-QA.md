@@ -22,6 +22,71 @@ The GitHub Actions workflow runs the same suite on every pull request and on pus
 
 ## Connected adventure regression (0.21.0-beta.1)
 
+### Devices, returns, lesson variety and camp depth (0.24–0.27, shipped as 0.27.0-beta.1)
+
+- **0.24 devices:** follow [DEVICE-AND-PILOT-PLAN.md](DEVICE-AND-PILOT-PLAN.md).
+  Parents → Device check for testing copies a report (screen, safe areas,
+  install state, saves kept, WebGL 2, camp frame timing). On a slow device,
+  Willowbrook offers low power once after about 3 seconds; "Not now" dismisses it.
+- **0.25 returns:** on a later day with 3+ due facts, the map offers a 4-fact
+  warm-up; after that, or on "Not today", it offers a Fact Trail for a realm
+  restored on an earlier day. It never offers a trail on the day the realm was
+  restored. Parents now needs a grown-up answer (a two-digit fact beyond ×12,
+  asked once per session). Family chips show on their own, with help, and
+  remembered later separately.
+- **0.26 lessons:** phase 2 starts with a PLAN choice for the strategy group
+  (doubling, five-anchored, ten-anchored, identity) before PREDICT. Wrong plans
+  get coaching. After the own-amount build, ×3/4/6/7/8/11/12 offer an optional
+  "another way". With a related lesson completed, "I used a strategy like this"
+  jumps to planning.
+- **0.27 camp:** at the river, choose fishing or river stones (from 3 realms;
+  two facts, +4 stone; three trips per learning adventure). Learning adds 2 stone
+  from 3 realms. A finished home triggers a moving-in moment. The camp edge shows
+  a pennant for each restored realm. Camp project cards show "Today's idea".
+
+### Every answer counts (0.23.0-beta.1)
+
+- **Independent checks:** after any lesson, the four checks never use an amount the
+  lesson displayed (4, the 6–8 prediction amount, or the child's own amount). One
+  item is reversed (b × f). "Try again" always draws a new set. Zero Marsh,
+  starting checks, guardian encounters and Fact Trail rounds are shuffled.
+- **Lessons:** each phase needs a decision. Predictions ask for a partial or total
+  that is not printed in the question. Phase 3 needs a chosen amount, a build and a
+  typed total before "Try four new problems" appears. "I already know this
+  strategy" skips to the check; fewer than 3 of 4 correct sends the child back.
+- **Guardian:** no hearts or "boss" copy. A first-try miss adds one fresh fact (up
+  to three). Five misses pause the round kindly; the first button retries with
+  new facts.
+- **Results:** exactly one gold button, one outlined alternative, one summary
+  line, collapsed camp news, then "Finish for today". After star 2 the primary
+  button continues to the next realm; the Fact Trail is the alternative.
+- **Starting check:** 5 of 6 earns star 1 and leads to the guardian.
+- **Small screens:** at 320×568, 375×667 and 667×375, prediction choices and the
+  GO key are visible without scrolling, with the software keyboard hidden.
+- **Camp:** the store no longer sells wood or stone. Gathering reviews are two
+  facts, due facts first. The land key appears only while building.
+- **Saves:** Parents shows whether the browser agreed to keep saves. Verify the
+  warning appears in Safari when the game is not installed to the Home Screen.
+
+### Family strategy expansion (0.22.0-beta.1)
+
+- In each realm's Learn activity, complete discovery, explain the whole-group
+  change, predict for seven items, manipulate, solve, then explore 0 and 12.
+  Check that wrong ideas receive coaching without losing hearts or supplies.
+- ×5: move arbitrary boats until the docks are equal. Return a boat, then Undo;
+  the previous arrangement and all cargo must return exactly. Try 6/4 docks too.
+- ×10: verify columns become the matching numbered/color bundles of ten without
+  adding cells. Try twelve columns and zero columns. ×11 with twelve tiles should
+  show 120 + 12 = 132, never a repeated-digit shortcut.
+- Double/undo through ×4 and ×8; check whole trays/clusters remain equal. In ×7
+  and ×12, verify both extra groups are full, not two single items.
+- Save and leave in the middle of a prediction or boat experiment. Resume after
+  relaunch and after switching back to the child profile. Complete a legacy
+  comparison save and confirm it still opens exploration without losing stars.
+- Use keyboard-only controls and Calm. On a small phone, scroll all content and
+  ensure controls clear the status area and software keyboard. Physical Safari,
+  VoiceOver, offline PWA relaunch and child observation are still release checks.
+
 See [LEARNING-CONNECTIONS.md](LEARNING-CONNECTIONS.md) for behavior and save compatibility.
 
 - Guardian: one prompt and one forward restoration bar; correct answers move it

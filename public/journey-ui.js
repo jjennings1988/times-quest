@@ -59,9 +59,6 @@ function beginLesson(fam){
 function resumeLesson(){if(state.journey.current)showScreen('screen-journey');else beginLesson(currentFamily());}
 function chooseStartingRoute(){state.journey.current={family:0,stage:'choose',groups:0};showScreen('screen-journey');}
 function lessonLandscape(fam){return illustratedGuardian(fam);}
-function legacyLessonLandscape(fam){
-  return `<div class="journey-landscape" aria-hidden="true" style="--realm-color:${REALMS[fam].color}"><div class="journey-hills"></div><div class="journey-stream"></div><div class="journey-bridge"><i></i><i></i><i></i><i></i><i></i></div><img src="art/realm/pet-${fam}.png" alt=""><span class="journey-spark">✦</span></div>`;
-}
 function renderJourney(){
   const current=state.journey.current,host=$('journey-body');
   if(!current||current.stage==='choose')$('screen-journey').style.backgroundImage="url('art/battle/bg-battle-x0-portrait.webp')";
@@ -74,24 +71,17 @@ function renderJourney(){
   if(current.stage==='choose'){
     host.innerHTML=`<div class="journey-heading"><small>CHOOSE YOUR START</small><h1>What would you like to try?</h1><p>Six calm questions can open a route. This is a starting suggestion, not a mastery badge.</p></div><div class="journey-route-grid">${REALM_ORDER.map(f=>`<button onclick="startReadiness(${f})">${realmCharacter(f)}<strong>${REALMS[f].name}</strong><span>×${f}</span></button>`).join('')}</div><button class="btn gold" onclick="beginLesson(0)">Begin with Poof instead</button>`;return;
   }
-  const l=LearningJourney.lesson(current.family),fam=current.family,r=REALMS[fam],build=current.stage==='build';
-  host.innerHTML=`<div class="journey-heading"><small>${build?'2 · BUILD TOGETHER':'1 · DISCOVER'} · NO TIMER</small><h1>${l.title}</h1><p>${r.petName} is your ally. ${l.idea}</p></div>${lessonLandscape(fam)}<section class="journey-card"><h2>${build?`Make ${fam} equal groups`:'Watch the groups work'}</h2><p>${build?`Each group holds 4 supplies. ${fam===0?'Leave no groups on the clearing.':`Use the buttons to build ${fam} groups. Then we will try a few new facts.`}`:l.explanation}</p>${build?lessonBuildMarkup(current.groups):MathVisuals.render(fam,4)}<div id="journey-feedback" role="status"></div>${build?`<button class="btn gold" onclick="checkLessonBuild()">Check my groups</button>`:`<button class="btn gold" onclick="lessonBuildStage()">Let me build it</button>`}<button class="btn ghost" onclick="saveState();showScreen('screen-map')">Save and explore</button></section>`;
-}
-function lessonBuildMarkup(groups){return `<div class="lesson-groups" aria-label="${groups} groups of 4">${groups?Array.from({length:groups},()=>'<span class="supply-group" aria-hidden="true"><i></i><i></i><i></i><i></i></span>').join(''):'<span class="empty-clearing">No groups here yet</span>'}</div><div class="group-controls"><button aria-label="Remove one group" onclick="adjustLesson(-1)" ${groups===0?'disabled':''}>−</button><output aria-live="polite">${groups} group${groups===1?'':'s'} · ${groups*4} supplies</output><button aria-label="Add one group" onclick="adjustLesson(1)" ${groups===12?'disabled':''}>+</button></div>`;}
-function lessonBuildStage(){state.journey.current.stage='build';state.journey.current.groups=0;saveState();renderJourney();$('journey-body').querySelector('.group-controls button:not(:disabled)')?.focus({preventScroll:true});}
-function adjustLesson(delta){const c=state.journey.current;if(!c||c.stage!=='build')return;c.groups=Math.max(0,Math.min(12,c.groups+delta));saveState();renderJourney();$('journey-body').querySelector(delta>0?'[aria-label="Add one group"]':'[aria-label="Remove one group"]')?.focus({preventScroll:true});}
-function checkLessonBuild(){
-  const c=state.journey.current;if(!c||c.stage!=='build')return;
-  if(c.groups!==c.family){$('journey-feedback').textContent=`You made ${c.groups} groups. We need ${c.family}. Each group stays equal.`;return;}
-  const fam=c.family;state.journey.current=null;saveState();
-  const queue=[2,3,6,5].map((b,i)=>({a:fam,b,text:`${fam} × ${b}`,ans:fam*b,prompt:i===3?`${fam} boats each carry ${b} supplies. How many supplies altogether?`:'Try this new fact. Take the time you need.'}));
-  lastConfig={fn:beginLesson,args:[fam]};startQuiz({mode:'lesson',fams:[fam],queue,timed:false,title:'Try it yourself'});
+  // Older 'build' saves resume in the current strategy lesson.
+  current.stage='see';renderGuardianLesson();
 }
 function startReadiness(fam){
   if(!REALMS[fam])return;
   state.journey.onboardingDone=true;state.journey.current=null;
-  const queue=[2,5,3,8,11,6].map((b,i)=>({a:fam,b,text:`${fam} × ${b}`,ans:fam*b,prompt:i===5?`${fam} baskets each hold ${b} apples. How many apples in all?`:'A calm starting check. Help is available.'}));
-  lastConfig={fn:startReadiness,args:[fam]};startQuiz({mode:'readiness',fams:[fam],queue,timed:false,needCorrect:5,title:'Choose a starting route'});
+  const key='r'+fam,queue=LearningItems.readiness(fam,{previous:state.journey.lastItems?.[key]||[]});
+  (state.journey.lastItems||={})[key]=queue.map(q=>q.b);
+  const unit=GuardianChapters.chapters[fam]?.unit;
+  if(unit&&fam>0)queue[queue.length-2].prompt=`${fam} equal groups with ${queue[queue.length-2].b} ${unit} in each. How many ${unit} in all?`;
+  lastConfig={fn:startReadiness,args:[fam]};startQuiz({mode:'readiness',fams:[fam],queue,timed:false,needCorrect:5,title:'Show what you know'});
 }
 function finishJourneyRound(qz,passed){
   const fam=qz.fams[0];
@@ -104,15 +94,21 @@ function finishJourneyRound(qz,passed){
     return {headline:'You discovered the power of zero!',sub:'Star 1 earned! Help Poof clear the fog with three discoveries to earn star 2.',action:'startBoss(0)',label:'Help Poof clear the marsh'};
   }
   if(qz.mode==='lesson'){
-    const old=state.journey.lessons[fam];state.journey.lessons[fam]={completed:true,day:dateKey(),independent:qz.passCorrect,total:qz.baseTotal};
+    const old=state.journey.lessons[fam],strong=qz.passCorrect>=3;
+    // A skipped lesson only counts when the child showed the strategy on their own.
+    if(qz.lessonSkip&&!strong){return {headline:'Let’s explore it together',sub:`${REALMS[fam].petName} has a quick model to show you. Your answers are saved.`,action:`resumeLesson()`,label:`Explore with ${REALMS[fam].petName}`};}
+    if(qz.lessonSkip)state.journey.current=null;
+    state.journey.lessons[fam]={completed:true,day:dateKey(),independent:qz.passCorrect,total:qz.baseTotal};
     if(!old?.completed){state.gems+=12;qz.gems+=12;}
     if(fam===2)state.journey.riverKit=true;
-    state.journey.activeFamily=fam;state.journey.current=null;
+    state.journey.activeFamily=fam;
+    if(!strong)return {headline:'A good start',sub:`You solved ${qz.passCorrect} of ${qz.baseTotal} on your own. Four new problems will help the strategy stick before the Realm Challenge.`,action:`retryGuardianTry(${fam})`,label:'Try four new problems',secondary:{action:`startTrial(${fam})`,label:'Go to the Realm Challenge'}};
     return {headline:'A new way to think!',sub:`${REALMS[fam].petName} helped you explore ${LearningJourney.lesson(fam).idea.toLowerCase()} Your Realm Challenge is open.`,action:`startTrial(${fam})`,label:'Try the Realm Challenge'};
   }
   if(qz.mode==='readiness'){
-    if(passed){state.journey.readiness[fam]=true;if(!state.journey.routes.includes(fam))state.journey.routes.push(fam);state.journey.activeFamily=fam;}
-    return {headline:passed?'Your route is open':'Let’s build this together',sub:passed?'You showed a useful starting point. Later visits will check what you remember.':'This check does not take anything away. A guardian can show you a useful strategy.',action:passed?`openRealm(${fam})`:`beginStartingLesson(${fam})`,label:passed?'Visit this realm':'Learn with a guardian'};
+    // The starting check uses the Realm Challenge rule (5 of 6 on your own, untimed), so it earns star 1.
+    if(passed){state.journey.readiness[fam]=true;state.realms[fam].trial=true;if(!state.journey.routes.includes(fam))state.journey.routes.push(fam);state.journey.activeFamily=fam;}
+    return {headline:passed?'Star 1 earned · your route is open':'Let’s build this together',sub:passed?`You showed what you know. Help ${REALMS[fam].petName} next to earn star 2.`:'This check does not take anything away. A guardian can show you a useful strategy.',action:passed?`startBoss(${fam})`:`beginStartingLesson(${fam})`,label:passed?`Help ${REALMS[fam].petName}`:'Learn with a guardian',secondary:passed?{action:`openRealm(${fam})`,label:'Visit this realm'}:null};
   }
   return null;
 }
@@ -136,12 +132,12 @@ function renderQuestionContext(q){
   if(companion){const [a,b]=companion.split('*').map(Number),friend=monsterIdentity(a,b);$('question-context').insertAdjacentHTML('beforeend',`<button class="lesson-companion" aria-label="Visit ${escapeHtml(friend.name)} in your Field Guide" onclick="openMonsterCard(${a},${b})">${monsterVisual(a,b)}</button>`);}
 }
 function encounterQuestions(fam,count){
-  const values=[3,4,6,5,7,8,9,2,11,12,10,1];
+  const values=LearningItems.shuffle([2,3,4,5,6,7,8,9,10,11,12,1]);
   const unit=GuardianChapters.chapters[fam]?.unit||'supplies';
   return Array.from({length:count},(_,i)=>{
     const b=values[i%values.length],kind=['build','split','missing'][i%3];
     if(kind==='missing'&&fam>0)return {a:fam,b,text:`${fam} × ? = ${fam*b}`,ans:b,encounter:kind,prompt:`Share ${fam*b} ${unit} into ${fam} equal groups. How many in each?`};
-    return {a:fam,b,text:`${fam} × ${b}`,ans:fam*b,encounter:kind==='missing'?'build':kind,prompt:kind==='split'?'Choose how to split the groups. Then combine their totals.':`Make ${fam} equal groups with ${b} ${unit} in each.`};
+    return {a:fam,b,text:`${fam} × ${b}`,ans:fam*b,encounter:kind==='missing'?'build':kind,prompt:kind==='split'?'Choose how to split the groups. Then combine their totals.':`Make ${fam} equal group${fam===1?'':'s'} with ${b} ${unit} in each.`};
   });
 }
 function renderEncounter(q){
@@ -188,7 +184,7 @@ function campGoalMarkup(){
   const title=g.constructing?'Being assembled':g.placed?'Built in my camp':g.kit?'Kit in my backpack':g.ready?'Ready to preview':'My next camp project';
   const needs=g.resources.filter(r=>r.need).map(r=>'<li><strong>'+Math.min(r.have,r.need)+' / '+r.need+'</strong> '+r.key+(r.missing?' · '+r.missing+' more':' · ready')+'</li>').join('');
   const progress=g.remaining?g.remaining+' more Realm Challenge'+(g.remaining===1?'':'s')+' to unlock this blueprint.':g.kit?'Your owned kit is free to place.':g.placed?'Your project is part of your world. Choose another whenever you like.':'Blueprint unlocked. No speed requirement.';
-  return '<section class="camp-goal-preview" data-camp-goal="'+g.type+'"><small>'+title+'</small><h3>'+g.item.name+'</h3><p>'+progress+'</p>'+(needs?'<ul class="goal-supplies">'+needs+'</ul>':'')+(g.pendingGems&&!g.placed&&!g.kit?'<p class="goal-note">Includes supplies waiting from your learning rounds.</p>':'')+'<p>'+g.item.w+' × '+g.item.h+' spaces'+(g.predecessor&&!g.placed?' · can renovate your '+CampV2.catalog[g.predecessor.type].name:'')+'</p><div class="goal-actions"><button class="btn secondary" onclick="'+(g.remaining?'openGoalRealm()':'openPinnedCampGoal()')+'">'+(g.placed?'Visit my '+g.item.name:g.ready?'Preview my project':g.remaining?'Explore my next realm':'Find supplies at camp')+'</button><button class="btn ghost" onclick="showCampGoalPicker()">Choose a project</button></div></section>';
+  return '<section class="camp-goal-preview" data-camp-goal="'+g.type+'"><small>'+title+'</small><h3>'+g.item.name+'</h3><p>'+progress+'</p><p class="goal-today"><strong>Today’s idea:</strong> '+CampGoals.todayIdea(g,{hasRod:!!state.campV2?.tools?.includes('rod')})+'</p>'+(needs?'<ul class="goal-supplies">'+needs+'</ul>':'')+(g.pendingGems&&!g.placed&&!g.kit?'<p class="goal-note">Includes supplies waiting from your learning rounds.</p>':'')+'<p>'+g.item.w+' × '+g.item.h+' spaces'+(g.predecessor&&!g.placed?' · can renovate your '+CampV2.catalog[g.predecessor.type].name:'')+'</p><div class="goal-actions"><button class="btn secondary" onclick="'+(g.remaining?'openGoalRealm()':'openPinnedCampGoal()')+'">'+(g.placed?'Visit my '+g.item.name:g.ready?'Preview my project':g.remaining?'Explore my next realm':'Find supplies at camp')+'</button><button class="btn ghost" onclick="showCampGoalPicker()">Choose a project</button></div></section>';
 }
 function showCampGoalPicker(){
   if(campGoalView().recoveryRequired){visitCamp();return;}

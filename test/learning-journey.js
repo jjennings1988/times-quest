@@ -30,15 +30,18 @@ async function main(){
     w.startSummit();check('summit rejects incomplete realms',ev('quiz')===null);
     w.renderMap();check('every map realm has a keyboard action',w.document.querySelectorAll('.realm-node [role="button"][tabindex="0"]').length===13);
     fresh();w.beginLesson(2);check('new child can start with meaningful doubles',ev('unlockedFamilies().includes(2)'));
-    check('guided model appears before testing',!!$('journey-body').querySelector('.math-visual')&&ev('quiz')===null);
-    w.lessonBuildStage();w.adjustLesson(1);w.checkLessonBuild();check('unequal group count prompts correction',ev('quiz')===null&&$('journey-feedback').textContent.includes('We need 2'));
-    w.adjustLesson(1);w.checkLessonBuild();check('four independent questions follow the model',ev('quiz.queue.length')===4&&!ev('quiz.timed'));
+    check('guided model appears before testing',!!$('journey-body').querySelector('.strategy-workshop')&&ev('quiz')===null);
+    w.strategyAction('act');w.strategyAction('reason',0);check('adding single items prompts correction',ev('quiz')===null&&!ev('state.journey.current.strategy.explained')&&$('strategy-feedback').textContent.includes('full groups'));
+    const finishDoubles=()=>{w.strategyAction('act');w.strategyAction('reason',1);w.strategyAction('next',7);w.strategyAction('plan',0);w.strategyAction('predict',14);w.strategyAction('act');w.strategyAction('total',14);w.strategyAction('next');w.strategyAction('each',9);w.strategyAction('act');w.strategyAction('total',18);w.startGuardianTry();};
+    finishDoubles();check('four independent questions follow the model',ev('quiz.queue.length')===4&&!ev('quiz.timed'));
+    check('independent questions never repeat an amount the lesson displayed',ev('quiz.queue').every(q=>![4,7,9].includes(q.b)));
+    check('one independent question is written in reverse order',ev('quiz.queue').filter(q=>q.reversed).length===1);
     while(ev('quiz'))await answer(ev('quiz.queue[quiz.idx].ans'));
     check('lesson completion opens challenge without grinding ten catches',ev('challengeReady(2)')&&ev('realmStars(2).caught')<10);
     check('lesson gives a clear next step', $('results-body').textContent.includes('Try the Realm Challenge'));
     check('lesson, milestone, and daily expedition rewards remain pending before first camp visit',ev('state.journey.pendingGems')===23);
     check('lesson has not invented retention mastery',ev('reviewSummary().secure')===0);
-    const pre=ev('state.gems');w.beginLesson(2);w.lessonBuildStage();w.adjustLesson(1);w.adjustLesson(1);w.checkLessonBuild();while(ev('quiz'))await answer(ev('quiz.queue[quiz.idx].ans'));
+    const pre=ev('state.gems');w.beginLesson(2);finishDoubles();while(ev('quiz'))await answer(ev('quiz.queue[quiz.idx].ans'));
     check('repeating a lesson does not reaward its twelve-gem milestone',ev('state.gems')-pre===1);
     w.startTrial(2);check('challenge is six untimed questions',ev('quiz.baseTotal')===6&&ev('quiz.needCorrect')===5&&!ev('quiz.timed'));
     while(ev('quiz'))await answer(ev('quiz.queue[quiz.idx].ans'));
@@ -56,11 +59,12 @@ async function main(){
     check('Double River kit supplies usable camp objects',ev('state.campV2.inventory.path')===14&&ev('state.campV2.inventory.deck')===6&&ev('state.campV2.inventory.lantern')===2);
     const stateCopy=JSON.stringify(ev('state'));ev(`state=JSON.parse(${JSON.stringify(stateCopy)});migrateState()`);w.deliverCampGrants();check('save/reload does not redeliver rewards',ev('state.campV2.gems')===delivered);
     fresh();ev('state.realms[0].trial=true');w.startBoss(0);
-    for(let i=0;i<3;i++){
+    check('guardian encounter has no hearts',ev('quiz.hearts')===0);
+    for(let i=0;i<5;i++){
       await answer(1);check(`miss ${i+1} offers mathematical feedback`,!!ev('quiz')&&$('hint-card').style.display==='block'&&$('hint-body').querySelector('.math-visual'));
-      if(i<2){w.dismissHint();w.dismissHint();}else{check('last-heart correction waits for the learner',ev('quiz.failedPending'));w.dismissHint();}
+      if(i<4){w.dismissHint();w.dismissHint();}else{check('fifth miss pauses after the learner reads the help',ev('quiz.failedPending'));w.dismissHint();}
     }
-    check('last-heart recovery ends safely',ev('quiz')===null&&!ev('state.realms[0].conquered'));
+    check('paused encounter ends safely without a star',ev('quiz')===null&&!ev('state.realms[0].conquered'));
     fresh();w.startPractice(0);ev("queueMissedFactForReview(quiz.queue[0]);queueMissedFactForReview(quiz.queue[1]);queueMissedFactForReview(quiz.queue[2]);queueMissedFactForReview(quiz.queue.at(-1))");
     check('review tail is capped at two and cannot extend itself',ev('quiz.reviewAdded')===2&&ev('quiz.queue.length')===ev('quiz.baseTotal')+2);
     w.quitQuiz();fresh();w.startQuiz({mode:'practice',fams:[7],queue:[{a:7,b:8,text:'7 × 8',ans:56}],timed:false,title:'Support check'});w.showQuestionHelp();w.dismissHint();await answer(56);
@@ -80,7 +84,8 @@ async function main(){
     check('parent tools are grouped without losing controls',w.document.querySelectorAll('#parent-body details[data-parent-panel]').length===5&&!!$('family-backup-pass'));
     check('heatmap supports keyboard and named detail',w.document.querySelectorAll('button.heat-cell[aria-label]').length===169);
     fresh();w.startReadiness(8);while(ev('quiz'))await answer(ev('quiz.queue[quiz.idx].ans'));
-    check('starting check opens a route without claiming a guardian victory',ev('unlockedFamilies().includes(8)')&&!ev('state.realms[8].conquered')&&ev('realmStars(8).stars')===0);
+    check('starting check earns star 1 and opens a route without claiming a guardian victory',ev('unlockedFamilies().includes(8)')&&!ev('state.realms[8].conquered')&&ev('realmStars(8).stars')===1);
+    check('starting check leads straight to the guardian',$('results-body').querySelector('.result-next .btn.gold').getAttribute('onclick')==='startBoss(8)');
     check('starting check enables a short realm challenge',ev('challengeReady(8)'));
     fresh();w.startQuiz({mode:'practice',fams:[2],queue:[{a:2,b:3,text:'2 × 3',ans:6},{a:2,b:4,text:'2 × 4',ans:8}],timed:false,title:'Interruption check'});
     await answer(6);check('answered question and earned supply are checkpointed',ev('state.journey.resume.idx')===1&&ev('state.journey.pendingGems')===1);
@@ -96,6 +101,19 @@ async function main(){
     ev(`state=${JSON.stringify(legacy)};migrateState()`);
     check('legacy save keeps gems, ownership and progression',ev('state.gems')===321&&ev("state.owned.includes('cat')")&&ev('state.realms[0].conquered')&&ev('state.settings.roundLen')===16);
     check('returning players use Willowbrook without inventing pending learning rewards',ev('state.journey.preferredCamp')==='v2'&&ev('state.journey.pendingGems')===0);
+    fresh();ev("['0*3','0*4','0*6','0*7'].forEach(k=>{const [a,b]=k.split('*').map(Number);const f=fact(a,b);f.c=2;f.rating=3;f.dueOn='2000-01-01';f.intervalDays=2;})");
+    check('a returning day offers a short warm-up of due facts first',ev('nextAction().offer')==='review'&&ev('nextAction().label').includes('Warm up'));
+    w.renderMap();check('the warm-up can be skipped for today',!$('continue-skip').hidden);w.skipDayOffer();check('skipping hides the offer until tomorrow',ev('nextAction().offer')!=='review');
+    ev('state.journey.dayOffers=null');w.startWarmup();check('warm-up is four untimed due facts',ev('quiz.mode')==='review'&&ev('quiz.queue.length')===4&&!ev('quiz.timed'));
+    check('starting the warm-up marks it offered for today',ev('state.journey.dayOffers.review'));w.quitQuiz();
+    fresh();ev("state.realms[0].trial=true;state.realms[0].conquered=true;state.realms[0].conqueredDay=dateKey()");
+    check('a Fact Trail is not pushed on the day its realm was restored',ev('nextAction().offer')!=='trail');
+    ev("state.realms[0].conqueredDay='2000-01-01'");check('a Fact Trail is offered on a later day',ev('nextAction().offer')==='trail'&&ev('nextAction().args[0]')===0);
+    w.startFactTrail(0);check('starting a trail round marks the offer for today',ev('state.journey.dayOffers.trail'));w.quitQuiz();
+    w.openParentGate();check('Parents asks a grown-up question first',!!$('parent-gate-answer')&&!$('screen-parent').classList.contains('active'));
+    $('parent-gate-answer').value='1';w.checkParentGate();check('a wrong answer keeps Parents closed',!$('screen-parent').classList.contains('active'));
+    $('parent-gate-answer').value=String(ev('parentGateQuestion'));w.checkParentGate();check('the right answer opens Parents for this session',$('screen-parent').classList.contains('active')&&ev('parentUnlocked'));
+    check('Parents separates independent, supported and remembered-later evidence',$('parent-body').textContent.includes('remembered later')||$('parent-body').textContent.includes('No new independent evidence'));
     check('no uncaught runtime errors across journeys',errors.length===0);
     console.log(`${checks} learning journey checks passed`);
   }finally{dom.window.close();}

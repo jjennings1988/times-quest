@@ -12,5 +12,17 @@
     const remaining=placed||kit?0:Math.max(0,(item.need||0)-mastered),ready=!remaining&&resources.every(r=>!r.missing),constructing=!!placed&&save.construction?.objectId===placed.id;
     return {type,item,placed,kit,predecessor,resources,remaining,ready,constructing,mastered,pendingGems};
   }
-  const api={valid,normalize,category,groups,view};root.CampGoals=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
+  /* One small, optional thing to do today for the pinned project. No streaks, nothing lost if skipped. */
+  function todayIdea(g,{hasRod=false}={}){
+    if(g.placed)return 'Choose a new project, or add a path or flowers around this one.';
+    if(g.constructing)return 'Visit camp so your explorer can finish building.';
+    if(g.kit||g.ready)return 'Open Build and choose a spot to place it.';
+    if(g.remaining)return `Restore ${g.remaining} more realm${g.remaining===1?'':'s'} on the Adventure map.`;
+    const miss=Object.fromEntries(g.resources.map(r=>[r.key,r.missing]));
+    if(miss.stone)return g.mastered>=3?'Take a river trip to collect stones (+4 stone for two review facts).':hasRod?'Catch a fish and trade it for 4 stone at the store.':'Restore 3 realms to open the river stone bar.';
+    if(miss.wood)return 'Clear a tree (+6 wood) or gather fallen branches (+3 wood).';
+    if(miss.gems)return 'Finish one learning round to earn gems.';
+    return 'Open Build and choose a spot.';
+  }
+  const api={valid,normalize,category,groups,view,todayIdea};root.CampGoals=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
