@@ -26,6 +26,7 @@ const fastest=Math.ceil(need/perRoundNoFishing),light=Math.ceil(need/perRoundLig
 check(`stone homes take at least ${fastest} learning adventures, so they stay a long-term goal`,fastest>=5);
 check(`one river trip per adventure reaches the keep within ${light} adventures, not months`,light<=16);
 
+{const f=C.fresh(),tent=f.objects.find(o=>o.type==='tent');const r=C.command(f,{kind:'paint',id:tent.id,color:3});check('a colour can be chosen directly, not only cycled',r.ok&&r.save.objects.find(o=>o.id===tent.id).color===3);check('an invalid colour falls back to the next colour',C.command(f,{kind:'paint',id:tent.id,color:9}).save.objects.find(o=>o.id===tent.id).color===1);}
 // Today's idea follows the pinned project.
 const fresh=C.fresh();
 const ideas=['tent','lodge','keep','stonewall','palisade','well'].map(type=>Goals.todayIdea(Goals.view(C.catalog,fresh,type),{hasRod:false}));

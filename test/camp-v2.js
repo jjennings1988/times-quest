@@ -49,7 +49,8 @@ test('future or damaged saves are refused without mutation',()=>{const s=C.fresh
     const click=selector=>w.document.querySelector(selector).click();const before=e('state.campV2.objects.length'),stock=e('state.campV2.inventory.fence');
     click('[data-type="fence"]');assert(w.document.querySelector('.cv2-brush'));click('[data-action="confirm"]');assert.equal(e('state.campV2.objects.length'),before+1);assert(w.document.querySelector('.cv2-brush'));assert(w.document.querySelector('[data-action="confirm"]').disabled);
     click('[data-action="nudge-w"]');click('[data-action="confirm"]');assert.equal(e('state.campV2.objects.length'),before+2);assert.equal(e('state.campV2.inventory.fence'),stock-2);
-    click('[data-action="undo"]');assert.equal(e('state.campV2.objects.length'),before+1);assert.equal(e('state.campV2.inventory.fence'),stock-1);click('[data-action="cancel"]');assert(!w.document.querySelector('.cv2-brush'));
+    click('[data-action="undo"]');assert.equal(e('state.campV2.objects.length'),before+1);assert.equal(e('state.campV2.inventory.fence'),stock-1);
+    click('[data-action="undo"]');assert.equal(e('state.campV2.objects.length'),before,'undo goes back more than one step');assert.equal(e('state.campV2.inventory.fence'),stock);click('[data-action="cancel"]');assert(!w.document.querySelector('.cv2-brush'));
   });
   test('guardian grove keeps unearned guardians locked and offers no practice shortcut',()=>{w.document.querySelector('[data-action="journal"]').click();w.document.querySelector('[data-location="sanctuary"]').click();assert.equal(w.document.querySelectorAll('[data-guardian]').length,13);assert(w.document.querySelector('[data-guardian="7"]').disabled);assert(!w.document.querySelector('[data-action="guardian-practice"]'));});
   e("showScreen('screen-map')");

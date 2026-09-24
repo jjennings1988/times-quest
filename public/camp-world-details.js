@@ -1,6 +1,6 @@
 /* Original village and guardian-grove geometry. No external art or runtime assets. */
 export function createWorldDetails(api) {
-  const {THREE,scene,world,content,guardians,geo,mat,piece,box,instance,newBuilding,tree,pathModel,roadMaterials,groundShade,sphereG,rockG,cylinderG,coneG,boxG}=api;
+  const {THREE,scene,world,content,guardians,geo,mat,piece,box,instance,newBuilding,tree,pathModel,roadMaterials,groundShade,sphereG,rockG,cylinderG,coneG,boxG,visitor=null}=api;
   const picks=new THREE.Group(),landscape=new THREE.Group(),residents=[],textures=[],roadGeometry=[];
   scene.add(picks);
   const ringG=geo('garden-ring',()=>new THREE.TorusGeometry(1,.075,5,32));
@@ -75,12 +75,14 @@ export function createWorldDetails(api) {
   for(let side=0;side<4;side++){const dial=new THREE.Group();dial.rotation.y=side*Math.PI/2;clock.add(dial);const face=piece(dial,cylinderG,'#f1e1b9',0,.68,.57,.39,.05,.39);face.rotation.x=Math.PI/2;box(dial,'#627668',0,.8,.62,.035,.26,.02);box(dial,'#627668',.12,.68,.63,.25,.035,.02);}landscape.add(clock);
   const wheel=new THREE.Group();const rim=piece(wheel,ringG,'#896943',0,0,0,1.08,1.08,1);for(let i=0;i<12;i++){const a=i*Math.PI/6,m=box(wheel,'#a28353',Math.cos(a)*.6,Math.sin(a)*.6,0,1.2,.09,.11);m.rotation.z=a;const paddle=box(wheel,'#b39564',Math.cos(a)*1.12,Math.sin(a)*1.12,0,.28,.3,.53);paddle.rotation.z=a;}wheel.position.set(20.75,at(21,14)+1.1,14.5);wheel.rotation.y=Math.PI/2;scene.add(wheel);
 
+  const pennantFlags=new THREE.Group();scene.add(pennantFlags);
   // Realm pennants at the camp's north edge: each restored realm colours one flag, so learning visibly changes home.
   {const x0=1.5,x1=10.5,z=-.45,postY=Math.max(at(x0,z),at(x1,z));
     for(const x of [x0,x1])box(landscape,'#7d5f3e',x,at(x,z)+1.15,z,.14,2.3,.14);
     box(landscape,'#e1d2ad',(x0+x1)/2,postY+2.18,z,x1-x0,.035,.035);
     [0,1,10,2,5,11,3,4,9,6,12,8,7].forEach((family,i)=>{const g=guardians.find(g=>g.family===family),x=x0+.35+i*(x1-x0-.7)/12;
-      box(landscape,g?.defeated?g.color:'#c9c3b2',x,postY+1.95,z,.24,.36,.03);if(g?.defeated)box(landscape,'#fff6d6',x,postY+1.88,z+.02,.08,.08,.01);});}
+      // Each flag hangs from its own hinge so it can flutter in the breeze.
+      const hinge=new THREE.Group();hinge.position.set(x,postY+2.13,z);box(hinge,g?.defeated?g.color:'#c9c3b2',0,-.18,0,.24,.36,.03);if(g?.defeated)box(hinge,'#fff6d6',0,-.25,.02,.08,.08,.01);hinge.userData.phase=i*.7;pennantFlags.add(hinge);});}
   // Thirteen small habitats. Unwon guardians have an empty, numbered welcome bed.
   const numberCanvas=document.createElement('canvas');numberCanvas.width=1024;numberCanvas.height=128;const ctx=numberCanvas.getContext('2d');ctx.font='bold 60px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#fff7dc';for(let i=0;i<13;i++)ctx.fillText('×'+i,i*78+39,64);const numberTexture=new THREE.CanvasTexture(numberCanvas);numberTexture.colorSpace=THREE.SRGBColorSpace;textures.push(numberTexture);
   const numberMat=new THREE.MeshBasicMaterial({map:numberTexture,transparent:true,side:THREE.DoubleSide});
@@ -122,5 +124,7 @@ export function createWorldDetails(api) {
     if(kind!=='ghost')for(const sign of [-1,1])piece(g,roundG,kind==='robot'?'#6d888a':cream,sign*.24,.16,.13,.17,.14,.25);
     groundShade(g,0,0,1.7,1.4);return g;
   }
-  return {picks,update(time,calm){wheel.rotation.z=calm?0:time*.00025;fountain.rotation.y=calm?0:time*.00015;residents.forEach((a,i)=>{const t=calm?0:time*.0006+i;a.root.position.y=a.y+(calm?0:Math.sin(t)*(a.kind==='ghost'?.13:.025));a.root.rotation.y=a.angle+(calm?0:Math.sin(t*.6)*.16);});},dispose(){roadGeometry.forEach(g=>g.dispose());textures.forEach(t=>t.dispose());numberMaterials.forEach(m=>m.dispose());picks.traverse(m=>{if(m.isMesh&&m.material.visible===false)m.material.dispose();});}};
+  // A guardian whose Fact Trail is complete visits the Story Stones for the day.
+  {const pad=content.guardianPads.find(p=>p.family===visitor),g=guardians.find(g=>g.family===visitor);if(pad&&g){const x=-5,z=2.3,y=at(x,z);const compact=instance(creature(pad.kind,g.color),false);compact.position.set(x,y+.16,z);scene.add(compact);residents.push({root:compact,x,z,y:y+.16,kind:pad.kind,family:pad.family,angle:.6});}}
+  return {picks,update(time,calm){pennantFlags.children.forEach(f=>{f.rotation.x=calm?0:Math.sin(time*.0035+f.userData.phase)*.28;f.rotation.z=calm?0:Math.sin(time*.0021+f.userData.phase)*.06;});wheel.rotation.z=calm?0:time*.00025;fountain.rotation.y=calm?0:time*.00015;residents.forEach((a,i)=>{const t=calm?0:time*.0006+i;a.root.position.y=a.y+(calm?0:Math.sin(t)*(a.kind==='ghost'?.13:.025));a.root.rotation.y=a.angle+(calm?0:Math.sin(t*.6)*.16);});},dispose(){roadGeometry.forEach(g=>g.dispose());textures.forEach(t=>t.dispose());numberMaterials.forEach(m=>m.dispose());picks.traverse(m=>{if(m.isMesh&&m.material.visible===false)m.material.dispose();});}};
 }

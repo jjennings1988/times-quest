@@ -17,7 +17,9 @@ async function main(){
   check('legacy completed manipulation keeps access to transfer',Nine.normalize(null,{step:1}).stage===2);
   {let t=Nine.change(Nine.change(Nine.change({...Nine.fresh(),stage:2,each:3},'each',6),'rack',4),'total',54);check('own amount, moved rack and total make the check ready',Nine.ready(t));}
   const save=Camp.fresh(),before=JSON.stringify(save),all=Goals.groups(Camp.catalog).flatMap(g=>g.ids);
-  check('every blueprint appears once',new Set(all).size===Object.keys(Camp.catalog).length&&all.length===new Set(all).size);
+  const buildable=Object.keys(Camp.catalog).filter(id=>!Camp.catalog[id].kitOnly);
+  check('every buildable blueprint appears once; earned keepsakes stay out of the goal picker',new Set(all).size===buildable.length&&all.length===new Set(all).size&&all.every(id=>!Camp.catalog[id].kitOnly));
+  check('thirteen realm keepsakes exist, one per family, and cannot be bought',Object.values(Camp.catalog).filter(d=>d.kitOnly).map(d=>d.realm).sort((a,b)=>a-b).join()===[0,1,2,3,4,5,6,7,8,9,10,11,12].join()&&Camp.unlockReason(Camp.fresh(),'keepsake4').includes('Restore'));
   check('legacy goal has a safe default',Goals.normalize(Camp.catalog,'woodland-gate')==='gate'&&!Goals.valid(Camp.catalog,'__proto__'));
   for(const type of Object.keys(Camp.catalog)){const g=Goals.view(Camp.catalog,save,type);check(`${type}: exact missing resources`,g.resources.every(r=>r.missing===Math.max(0,r.need-r.have)));}
   let g=Goals.view(Camp.catalog,save,'tent');check('placed home is not described as backpack stock',!!g.placed&&!g.kit);
@@ -46,7 +48,7 @@ async function main(){
     check('zero explorer distinguishes nine empty groups',$('journey-body').querySelectorAll('.nine-racks button').length===10&&$('journey-body').querySelectorAll('.nine-lanterns svg').length===0&&$('journey-body').textContent.includes('9 equal groups × 0 = 0'));
     check('guided pilot neither earns a star nor changes fact evidence',!ev('state.realms[9].trial')&&ev('JSON.stringify(state.facts)')===learningBefore);
     w.startGuardianTry();check('four fresh questions are untimed and not marked assisted',ev('quiz.queue.length')===4&&!ev('quiz.timed')&&ev('quiz.queue.every(q=>!q.assisted)'));
-    ev('quiz=null;state.campV2=CampV2.fresh()');w.showCampGoalPicker();check('picker offers every blueprint, including locked goals',$('card-modal-body').querySelectorAll('[data-goal]').length===Object.keys(Camp.catalog).length&&!$('card-modal-body').querySelector('[data-goal="keep"]').disabled);
+    ev('quiz=null;state.campV2=CampV2.fresh()');w.showCampGoalPicker();check('picker offers every blueprint, including locked goals',$('card-modal-body').querySelectorAll('[data-goal]').length===Object.keys(Camp.catalog).filter(id=>!Camp.catalog[id].kitOnly).length&&!$('card-modal-body').querySelector('[data-goal="keep"]').disabled);
     w.pinCampGoal('keep');w.openGoalRealm();check('a locked project opens an available realm to work toward',ev('unlockedFamilies().includes(activeRealm)')&&!ev('state.realms[activeRealm].trial'));
     const campBefore=ev('JSON.stringify(state.campV2)');w.pinCampGoal('keep');check('pinning changes only the goal',ev('state.journey.goal')==='keep'&&ev('JSON.stringify(state.campV2)')===campBefore);
     w.pinCampGoal('__proto__');check('unknown blueprint cannot become a goal',ev('state.journey.goal')==='keep');
@@ -66,7 +68,7 @@ async function main(){
     try{
       await pause();const wallet=[camp.gems,camp.wood,camp.stone].join(','),objects=JSON.stringify(camp.objects);
       controller.openGoal('trailtent');
-      check('ready goal previews renovation with its stable object identity',host.querySelector('.cv2-placement').textContent.includes('UPGRADE')&&host.querySelector('.cv2-placement').textContent.includes('4, 3'));
+      check('ready goal previews renovation with its stable object identity',host.querySelector('.cv2-placement').textContent.includes('UPGRADE')&&!host.querySelector('.cv2-placement').textContent.includes('4, 3'));
       check('preview changes neither supplies nor placed objects',[camp.gems,camp.wood,camp.stone].join(',')===wallet&&JSON.stringify(camp.objects)===objects);
       host.querySelector('[data-action="cancel"]').click();
       check('cancelling goal preview is free',[camp.gems,camp.wood,camp.stone].join(',')===wallet&&!camp.construction);

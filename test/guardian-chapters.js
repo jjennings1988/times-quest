@@ -29,14 +29,14 @@ async function main(){
       w.startGuardianTry();check(`chapter ${f} cannot skip directly to independent check`,ev('quiz')===null);
       if(f===9){w.nineAction('rack',0);w.nineAction('reason','group');w.nineAction('next',7);w.nineAction('plan',0);w.nineAction('predict',70);w.nineAction('rack',3);w.nineAction('total',63);w.nineAction('next');}
       else {
-        const build=()=>{if(f===5){for(let i=0;i<5;i++)w.strategyAction('boat',i);}else while(!ev('FamilyLessons.complete(state.journey.current.strategy)'))w.strategyAction('act');};
+        const build=()=>{if(f===5){for(let i=0;i<5;i++)w.strategyAction('boat',i);}else while(!ev('FamilyLessons.complete(state.journey.current.strategy)'))w.strategyAction('act',1);};
         build();w.strategyAction('reason',ev('FamilyLessons.plans['+f+'].correct'));w.strategyAction('next',7);w.strategyAction('plan',ev('FamilyLessons.planFor['+f+'].correct'));w.strategyAction('predict',ev('FamilyLessons.plans['+f+'].prediction(7)'));build();w.strategyAction('total',f*7);w.strategyAction('next');
       }
       const saved=JSON.stringify(ev('state'));ev(`state=JSON.parse(${JSON.stringify(saved)});migrateState()`);w.resumeLesson();
       check(`chapter ${f} reload keeps completed manipulation and opens the child's own amount`,$('journey-body').textContent.includes('Your amount. Your model.')&&(f===9?!!$('nine-each'):!!$('strategy-each')));
       w.startGuardianTry();check(`chapter ${f} exploration needs the child's own build before the check`,ev('quiz')===null);
       if(f===9){w.nineAction('each',5);w.nineAction('rack',2);w.nineAction('total',45);}
-      else{w.strategyAction('each',5);const build=()=>{if(f===5){for(let i=0;i<5;i++)w.strategyAction('boat',i);}else while(!ev('FamilyLessons.complete(state.journey.current.strategy)'))w.strategyAction('act');};build();w.strategyAction('total',f*5);}
+      else{w.strategyAction('each',5);const build=()=>{if(f===5){for(let i=0;i<5;i++)w.strategyAction('boat',i);}else while(!ev('FamilyLessons.complete(state.journey.current.strategy)'))w.strategyAction('act',1);};build();w.strategyAction('total',f*5);}
       w.startGuardianTry();check(`chapter ${f} starts four untimed transfer questions`,ev('quiz.queue.length')===4&&!ev('quiz.timed'));
       check(`chapter ${f} check avoids every amount the lesson showed`,ev('quiz.queue').every(q=>![4,5,7].includes(q.b)));
       check(`chapter ${f} teaching does not award a challenge star`,!ev(`state.realms[${f}].trial`));

@@ -7,7 +7,7 @@
   const chapters=root.GuardianChapters||(typeof require==='function'?require('./guardian-chapters'):null);
   const PREDICT_AMOUNTS=[6,7,8];
   const plans={
-    1:{groups:[1,1],actions:['Deliver this tray'],idea:'One group keeps its amount',prompt:'Carry the whole tray to Echo. Does moving it change how many seeds it holds?',reason:'What happened to the seeds?',choices:['The amount stayed the same','One extra seed appeared'],correct:0,
+    1:{groups:[1,1],actions:['Deliver this tray'],equations:n=>[`1 + ${n} = ${n+1}`,`1 × ${n} = ${n}`,`${n} × ${n} = ${n*n}`],equationCorrect:1,idea:'One group keeps its amount',prompt:'Carry the whole tray to Echo. Does moving it change how many seeds it holds?',reason:'What happened to the seeds?',choices:['The amount stayed the same','One extra seed appeared'],correct:0,
       predict:n=>`This tray holds ${n} seeds. How many seeds will Echo receive when the whole tray arrives?`,prediction:n=>n,options:n=>[1,n,n+1],coach:n=>`One tray is one group. Every one of its ${n} seeds travels with it.`},
     2:{groups:[1,2],actions:['Make a matching raft'],idea:'Double the amount',prompt:'Make a second raft that carries exactly the same number of planks as the first.',reason:'What makes this a double?',choices:['Add just two planks','Make two equal groups'],correct:1,
       predict:n=>`Each raft holds ${n} planks. How many planks will two matching rafts carry?`,prediction:n=>2*n,options:n=>[n+2,2*n,n],coach:n=>`A matching raft carries another ${n} planks, not just two more. Think ${n} plus ${n}.`},
@@ -103,7 +103,8 @@
     else if(action==='predict'&&s.phase===1&&s.planned&&!s.predicted){s.predicted=arg===plans[f].prediction(s.each);s.feedback=s.predicted?'Your prediction is ready. Now use the model to test it.':plans[f].coach(s.each);}
     else if((action==='act'||action==='boat')&&building){
       if(f===5&&action==='boat'&&Number.isInteger(arg)&&arg>=0&&arg<10){s.history=[...s.history,s.moved.slice()].slice(-20);s.moved=s.moved.includes(arg)?s.moved.filter(i=>i!==arg):[...s.moved,arg];s.feedback=s.moved.length===5?'Five full boats at each dock. Every crate stayed on its boat.':`${10-s.moved.length} boats here and ${s.moved.length} there. Make both docks equal.`;}
-      else if(f!==5&&action==='act'&&s.step<plans[f].actions.length){s.step++;s.feedback=f===1?'One full tray arrived. Nothing was added or lost.':f===10?'The same cells are now bundled by column. Nothing was added or lost.':`${counts(s).groups} equal groups now. Each still holds ${s.each}.`;}
+      else if(f===1&&action==='act'&&s.step<1&&arg!==plans[1].equationCorrect){s.feedback=`That equation changes the amount. One tray of ${s.each} is one group of ${s.each}.`;return s;}
+      else if(f!==5&&action==='act'&&s.step<plans[f].actions.length){s.step++;s.feedback=f===1?(s.phase===0?`Yes: 1 × ${s.each} = ${s.each}. The tray arrived with nothing added or lost.`:'Yes, that equation matches. The tray arrived with nothing added or lost.'):f===10?'The same cells are now bundled by column. Nothing was added or lost.':`${counts(s).groups} equal groups now. Each still holds ${s.each}.`;}
       else return s;
       s.explained=false;s.solved=false;
     }else if(action==='undo'){
@@ -123,7 +124,7 @@
   }
   function expression(s){
     const f=s.family,b=s.each,c=counts(s),answer=s.phase>0&&!s.solved?'?':c.total;
-    if(!complete(s))return `${c.groups} × ${b} = ${answer}`;
+    if(!complete(s))return f===1?`1 tray of ${b} = ?`:`${c.groups} × ${b} = ${answer}`;
     const terms={1:`1 × ${b}`,2:`${b} + ${b}`,3:`${2*b} + ${b}`,4:`${2*b} + ${2*b}`,5:`${10*b} ÷ 2`,6:`${5*b} + ${b}`,7:`${5*b} + ${2*b}`,8:`${4*b} + ${4*b}`,10:`${b} × 10`,11:`${10*b} + ${b}`,12:`${10*b} + ${2*b}`};
     const hidden={3:`double + ${b}`,4:'double + double',6:`five racks + ${b}`,7:'five packs + two packs',8:'four clusters + four clusters',11:`ten bundles + ${b}`,12:'ten trays + two trays'};
     // Before the child answers, show the strategy's shape without printing the partial they are asked to find.

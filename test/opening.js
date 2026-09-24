@@ -16,11 +16,14 @@ async function main(){
     check('new invitation begins at zero', $('journey-body').innerHTML.includes('beginLesson(0)')&&!ev('unlockedFamilies().includes(2)'));
     w.beginLesson(0);check('zero lesson starts with three inspectable baskets',w.document.querySelectorAll('[aria-label^="Inspect basket"]').length===3);
     w.advanceZeroLesson();check('cannot skip basket inspection',!ev('state.journey.current.zeroStep'));
+    check('the equation stays hidden before any basket is opened',$('journey-body').querySelector('.zero-equation').textContent.includes('?'));
+    w.inspectZeroBasket(0);check('baskets wait for a prediction',!ev('state.journey.current.opened?.length'));
+    w.predictZero('inspect',3);check('any prediction is welcome and recorded',ev('state.journey.current.zeroGuess')===3);
     w.inspectZeroBasket(0);w.inspectZeroBasket(0);check('repeated inspection counts once',ev('state.journey.current.opened.length')===1);
     w.inspectZeroBasket(1);w.inspectZeroBasket(2);w.advanceZeroLesson();check('second arrangement begins with nonempty groups',ev('state.journey.current.groups')===3&&$('journey-body').textContent.includes('12'));
-    w.advanceZeroLesson();check('cannot skip removing nonempty groups',ev('state.journey.current.zeroStep')==='remove');w.removeZeroBasket();
+    w.advanceZeroLesson();check('cannot skip removing nonempty groups',ev('state.journey.current.zeroStep')==='remove');w.removeZeroBasket();check('sending baskets waits for a prediction',ev('state.journey.current.groups')===3);w.predictZero('remove',0);w.removeZeroBasket();
     const saved=JSON.stringify(ev('state'));ev(`state=JSON.parse(${JSON.stringify(saved)});migrateState()`);w.resumeLesson();check('reloaded lesson preserves exact manipulation state',ev('state.journey.current.groups')===2&&ev('state.journey.current.zeroStep')==='remove');
-    w.removeZeroBasket();w.removeZeroBasket();w.advanceZeroLesson();check('comparison distinguishes empty baskets and absent baskets', $('journey-body').textContent.includes('3 × 0')&&$('journey-body').textContent.includes('0 × 4'));
+    w.removeZeroBasket();w.removeZeroBasket();check('a correct prediction is confirmed',$('journey-body').textContent.includes('Just as you predicted'));w.advanceZeroLesson();check('comparison distinguishes empty baskets and absent baskets', $('journey-body').textContent.includes('3 × 0')&&$('journey-body').textContent.includes('0 × 4'));
     w.startZeroTry();check('opening challenge has three untimed independent problems',ev('quiz.queue.length')===3&&ev('quiz.needCorrect')===3&&!ev('quiz.timed'));
     w.showQuestionHelp();w.dismissHint();await answer(0);await answer(0);await answer(0);
     check('supported completion does not grant the first challenge star',!ev('state.realms[0].trial')&&!ev('canStartBoss(0)'));

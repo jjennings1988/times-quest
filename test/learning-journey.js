@@ -114,6 +114,16 @@ async function main(){
     $('parent-gate-answer').value='1';w.checkParentGate();check('a wrong answer keeps Parents closed',!$('screen-parent').classList.contains('active'));
     $('parent-gate-answer').value=String(ev('parentGateQuestion'));w.checkParentGate();check('the right answer opens Parents for this session',$('screen-parent').classList.contains('active')&&ev('parentUnlocked'));
     check('Parents separates independent, supported and remembered-later evidence',$('parent-body').textContent.includes('remembered later')||$('parent-body').textContent.includes('No new independent evidence'));
+    fresh();w.chooseStartingRoute();check('experienced learners are offered a three-realm check first',!!$('journey-body').querySelector('.journey-placement'));
+    w.startPlacement();check('the check covers the next three realms with four untimed items each',ev('quiz.mode')==='placement'&&ev('quiz.fams.join()')==='0,1,10'&&ev('quiz.queue.length')===12&&!ev('quiz.timed'));
+    const missFam=10;while(ev('quiz')){const q=ev('quiz.queue[quiz.idx]');if(q.a===missFam&&!ev('quiz.retry')&&!ev('quiz.queue[quiz.idx].independentOk===false')){await answer(q.ans+1);w.dismissHint();continue;}await answer(q.ans);}
+    check('four of four on your own opens a realm with star 1',ev('state.realms[1].trial')&&ev('unlockedFamilies().includes(1)')&&ev('realmStars(1).stars')===1);
+    check('a realm with a miss stays for its guardian lesson',!ev('state.realms[10].trial'));
+    check('the check leads to the first opened guardian',$('results-body').querySelector('.result-next .btn.gold').getAttribute('onclick')==='startBoss(0)');
+    fresh();ev("state.campV2=CampV2.fresh();state.realms[0].trial=true;state.realms[0].conquered=true;state.realms[1].conquered=true");w.deliverCampGrants();
+    check('each restored realm sends its keepsake to the camp backpack',ev("state.campV2.inventory.keepsake0")===1&&ev("state.campV2.inventory.keepsake1")===1&&!ev("state.campV2.inventory.keepsake10"));
+    w.deliverCampGrants();check('keepsakes are delivered once, even after placing or storing them',ev("state.campV2.inventory.keepsake0")===1);
+    check('an earned keepsake can be placed for free',ev("CampV2.command(state.campV2,{kind:'place',type:'keepsake0',x:1,y:8}).ok"));
     check('no uncaught runtime errors across journeys',errors.length===0);
     console.log(`${checks} learning journey checks passed`);
   }finally{dom.window.close();}

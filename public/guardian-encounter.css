@@ -37,3 +37,19 @@
   #screen-quiz .key{padding:0!important;min-height:44px!important;height:44px;font-size:24px}
   #screen-quiz .keypad{grid-template-rows:repeat(4,44px)!important;max-height:none!important}
 }
+/* 0.27.1: allies never shake the screen. Progress glows; a miss dims softly while help appears. */
+#screen-quiz.guardian-active .battle-stage.restore-glow #guardian-restoration-scene{animation:restore-glow .8s ease-out}
+#screen-quiz.guardian-active .battle-stage.guide-hint #guardian-restoration-scene{animation:guide-hint .9s ease-in-out}
+@keyframes restore-glow{0%{filter:brightness(1)}35%{filter:brightness(1.25) saturate(1.15)}100%{filter:brightness(1)}}
+@keyframes guide-hint{0%,100%{filter:none}45%{filter:brightness(.88) sepia(.18)}}
+@media(prefers-reduced-motion:reduce){#screen-quiz.guardian-active .battle-stage #guardian-restoration-scene{animation:none!important}}
+/* Landscape phones: the question and scene on the left, the keypad beside it, so GO never leaves the screen. */
+@media (orientation:landscape) and (max-height:520px){
+  #screen-quiz.active{display:grid!important;grid-template-columns:minmax(0,1fr) minmax(230px,38%);grid-auto-rows:min-content;column-gap:14px;align-content:start;overflow-y:auto}
+  #screen-quiz.active>*{grid-column:1;min-width:0}
+  #screen-quiz.active>#keypad,#screen-quiz.active>#hint-card{grid-column:2;grid-row:1 / span 10;align-self:center;margin:0!important;width:100%;max-width:none!important}
+  #screen-quiz.active>#keypad{padding:8px 12px calc(8px + var(--safe-bottom))!important}
+  #screen-quiz.active>#hint-card{max-height:calc(100vh - 16px);overflow-y:auto}
+  #screen-quiz.guardian-active #guardian-restoration-scene{height:56px}
+  #screen-quiz .question-zone{flex-direction:row!important;gap:12px!important;min-height:0!important;padding-block:4px!important}
+}

@@ -86,7 +86,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[role="button"]:
 
 /* ---------- top bar ---------- */
 .topbar{
-  display:flex;align-items:center;gap:8px;padding:calc(12px + var(--safe-top)) max(16px,var(--safe-right)) 12px max(16px,var(--safe-left));position:sticky;top:0;z-index:40;min-height:64px;
+  display:flex;align-items:center;gap:8px;padding:calc(12px + var(--safe-top)) max(16px,var(--safe-right)) 12px max(16px,var(--safe-left));position:sticky;top:0;z-index:40;min-height:calc(64px + var(--safe-top));flex-shrink:0;
   background:linear-gradient(180deg,rgba(26,21,56,.98),rgba(26,21,56,.9));backdrop-filter:blur(14px);border-bottom:1px solid rgba(255,255,255,.08);
 }
 .topbar .title{font-family:var(--display);font-weight:800;font-size:20px;color:#fff;flex:1;line-height:1.1}
@@ -584,7 +584,9 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[role="button"]:
 .monster-realm-head strong{font-family:var(--display);font-size:16px}
 .monster-realm-head span{margin-left:auto;color:#B7AEE8;font-size:11px;font-weight:800}
 .monster-grid{display:block}
-.monster-realm-section .monster-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.monster-realm-section .monster-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,92px),1fr));gap:9px}
+/* Cards never force the grid wider than the screen: labels stack and may wrap. */
+.monster-realm-section .monster-cell{min-width:0}.monster-cell .fact,.monster-cell .st{display:block;overflow-wrap:anywhere}
 .monster-cell{
   background:var(--cream);border-radius:14px;padding:8px 4px;text-align:center;box-shadow:0 4px 0 rgba(0,0,0,.25);border:0;font-family:var(--body);cursor:pointer;color:var(--ink)
 }
@@ -1167,7 +1169,7 @@ async function createProfile(){
   const p={id,name:qa?'Summit Tester':name,avatar:profileDraftAvatar,created:Date.now(),qa,...profileSummary(snapshot)};
   profileBook.profiles.push(p); activeProfileId=id; state=snapshot; migrateState();
   if(!qa)state.journey.openingEdition=true;
-  requestPersistentStorage();
+  requestPersistentStorage(true);
   await storageSet(profileSaveKey(id),JSON.stringify(state)); await persistProfileBook();
   closeProfileGate(); applyCalm(); checkDaily(); showScreen('screen-map');
   if(qa) toast('QA profile ready: every realm and camp item is unlocked');else startWelcome();
@@ -1465,7 +1467,7 @@ const RATING_LABEL = ["undiscovered","discovered","befriending","befriending","c
    Defaults below reproduce the game's original behaviour exactly, so an
    existing save that predates settings plays identically until something
    is changed on purpose. */
-const APP_VERSION = '0.27.0-beta.1';
+const APP_VERSION = '0.28.0-beta.1';
 const FAST_MS = 4000;          // default bonus window
 const WINDOW_CHOICES = [3000,4000,6000,8000];
 const ROUND_CHOICES  = [8,12,16];
@@ -2392,6 +2394,7 @@ function checkAnswer(){
   LearningJourney.record(fact(q.a,q.b),{correct:parseInt(quiz.answer,10)===q.ans,assisted:!independent,elapsed,operation,day:dateKey()});
   const f=fact(q.a,q.b);
   const correct=parseInt(quiz.answer,10)===q.ans;
+  if(independent)q.independentOk=correct;
 
   if(correct){
     sfx.ok();
@@ -2754,9 +2757,11 @@ function announceBattle(title,copy,duration=1000){
 }
 function animateBattle(action){
   if(state.settings.calm||prefersReducedMotion()) return;
+  // Guardians are allies: a correct answer glows forward and a miss is a calm pause, never a hit or a shake.
+  if(quiz?.mode==='boss')action=action==='boss-hit'?'guide-hint':'restore-glow';
   const stage=$('battle-stage');
   clearTimeout(battleActionTimer);
-  stage.classList.remove('hero-hit','special-hit','boss-hit');
+  stage.classList.remove('hero-hit','special-hit','boss-hit','restore-glow','guide-hint');
   void stage.offsetWidth;
   stage.classList.add(action);
   battleActionTimer=setTimeout(()=>stage.classList.remove(action),850);
@@ -3001,10 +3006,19 @@ function renderMonsters(){
    ===================================================== */
 /* Local-only saves: ask the browser to keep them, and tell parents plainly when it may not. */
 let storagePersisted=null;
-async function requestPersistentStorage(){
-  try{if(navigator.storage?.persisted){storagePersisted=await navigator.storage.persisted();if(!storagePersisted&&navigator.storage.persist)storagePersisted=await navigator.storage.persist();}}catch(e){}
+// Checking never prompts. Asking (which can show a browser prompt) happens only when a grown-up creates a profile.
+async function requestPersistentStorage(ask=false){
+  try{if(navigator.storage?.persisted){storagePersisted=await navigator.storage.persisted();if(ask&&!storagePersisted&&navigator.storage.persist)storagePersisted=await navigator.storage.persist();}}catch(e){}
   return storagePersisted;
 }
+/* One note per device for families playing in a browser tab that may clear saves. */
+const STORAGE_NOTE_KEY='timesquest-storage-note-seen';
+function titleStorageNote(){
+  let seen=false;try{seen=localStorage.getItem(STORAGE_NOTE_KEY)==='1';}catch(e){}
+  if(seen||storagePersisted===true||isInstalledApp())return '';
+  return '<div class="title-storage-note" role="note"><strong>For grown-ups:</strong> saves live only on this device, and browsers can clear them. Add Times Quest to your Home Screen, or download a backup in Parents. <button onclick="dismissStorageNote(this)">Got it</button></div>';
+}
+function dismissStorageNote(button){try{localStorage.setItem(STORAGE_NOTE_KEY,'1');}catch(e){}button.closest('.title-storage-note')?.remove();}
 function isInstalledApp(){try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;}catch(e){return false;}}
 function storageNote(){
   if(storagePersisted||isInstalledApp())return '<p class="storage-note ok">This device has been asked to keep Times Quest saves. A backup still protects against a lost or reset device.</p>';
@@ -3699,8 +3713,12 @@ function enterCampV2(){
     companions:state.campMonsterFavorites.map(key=>{const [a,b]=key.split('*').map(Number);return {key,a,b,...monsterIdentity(a,b)};}),
     onCompanion:(a,b)=>{showScreen('screen-monsters');openMonsterCard(a,b);},
     tester:isCampTester(),reviewQuestions:campReviewQuestions,onReview:recordCampReview,
-    avatar:profileAvatar(),reducedMotion:()=>state.settings.calm||prefersReducedMotion(),
+    avatar:profileAvatar(),ownerName:(profileById()&&profileById().name)||'',explorerIndex:profileById()?.avatar??0,reducedMotion:()=>state.settings.calm||prefersReducedMotion(),
     goalMarkup:campGoalMarkup,
+    // Guardians whose Fact Trail is complete take turns visiting the Story Stones, one per day; their keepsakes turn gold.
+    goldRealms:REALM_ORDER.filter(f=>realmStars(f).stars===3),
+    visitor:(()=>{const g=REALM_ORDER.filter(f=>realmStars(f).stars===3);return g.length?g[Math.floor(Date.now()/864e5)%g.length]:null;})(),
+    visitorName:(()=>{const g=REALM_ORDER.filter(f=>realmStars(f).stars===3);return g.length?REALMS[g[Math.floor(Date.now()/864e5)%g.length]].petName:'';})(),
     onRestart:restartCamp,onReload:reloadCampApp,onDiagnostic:recordCampDiagnostic,
     onExit:showScreen,onPractice:family=>{showScreen('screen-hall');if(Number.isInteger(family)&&state.realms[family]?.conquered)startPractice(family);}
   });
@@ -4158,7 +4176,7 @@ document.addEventListener('keydown',e=>{
 
 (async function init(){
   await loadState();
-  requestPersistentStorage();
+  await requestPersistentStorage();
   if(!state){ showTitle(); return; }
   applyCalm();
   checkDaily();

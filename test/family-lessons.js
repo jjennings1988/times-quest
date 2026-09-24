@@ -2,7 +2,7 @@ const fs=require('node:fs'),assert=require('node:assert/strict'),{JSDOM}=require
 const Model=require('../public/family-lessons'),Chapters=require('../public/guardian-chapters');
 let checks=0;const check=(name,value)=>{assert.ok(value,name);checks++;};
 const families=[1,2,3,4,5,6,7,8,10,11,12];
-function build(f,s){if(f===5){for(const i of [0,2,4,6,8])if(!s.moved.includes(i))s=Model.change(f,s,'boat',i);}else while(!Model.complete(s))s=Model.change(f,s,'act');return s;}
+function build(f,s){if(f===5){for(const i of [0,2,4,6,8])if(!s.moved.includes(i))s=Model.change(f,s,'boat',i);}else while(!Model.complete(s))s=Model.change(f,s,'act',1);return s;}
 async function main(){
   for(const f of families){
     let s=Model.fresh(f),snapshot=JSON.stringify(s);
@@ -14,7 +14,7 @@ async function main(){
     s=Model.change(f,s,'next',7);
     check(`${f}: new amount starts with prediction`,s.phase===1&&s.each===7&&!s.predicted);
     if(![1,5,10].includes(f))for(const n of Model.PREDICT_AMOUNTS)check(`${f} with ${n}: the prediction is not printed in its own question`,!new RegExp(`\b${Model.plans[f].prediction(n)}\b`).test(Model.plans[f].predict(n)));
-    const start=JSON.stringify(s);Model.change(f,s,'act');check(`${f}: input model is immutable`,JSON.stringify(s)===start&&JSON.stringify(Model.fresh(f))===snapshot);
+    const start=JSON.stringify(s);Model.change(f,s,'act',1);check(`${f}: input model is immutable`,JSON.stringify(s)===start&&JSON.stringify(Model.fresh(f))===snapshot);
     check(`${f}: prediction waits for a plan`,!Model.change(f,s,'predict',Model.plans[f].prediction(7)).predicted);
     const wrongPlan=Model.change(f,s,'plan',(Model.planFor[f].correct+1)%Model.planFor[f].options.length);check(`${f}: a wrong plan gets coaching`,!wrongPlan.planned&&wrongPlan.feedback===Model.planFor[f].coach);
     s=Model.change(f,s,'plan',Model.planFor[f].correct);check(`${f}: the right plan opens prediction`,s.planned);
@@ -41,12 +41,14 @@ async function main(){
   boats=Model.change(5,boats,'boat',5);check('returning a boat restores equal docks',Model.complete(boats));
   boats=Model.change(5,boats,'undo');check('undo restores the exact previous docks after a return trip',boats.moved.includes(5)&&boats.moved.length===6);
   boats=Model.change(5,boats,'undo');check('consecutive undo follows move history',!boats.moved.includes(5)&&boats.moved.length===5);
+  {let one=Model.fresh(1);const wrong=Model.change(1,one,'act',0);check('×1: an equation that changes the amount is coached, not accepted',wrong.step===0&&wrong.feedback.includes('one group'));
+   check('×1: the tray equation is hidden until chosen',Model.expression(one)==='1 tray of 4 = ?');one=Model.change(1,one,'act',Model.plans[1].equationCorrect);check('×1: choosing 1 × n delivers the tray',Model.complete(one)&&Model.expression(one)==='1 × 4 = 4');}
   let tens=Model.change(10,build(10,Model.change(10,{...Model.fresh(10),phase:2},'each',12)),'total',120);check('ten times twelve forms twelve tens, not a digit trick',Model.expression(tens)==='12 × 10 = 120');
   let eleven=Model.change(11,build(11,Model.change(11,{...Model.fresh(11),phase:2},'each',12)),'total',132);check('eleven times twelve uses 120 plus 12',Model.expression(eleven)==='120 + 12 = 132');
 
   const source=fs.readFileSync('public/index.html','utf8').replace(/<script src="([^"]+\.js)"><\/script>/g,(_,n)=>`<script>${fs.readFileSync('public/'+n,'utf8')}</script>`);
   const errors=[],dom=new JSDOM(source,{runScripts:'dangerously',pretendToBeVisual:true,url:'https://strategies.test/',beforeParse(w){w.HTMLElement.prototype.scrollIntoView=()=>{};w.addEventListener('error',e=>errors.push(e.message));}}),w=dom.window,ev=s=>w.eval(s),$=id=>w.document.getElementById(id);
-  function finishModel(f){if(f===5){for(const i of [0,2,4,6,8])if(!ev('state.journey.current.strategy.moved').includes(i))w.strategyAction('boat',i);}else while(!ev('FamilyLessons.complete(state.journey.current.strategy)'))w.strategyAction('act');}
+  function finishModel(f){if(f===5){for(const i of [0,2,4,6,8])if(!ev('state.journey.current.strategy.moved').includes(i))w.strategyAction('boat',i);}else while(!ev('FamilyLessons.complete(state.journey.current.strategy)'))w.strategyAction('act',1);}
   try{
     await new Promise(r=>setTimeout(r,25));
     for(const f of families){
@@ -55,7 +57,7 @@ async function main(){
       check(`${f}: authored workshop and painted realm both present`,!!$('journey-body').querySelector(`.strategy-world-${f}`)&&!!$('journey-body').querySelector(`.ss-lesson`));
       w.startGuardianTry();check(`${f}: the check cannot be reached without the lesson`,ev('quiz')===null&&ev('state.journey.current.strategy.phase')===0);
       finishModel(f);w.strategyAction('reason',Model.plans[f].correct);w.strategyAction('next',7);check(`${f}: the plan appears before the model`,$('journey-body').querySelector('.strategy-plan')?.compareDocumentPosition($('journey-body').querySelector('.strategy-workshop'))===4);w.strategyAction('plan',Model.planFor[f].correct);check(`${f}: the prediction appears before the model`,$('journey-body').querySelector('.strategy-first')?.compareDocumentPosition($('journey-body').querySelector('.strategy-workshop'))===4);w.strategyAction('predict',Model.plans[f].prediction(7));
-      if(f===5)w.strategyAction('boat',0);else w.strategyAction('act');
+      if(f===5)w.strategyAction('boat',0);else w.strategyAction('act',1);
       const saved=ev('JSON.stringify(state)'),step=ev('JSON.stringify(state.journey.current.strategy)');ev(`state=JSON.parse(${JSON.stringify(saved)});migrateState()`);w.resumeLesson();
       check(`${f}: reload preserves exact experiment and feedback`,ev('JSON.stringify(state.journey.current.strategy)')===step);
       finishModel(f);check(`${f}: seven-item model has exact countable objects`,$('journey-body').querySelectorAll('.strategy-workshop svg').length===(f===5?70:f*7));
