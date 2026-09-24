@@ -22,6 +22,73 @@ The GitHub Actions workflow runs the same suite on every pull request and on pus
 
 ## Connected adventure regression (0.21.0-beta.1)
 
+### Willowbrook: quick wins, growing homes, living valley (0.28.0-beta.1)
+
+**Quick wins**
+- Tapping a tree or unopened land shows "Clear this tree?" / "Open this land?"
+  with Not now. No review starts from a stray tap.
+- Tapping during a long walk arrives at once; Journal destinations "hop" there.
+- No grid coordinates anywhere; objects show a place name ("Cedar Rise").
+- The ☾/☀ button in the camera column switches the moonlit sky.
+- Undo goes back up to 12 building steps.
+
+**A home worth growing**
+- Cabin (canvas roof, pennant), Timber Lodge (two storeys, porch, chimney),
+  Stone Cottage (stone base, timbered upper floor, bay window, walled garden)
+  and Stone Keep (four cone-roofed towers, central tower with flag, arched gate)
+  each have their own shape. Every tier keeps the doorstep and porch lantern.
+- Lodge, cottage and keep carry a name sign with the child's name.
+- Five colour swatches replace "Change colour".
+- A home renovation blocked by decorations offers "Make room", which moves them
+  to the Backpack (undoable). Homes are never moved automatically.
+- Trees open a see-through window around the explorer or the selected building;
+  jumping to a building zooms out to show all of it.
+- The header shows your home and what the next renovation needs.
+
+**A living valley**
+- The sky follows the device clock (morning, day, dusk from 5 pm, night from 9 pm);
+  moonlit is a manual override. Windows glow at dusk and night.
+- Chimneys smoke; fireflies circle campfires after dark; fish leap in the river;
+  realm pennants flutter. Calm mode turns all motion off.
+- A guardian whose Fact Trail is complete visits the Story Stones (one per day).
+- Each restored realm sends one keepsake to the Backpack (13 in all, free to
+  place, never sold). A completed Fact Trail gives it gold trim.
+- Check frame pacing (Parents → Device check) on an iPhone and a Chromebook with
+  a furnished camp at night; the new effects add a few dozen small meshes.
+
+### iPhone top-edge fix (0.27.2-beta.1)
+
+- Top bars no longer shrink on long screens. Before, on an iPhone the extra
+  status-bar padding let the bar squeeze and pushed its icons under the clock,
+  battery and camera area (map, realm, Monsters, Training, Parents). The map's
+  Realms / Revisit / Resume chips now start below the status bar too.
+- Monsters: the grid fits the screen width (three columns on phones). A fourth
+  column was previously clipped off the right edge.
+- Check on a real iPhone, both in Safari and after Add to Home Screen, in
+  portrait and landscape.
+
+### Review follow-ups (0.27.1-beta.1)
+
+- Guardian encounters: a correct answer makes the scene glow; a miss dims it
+  briefly. No shake, lunge, or hit animation. Calm and reduced motion disable both.
+- Zero Marsh: the child predicts before opening the baskets and before sending
+  them away. Baskets and the send button wait for the prediction; any guess is
+  welcomed and compared afterwards.
+- ×1: choose the equation that matches the tray (1 × n), instead of pressing
+  a "Deliver" button. After discovery, the choices hide their totals.
+- "I have multiplied before" → **Show what I know · 3 realms in one check**:
+  12 untimed items. 4 of 4 on your own in a realm earns its star 1 and opens it.
+- Title screen: a one-time note for grown-ups when saves may be cleared (not
+  installed, and the browser did not agree to keep them). Asking the browser to
+  keep saves happens only when a profile is created, never on boot.
+- Camp: a small "?" button opens camp help; My land and Home upgrades are in
+  Build and Journal.
+- The camp catalog lives entirely in `camp-content.js`.
+- Explorer screen: "Show all 19 explorers" sits above the grid; the button bar
+  sticks to the screen edge.
+- Question screen on landscape phones (height ≤ 520px): the keypad sits beside
+  the question. Measured GO visible at 320×568, 375×667 and 667×375.
+
 ### Devices, returns, lesson variety and camp depth (0.24–0.27, shipped as 0.27.0-beta.1)
 
 - **0.24 devices:** follow [DEVICE-AND-PILOT-PLAN.md](DEVICE-AND-PILOT-PLAN.md).

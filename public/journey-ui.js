@@ -4,7 +4,7 @@ let profileEditing=false;
 const explorerNames=['Ember','River','Aspen','Sky','Rowan','Wren','Sage','Scout','Fern','Robin','Brook','Cedar','Maple','Sunny','Ash','Juniper','Reed','Clover','Willow'];
 function renderExplorerForm(){
   const p=profileById();
-  return `<div class="profile-brand"><h1>${profileEditing?'Your explorer':'Choose your explorer'}</h1><p>You can change your name or explorer later.</p></div><div class="profile-card profile-form on"><label for="profile-name">Climber name</label><input class="profile-name" id="profile-name" maxlength="18" autocomplete="off" placeholder="Your name or nickname" aria-label="Climber name" value="${profileEditing?escapeHtml(p.name):''}"><div class="explorer-preview"><img id="explorer-preview-image" src="${PROFILE_AVATARS[profileDraftAvatar]}" alt="Selected explorer"><div><strong id="explorer-preview-name">${explorerNames[profileDraftAvatar]}</strong><p>Your companion on the map and in every encounter.</p></div></div><div class="avatar-pick" aria-label="Explorer choices">${PROFILE_AVATARS.map((src,i)=>`<button ${i>=8&&i!==profileDraftAvatar?'hidden':''} class="${i===profileDraftAvatar?'on':''}" onclick="chooseProfileAvatar(${i},this)" aria-label="Choose ${explorerNames[i]}" aria-pressed="${i===profileDraftAvatar}"><img src="${src}" alt=""></button>`).join('')}</div><button class="more-explorers" onclick="document.querySelectorAll('.avatar-pick button').forEach(b=>b.hidden=false);this.hidden=true">More explorers</button><div class="profile-actions"><button class="btn ghost" onclick="profileEditing=false;renderProfileGate('choose')">Back</button><button class="btn gold" onclick="${profileEditing?'saveExplorerIdentity()':'createProfile()'}">${profileEditing?'Save explorer':'Begin quest'}</button></div></div>`;
+  return `<div class="profile-brand"><h1>${profileEditing?'Your explorer':'Choose your explorer'}</h1><p>You can change your name or explorer later.</p></div><div class="profile-card profile-form on"><label for="profile-name">Climber name</label><input class="profile-name" id="profile-name" maxlength="18" autocomplete="off" placeholder="Your name or nickname" aria-label="Climber name" value="${profileEditing?escapeHtml(p.name):''}"><div class="explorer-preview"><img id="explorer-preview-image" src="${PROFILE_AVATARS[profileDraftAvatar]}" alt="Selected explorer"><div><strong id="explorer-preview-name">${explorerNames[profileDraftAvatar]}</strong><p>Your companion on the map and in every encounter.</p></div></div><button class="more-explorers" onclick="document.querySelectorAll('.avatar-pick button').forEach(b=>b.hidden=false);this.hidden=true">Show all 19 explorers</button><div class="avatar-pick" aria-label="Explorer choices">${PROFILE_AVATARS.map((src,i)=>`<button ${i>=8&&i!==profileDraftAvatar?'hidden':''} class="${i===profileDraftAvatar?'on':''}" onclick="chooseProfileAvatar(${i},this)" aria-label="Choose ${explorerNames[i]}" aria-pressed="${i===profileDraftAvatar}"><img src="${src}" alt=""></button>`).join('')}</div><div class="profile-actions"><button class="btn ghost" onclick="profileEditing=false;renderProfileGate('choose')">Back</button><button class="btn gold" onclick="${profileEditing?'saveExplorerIdentity()':'createProfile()'}">${profileEditing?'Save explorer':'Begin quest'}</button></div></div>`;
 }
 function editExplorer(){profileEditing=true;profileDraftAvatar=profileById().avatar;renderProfileGate('create');}
 async function saveExplorerIdentity(){
@@ -31,6 +31,9 @@ function deliverCampGrants(){
     for(const [type,count] of [['path',6],['deck',2],['lantern',1]])next.inventory[type]=Math.min(10000,(next.inventory[type]||0)+count);
     next.revision++;state.campV2=next;state.journey.riverKitDelivered=true;
   }
+  // Each restored realm sends one keepsake to the camp backpack, once.
+  {const delivered=state.journey.keepsakesDelivered||(state.journey.keepsakesDelivered=[]);const due=REALM_ORDER.filter(f=>state.realms[f]?.conquered&&!delivered.includes(f)&&CampV2.catalog['keepsake'+f]);
+    if(due.length){const next=JSON.parse(JSON.stringify(state.campV2));for(const f of due){next.inventory['keepsake'+f]=Math.min(10000,(next.inventory['keepsake'+f]||0)+1);delivered.push(f);}next.revision++;state.campV2=next;}}
   if(state.journey.zeroKit&&!state.journey.zeroKitDelivered){
     const next=JSON.parse(JSON.stringify(state.campV2));
     next.inventory.trailtent=(next.inventory.trailtent||0)+1;next.openingIntro=true;next.revision++;
@@ -69,7 +72,7 @@ function renderJourney(){
     return;
   }
   if(current.stage==='choose'){
-    host.innerHTML=`<div class="journey-heading"><small>CHOOSE YOUR START</small><h1>What would you like to try?</h1><p>Six calm questions can open a route. This is a starting suggestion, not a mastery badge.</p></div><div class="journey-route-grid">${REALM_ORDER.map(f=>`<button onclick="startReadiness(${f})">${realmCharacter(f)}<strong>${REALMS[f].name}</strong><span>×${f}</span></button>`).join('')}</div><button class="btn gold" onclick="beginLesson(0)">Begin with Poof instead</button>`;return;
+    host.innerHTML=`<div class="journey-heading"><small>CHOOSE YOUR START</small><h1>What would you like to try?</h1><p>Six calm questions can open a route. This is a starting suggestion, not a mastery badge.</p></div><button class="btn gold journey-placement" onclick="startPlacement()">Show what I know · 3 realms in one check</button><p class="journey-route-note">Or choose one realm:</p><div class="journey-route-grid">${REALM_ORDER.map(f=>`<button onclick="startReadiness(${f})">${realmCharacter(f)}<strong>${REALMS[f].name}</strong><span>×${f}</span></button>`).join('')}</div><button class="btn gold" onclick="beginLesson(0)">Begin with Poof instead</button>`;return;
   }
   // Older 'build' saves resume in the current strategy lesson.
   current.stage='see';renderGuardianLesson();
@@ -82,6 +85,15 @@ function startReadiness(fam){
   const unit=GuardianChapters.chapters[fam]?.unit;
   if(unit&&fam>0)queue[queue.length-2].prompt=`${fam} equal groups with ${queue[queue.length-2].b} ${unit} in each. How many ${unit} in all?`;
   lastConfig={fn:startReadiness,args:[fam]};startQuiz({mode:'readiness',fams:[fam],queue,timed:false,needCorrect:5,title:'Show what you know'});
+}
+/* Show what I know: the next three unopened realms in one untimed check.
+   Four of four on your own in a realm earns that realm's star 1 and opens its route. */
+function placementFamilies(){return REALM_ORDER.filter(f=>!state.realms[f].trial&&!state.realms[f].conquered).slice(0,3);}
+function startPlacement(){
+  const fams=placementFamilies();if(!fams.length){toast('Every realm has its first star already');showScreen('screen-map');return;}
+  state.journey.onboardingDone=true;state.journey.current=null;
+  const queue=LearningItems.shuffle(fams.flatMap(f=>LearningItems.readiness(f,{count:4}).map(q=>({...q,prompt:`Show what you know · ×${f} · ${REALMS[f].name}`}))));
+  lastConfig={fn:startPlacement,args:[]};startQuiz({mode:'placement',fams,queue,timed:false,title:'Show what you know'});
 }
 function finishJourneyRound(qz,passed){
   const fam=qz.fams[0];
@@ -104,6 +116,13 @@ function finishJourneyRound(qz,passed){
     state.journey.activeFamily=fam;
     if(!strong)return {headline:'A good start',sub:`You solved ${qz.passCorrect} of ${qz.baseTotal} on your own. Four new problems will help the strategy stick before the Realm Challenge.`,action:`retryGuardianTry(${fam})`,label:'Try four new problems',secondary:{action:`startTrial(${fam})`,label:'Go to the Realm Challenge'}};
     return {headline:'A new way to think!',sub:`${REALMS[fam].petName} helped you explore ${LearningJourney.lesson(fam).idea.toLowerCase()} Your Realm Challenge is open.`,action:`startTrial(${fam})`,label:'Try the Realm Challenge'};
+  }
+  if(qz.mode==='placement'){
+    const opened=qz.fams.filter(f=>{const items=qz.queue.filter(q=>q.a===f&&!q.reviewRound);return items.length&&items.every(q=>q.independentOk===true);});
+    for(const f of opened){state.journey.readiness[f]=true;state.realms[f].trial=true;if(!state.journey.routes.includes(f))state.journey.routes.push(f);const r=claimRealmStarRewards(f);qz.gems+=r.gems;}
+    const names=opened.map(f=>`×${f} ${REALMS[f].name}`).join(', ');
+    if(opened.length){state.journey.activeFamily=opened[0];return {headline:`${opened.length} realm${opened.length===1?'':'s'} opened · star 1 earned`,sub:`${names}. Help ${REALMS[opened[0]].petName} next to earn star 2.`,action:`startBoss(${opened[0]})`,label:`Help ${REALMS[opened[0]].petName}`,secondary:placementFamilies().length?{action:'startPlacement()',label:'Show what I know · next 3 realms'}:null};}
+    return {headline:'Let’s build these together',sub:'This check takes nothing away. A guardian can show you a strategy for these realms.',action:`beginStartingLesson(${qz.fams[0]})`,label:`Learn with ${REALMS[qz.fams[0]].petName}`};
   }
   if(qz.mode==='readiness'){
     // The starting check uses the Realm Challenge rule (5 of 6 on your own, untimed), so it earns star 1.

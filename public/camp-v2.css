@@ -80,3 +80,21 @@
 .cv2-land-legend{display:none}.cv2-show-land .cv2-land-legend{display:flex}
 .cv2-welcome-note{font-size:12px;opacity:.8;margin:8px 0 0}
 @media(max-width:430px){.cv2-shortcuts button{padding:6px 10px;font-size:11px;min-height:44px}.cv2-welcome{padding:14px!important}.cv2-welcome p{margin:6px 0}}
+/* 0.27.1: one small help button in the header; land and upgrades live in Build and Journal. */
+.cv2-help{flex:none;width:44px;height:44px;border-radius:14px;border:1px solid #b9c99e;background:#fff4d9;color:#294f43;font:900 20px var(--body,system-ui);cursor:pointer;margin-left:auto;margin-right:8px}
+.cv2-panel-links{display:flex;flex-wrap:wrap;gap:8px;margin:4px 0 12px}.cv2-panel-links button{min-height:44px;padding:8px 14px;border-radius:12px;border:1px solid #b9c99e;background:#fff4d9;color:#294f43;font-weight:800;cursor:pointer}
+/* The help button has its own header column so the supplies box keeps its width. */
+.cv2-header{grid-template-columns:44px 28px minmax(0,1fr) 44px auto}
+.cv2-help{margin:0}
+@media(max-width:380px){.cv2-header{grid-template-columns:44px minmax(0,1fr) 44px auto}}
+/* Phase 1: a calm confirmation before any review started from the world. */
+.cv2-offer{pointer-events:auto}.cv2-offer small{font-weight:900;letter-spacing:.06em;font-size:11px;color:#5d7a64}.cv2-offer h2{margin:4px 0 6px}.cv2-offer .cv2-actions{display:flex;gap:8px;margin-top:10px}.cv2-offer .cv2-actions button{flex:1;min-height:48px}
+.cv2-sky{font-size:20px}
+.cv2-make-room{width:100%;min-height:44px;margin:6px 0;border-radius:12px;border:1px solid #c9a46a;background:#fff1d6;color:#5b3f1d;font-weight:800;cursor:pointer}
+.cv2-swatches{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0}.cv2-swatches button{width:44px;height:44px;border-radius:50%;border:3px solid #fff8e6;background:var(--swatch);box-shadow:0 0 0 1px #0003;cursor:pointer}.cv2-swatches button[aria-pressed="true"]{box-shadow:0 0 0 3px #2f5244}
+.cv2-brand small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}.cv2-brand{min-width:0}
+/* Colour swatches sit on their own row so the selection card never scrolls sideways. */
+.cv2-selection .cv2-actions{flex-wrap:wrap!important;overflow:visible!important}
+.cv2-selection .cv2-swatches{flex:1 1 100%;order:20;justify-content:flex-start;margin:4px 0 0}
+.cv2-selection .cv2-actions>button{flex:1 1 auto}
+.cv2-swatches button{flex:0 0 44px!important;width:44px!important;height:44px!important;padding:0!important;min-width:0!important}
