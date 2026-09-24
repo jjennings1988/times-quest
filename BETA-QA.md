@@ -22,6 +22,28 @@ The GitHub Actions workflow runs the same suite on every pull request and on pus
 
 ## Connected adventure regression (0.21.0-beta.1)
 
+### The world around the map (0.29.0-beta.1)
+
+On screens wider than the map (tablet landscape, laptops, classroom displays):
+- **Day (before 5 pm):** "The Cartographer's Chart". Parchment with topographic
+  contours, a compass rose with 13 rays (gold for each restored realm, a gem for
+  three stars), a title panel naming the explorer and realms restored, sepia field
+  sketches of befriended guardians ("?" for uncharted ones), handwritten strategy
+  notes that ink in as realms are restored, and a wax seal when all 13 are done.
+- **Dusk (5–9 pm) and night:** "The Sky of Twelve". Star field, Milky Way, moon,
+  shooting stars, and 13 constellations shaped like each realm's groups (×7 = five
+  and two, ×9 = ten with one taken away). Restored realms light up in gold; Fact
+  Trail facts appear as small stars; all 13 restored adds an aurora. Dusk adds a
+  mountain horizon with village lights.
+- **On the map:** fog over realms not yet reached; a 13-dot Fact Trail arc around
+  every open realm; a gold laurel and pennant for restored realms; a sparkle for
+  three-star realms; a summit sunburst (and fireworks after the Summit); the map
+  darkens and realms glow like lanterns at night.
+- The moonlit camp setting also turns the map sky to night. Everything is
+  decorative (hidden from screen readers) and still in Calm or reduced motion.
+- Phones and narrow screens are unchanged: no backdrop is built when the side
+  margin is under 56px.
+
 ### Willowbrook: quick wins, growing homes, living valley (0.28.0-beta.1)
 
 **Quick wins**
