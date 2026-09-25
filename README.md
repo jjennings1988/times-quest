@@ -30,6 +30,8 @@ public/
 ├── chart-realms.js        Hand-drawn map: the twelve other realm landmarks, stage by stage
 ├── chart-landmarks.js     Hand-drawn map: ink by realm stage, the twin crossing, night lights
 ├── chart-worker.js        Paints the hand-drawn map off the main thread
+├── chart-lore.js          Hand-drawn map: parchment, Fact Trail milestones, gold leaf, the signed cartouche
+├── map-zoom.js            Pinch-to-zoom for the hand-drawn map
 ├── map-chart.js / .css    Mounts, caches and inks the hand-drawn map (Parents switch)
 ├── opening.js             Illustrated title and Zero Marsh expedition
 ├── opening.css            Title and interactive guardian scenes
@@ -130,6 +132,25 @@ See [the opening slice and verification guide](OPENING-EXPEDITION.md),
 [the follow-up audit](FOLLOW-UP-EXPERIENCE-AUDIT.md), and
 [the prior learning upgrade checklist](LEARNING-UPGRADE-CHECKLIST.md).
 Tests now include test/opening.js for the complete first expedition.
+
+## Learning in the chart's own hand, and pinch-to-zoom — 0.35 beta (testing)
+
+On the hand-drawn map, the old on-map details are redrawn in the chart's style
+(the painted map keeps its originals):
+- **Unexplored realms are blank parchment**, marked "Uncharted" with a
+  surveyor's faint marks. The map now goes blank → pencil → ink and colour.
+- **Fact Trails are milestones:** thirteen along the road out of each open realm,
+  a pencil outline until the fact is checked, then an inked stone with a gold cap.
+- **Three stars gild the realm:** its name label turns to shimmering gold leaf and
+  a gold-leaf compass star is inked beside its landmark.
+- **The summit:** gold-leaf rays around Mount Twelve once every realm is restored;
+  a flag and fireworks when it is conquered.
+- **A signed cartouche:** "A Chart of the Twelve Realms — surveyed by …" waits in
+  pencil and is inked, signed with the child's name and sealed when the summit
+  is conquered.
+- **Pinch-to-zoom** (up to 2.6×) on phones and tablets, ctrl/⌘ + scroll or trackpad
+  pinch on laptops, and − / + buttons. The map grows while realm buttons keep
+  their size; the chart redraws itself sharper after a large zoom.
 
 ## Landmarks set into the land, and a surveyor's topography — 0.34.3 beta (testing)
 

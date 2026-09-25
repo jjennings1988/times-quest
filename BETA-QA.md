@@ -48,6 +48,18 @@ The painted map stays the default; switching off returns it instantly.
   gains a celebration at 3 stars (flags, floating or sky lanterns, aurora,
   rainbow). Check each one sits beside its realm and is not hidden by the realm
   button, its label or the climber, in portrait on a phone.
+- **Learning details (0.35):** realms not yet open are blank parchment marked
+  "Uncharted"; each open realm has 13 milestones along its road, inked one by one
+  as Fact Trail facts are checked; a three-star realm's name is gold leaf with a
+  gold star by its landmark; the cartouche at the bottom is pencil until the
+  summit is conquered, then signed with the child's name. The old fog, dot arcs
+  and laurels should not appear on the hand-drawn map.
+- **Pinch-to-zoom (0.35):** pinch the map with two fingers (iPhone, iPad,
+  Android): it should zoom around your fingers, pan in every direction when
+  zoomed, never zoom the whole page, and realm buttons stay the same size. Check
+  the − / + buttons, "find my explorer" while zoomed, and that one-finger
+  scrolling still feels normal. Note whether the chart sharpens a moment after a
+  big zoom.
 - **Night:** the chart darkens with the map; windows, lanterns, the lighthouse
   beam, beacons and the power station orb glow above it.
 - **Check:** realm buttons, route and "You are here" sit exactly where they did

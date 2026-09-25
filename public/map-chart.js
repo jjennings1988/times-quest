@@ -4,7 +4,7 @@
    Decorative: the realm nodes and route stay exactly where they were. */
 (function(root){
   'use strict';
-  const CP=root.ChartPaint,CL=root.ChartLandmarks,CACHE='tq-chart';
+  const CP=root.ChartPaint,CL=root.ChartLandmarks,CLO=root.ChartLore,CACHE='tq-chart';
   const keyFor=scale=>`./chart-cache/v${CP.VERSION}/${scale}/`;
   let el=null,glow=null,base={scale:0,loading:null},layerKey='',pending=null,raf=0,current=null;
 
@@ -19,7 +19,7 @@
 
   /* ---------- the painted base, from cache or freshly drawn ---------- */
   async function fromCache(key){try{if(!root.caches)return null;const c=await caches.open(CACHE),[a,b]=await Promise.all([c.match(key+'ink.jpg'),c.match(key+'pencil.jpg')]);return a&&b?{ink:await a.blob(),pencil:await b.blob()}:null;}catch(e){return null;}}
-  async function toCache(key,blobs){try{if(!root.caches)return;const c=await caches.open(CACHE);for(const req of await c.keys())if(!new URL(req.url).pathname.includes(key.slice(1)))await c.delete(req);await c.put(key+'ink.jpg',new Response(blobs.ink,{headers:{'content-type':'image/jpeg'}}));await c.put(key+'pencil.jpg',new Response(blobs.pencil,{headers:{'content-type':'image/jpeg'}}));}catch(e){}}
+  async function toCache(key,blobs){try{if(!root.caches)return;const c=await caches.open(CACHE);for(const req of await c.keys())if(!new URL(req.url).pathname.includes(`/chart-cache/v${CP.VERSION}/`))await c.delete(req);await c.put(key+'ink.jpg',new Response(blobs.ink,{headers:{'content-type':'image/jpeg'}}));await c.put(key+'pencil.jpg',new Response(blobs.pencil,{headers:{'content-type':'image/jpeg'}}));}catch(e){}}
   function inWorker(scale){return new Promise((resolve,reject)=>{
     if(typeof Worker==='undefined'||typeof OffscreenCanvas==='undefined'||!('convertToBlob' in OffscreenCanvas.prototype))return reject(new Error('no worker canvas'));
     let w;try{w=new Worker('chart-worker.js');}catch(e){return reject(e);}
@@ -77,11 +77,11 @@
     if(!glow){glow=document.createElementNS('http://www.w3.org/2000/svg','svg');glow.setAttribute('class','chart-glow');glow.setAttribute('viewBox','0 0 864 1821');glow.setAttribute('preserveAspectRatio','none');glow.setAttribute('aria-hidden','true');}
     if(glow.previousSibling!==host)host.after(glow);glow.classList.toggle('on',data.sky!=='day');glow.classList.toggle('calm',!!data.calm);
     r.classList.toggle('night',data.sky!=='day');r.classList.toggle('calm',!!data.calm);r.dataset.marsh=String((data.stages||{})[0]|0);
-    const stages=data.stages||{},all=!!data.all,key=JSON.stringify([stages,all,data.profile]);
+    const stages=data.stages||{},all=!!data.all,key=JSON.stringify([stages,all,data.profile,data.lore]);
     if(key!==layerKey){
       layerKey=key;const seen=readSeen(data.profile),fresh={};let grow=null;
       if(seen&&!data.calm)for(const f of Object.keys(stages)){const was=seen[f]|0,now=stages[f]|0;if(now>was){fresh[f]=true;if(!grow||now>=3)grow={family:+f,from:CL.INK_RADIUS[was]||0};}}
-      r.querySelector('.chart-live').innerHTML=CL.markup(null,stages,{fresh,all});
+      r.querySelector('.chart-live').innerHTML=CL.markup(null,stages,{fresh,all})+(CLO?CLO.markup(data.lore):'');
       glow.innerHTML=CL.glowMarkup(stages);
       if(grow){applyMask(Object.assign({},stages,{[grow.family]:seen[grow.family]|0}),false);pending={...grow,stages,all};}
       else{pending=null;applyMask(stages,all);}
@@ -89,8 +89,10 @@
     }
     ensureBase(host);if(pending)startGrow();
   }
+  // After zooming, draw the chart at a finer resolution if the map is now much larger.
+  function refresh(){if(el&&el.parentNode)ensureBase(el.parentNode);}
   function release(){if(!el)return;cancelAnimationFrame(raf);el.remove();el=null;if(glow){glow.remove();glow=null;}base={scale:0,loading:null};layerKey='';pending=null;}
 
-  const api={render,release,supported,keyFor};
+  const api={render,release,refresh,supported,keyFor};
   root.MapChart=api;
 })(typeof window!=='undefined'?window:globalThis);

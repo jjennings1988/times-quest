@@ -1073,6 +1073,8 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
 <script src="chart-paint.js"></script>
 <script src="chart-realms.js"></script>
 <script src="chart-landmarks.js"></script>
+<script src="chart-lore.js"></script>
+<script src="map-zoom.js"></script>
 <script src="map-chart.js"></script>
 <script src="device-check.js"></script>
 <script src="learning-journey.js"></script>
@@ -1475,7 +1477,7 @@ const RATING_LABEL = ["undiscovered","discovered","befriending","befriending","c
    Defaults below reproduce the game's original behaviour exactly, so an
    existing save that predates settings plays identically until something
    is changed on purpose. */
-const APP_VERSION = '0.34.3-beta.1';
+const APP_VERSION = '0.35.0-beta.1';
 const FAST_MS = 4000;          // default bonus window
 const WINDOW_CHOICES = [3000,4000,6000,8000];
 const ROUND_CHOICES  = [8,12,16];
@@ -2134,7 +2136,7 @@ const MAP_POSITIONS=[
 /* Everything the map's surroundings reflect about the child's learning. */
 function mapLoreData(){
   const unlocked=unlockedFamilies(),profile=profileById();
-  return {night:!!state.campV2?.night,calm:!!(state.settings.calm||prefersReducedMotion()),explorer:profile?.name||'',
+  return {night:!!state.campV2?.night,calm:!!(state.settings.calm||prefersReducedMotion()),explorer:profile?.name||'',chart:useChartMap(),
     positions:MAP_POSITIONS,allRestored:allConquered(),summitDone:!!state.summitDone,
     realms:REALM_ORDER.map(f=>({family:f,name:REALMS[f].name,pet:REALMS[f].petName,color:REALMS[f].color,unlocked:unlocked.includes(f),restored:!!state.realms[f].conquered,stars:realmStars(f).stars,trail:factTrailProgress(f).count,strategyNote:LearningJourney.lesson(f).idea}))};
 }
@@ -2144,7 +2146,9 @@ function mapChartData(){
   const lore=mapLoreData();
     const stage=f=>ChartLandmarks.stageFor({trial:!!state.realms[f].trial,conquered:!!state.realms[f].conquered,stars:realmStars(f).stars});
   return {stages:Object.fromEntries(REALM_ORDER.map(f=>[f,stage(f)])),
-    all:!!state.summitDone,calm:lore.calm,sky:window.MapBackdrop?MapBackdrop.skyNow(lore):'day',profile:String(activeProfileId||'solo')};
+    all:!!state.summitDone,calm:lore.calm,
+    // What the chart shows about learning: open realms, Fact Trail milestones, stars, the finished map.
+    lore:{realms:lore.realms.map(q=>({family:q.family,unlocked:q.unlocked,trail:q.trail,stars:q.stars})),explorer:lore.explorer,allRestored:lore.allRestored,summitDone:lore.summitDone},sky:window.MapBackdrop?MapBackdrop.skyNow(lore):'day',profile:String(activeProfileId||'solo')};
 }
 function mapRouteSvg(completedCount){
   const width=864,height=1821;
@@ -2168,7 +2172,8 @@ function renderMap(){
   const unlocked=unlockedFamilies();
   const completedCount=conquestCount();
   const chart=useChartMap();
-  trail.innerHTML=`<div class="map-world"><div class="map-art${chart?' map-chart':''}" aria-hidden="true"></div>${mapRouteSvg(completedCount)}</div>`;
+  trail.innerHTML=`<div class="map-world${chart?' charted':''}"><div class="map-art${chart?' map-chart':''}" aria-hidden="true"></div>${mapRouteSvg(completedCount)}</div>`;
+  if(window.MapZoom){MapZoom.setEnabled(chart);MapZoom.apply();}
   if(!chart&&window.MapChart)MapChart.release();
   const world=trail.querySelector('.map-world');
   // summit node at the final background landmark
@@ -2187,7 +2192,7 @@ function renderMap(){
     const progress=realmProgress(fam),stars=progress.stars;
     const node=document.createElement('div');
     const point=MAP_POSITIONS[i];
-    node.className=`realm-node ${isUnlocked?'':'locked'} ${isHere?'here':''} ${state.realms[fam].conquered?'conquered':''}`;
+    node.className=`realm-node ${isUnlocked?'':'locked'} ${isHere?'here':''} ${state.realms[fam].conquered?'conquered':''} ${chart&&stars===3?'gilded':''}`;
     node.style.cssText=`left:${point.x}%;top:${point.y}%`;
     node.innerHTML=`
       <div class="realm-bubble" style="background:${r.color}"><span class="realm-number">×${fam}</span>${isUnlocked?realmCharacter(fam):'🔒'}
@@ -4214,6 +4219,7 @@ document.addEventListener('keydown',e=>{
   applyCalm();
   checkDaily();
   if(window.MapBackdrop)MapBackdrop.attach($('screen-map'),mapLoreData);
+  if(window.MapZoom)MapZoom.attach($('screen-map'),$('map-trail'),{onEnd:()=>{if(useChartMap()&&window.MapChart)MapChart.refresh();}});
   renderMap();
   updateChips();
   showTitle();

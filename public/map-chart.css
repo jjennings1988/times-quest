@@ -125,6 +125,29 @@
 .chart-glow.calm .cg-halo{animation:none}
 @media(prefers-reduced-motion:reduce){.chart-glow .cg-halo{animation:none}}
 
+/* Learning in the chart's hand (chart-lore.js) */
+.cl-uncharted{font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;font-style:italic;font-size:11px;letter-spacing:3px;fill:rgba(90,86,80,.75)}
+.cl-cart-title{font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;font-size:11px;font-variant:small-caps;letter-spacing:1.6px;fill:#3b2a1c}
+.cl-cart-by{font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;font-style:italic;font-size:7px;fill:#5a4128}
+.cl-cart-name{font-family:'Snell Roundhand','Apple Chancery','Segoe Script','Brush Script MT','Iowan Old Style',Georgia,serif;font-style:italic;font-size:13px;fill:#2c2418}
+.cl-cart-title.pencil,.cl-cart-by.pencil{fill:rgba(90,86,80,.75)}
+.cl-seal{font:800 6px Georgia,serif;fill:#f6dcc8}
+.cl-gilt{transform-box:fill-box;transform-origin:center;animation:cl-gilt 4s ease-in-out infinite}
+@keyframes cl-gilt{50%{filter:brightness(1.18) drop-shadow(0 0 2px rgba(255,210,90,.7))}}
+.cl-summit{animation:cl-gilt 6s ease-in-out infinite}
+/* Three stars: the realm's name in gold leaf */
+.map-world.charted .realm-node.gilded .meta{background:linear-gradient(115deg,#fbe8b2,#f6d88a 35%,#fff4cf 50%,#f1cf78 65%,#fbe8b2);background-size:220% 100%;border-color:#b8860b;box-shadow:0 3px 0 rgba(122,85,24,.45),0 0 0 1px rgba(255,236,170,.6) inset;animation:gold-leaf 6s ease-in-out infinite}
+.map-world.charted .realm-node.gilded .meta .nm{background:linear-gradient(90deg,#6e4608,#b8860b 40%,#8a5a0e 60%,#6e4608);-webkit-background-clip:text;background-clip:text;color:transparent}
+@keyframes gold-leaf{50%{background-position:100% 0}}
+body.calm .map-world.charted .realm-node.gilded .meta{animation:none}
+/* Pinch-to-zoom */
+#map-trail.zoomable{touch-action:pan-x pan-y}
+#map-trail.zoomed{overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+#map-trail.zoomed::-webkit-scrollbar{display:none}
+#map-trail.zoomed .map-world{left:0;transform:none;margin:0 auto}
+/* The frame's edge vignette is sized to the screen; once the map pans sideways it would slide across it. */
+#map-trail.zoomed::after{display:none}
+
 /* Stillness when asked */
 .chart-root.calm *{animation:none!important}
 .chart-root.calm .cl-boat{transform:translate(var(--x),var(--y))}

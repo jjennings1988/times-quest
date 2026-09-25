@@ -84,6 +84,25 @@ check('the storm clears when the refuge is celebrated',grp(7,0).includes('cl-bol
 check('night lights sit above the darkened map',CL.glowMarkup({2:3}).includes('cgLamp')&&/host\.after\(glow\)/.test(fs.readFileSync(path.join(__dirname,'..','public','map-chart.js'),'utf8')));
 check('the marsh mist thins as Zero Marsh is restored',/dataset\.marsh/.test(fs.readFileSync(path.join(__dirname,'..','public','map-chart.js'),'utf8'))&&/data-marsh="0"/.test(fs.readFileSync(path.join(__dirname,'..','public','map-chart.css'),'utf8')));
 
+// 0.35: learning shown in the chart's own hand.
+const LORE=require('../public/chart-lore'),Z=require('../public/map-zoom');
+const lore=(over={})=>({realms:CW.ORDER.map((f,i)=>({family:f,unlocked:i<3,trail:i===0?13:i===1?5:0,stars:i===0?3:1})),explorer:'Ava',allRestored:false,summitDone:false,...over});
+const L0=LORE.markup(lore());
+check('unexplored realms are blank parchment, marked uncharted',(L0.match(/Uncharted/g)||[]).length===10&&L0.includes('url(#clParch)'));
+check('every Fact Trail has thirteen milestones along its road',LORE.MILESTONES.length===13&&LORE.MILESTONES.every(m=>m.length===13));
+check('milestones stand on land beside the road, not in the river or lake',LORE.MILESTONES.flat().every(([x,y])=>world.waterAt(x,y)<0));
+check('checked facts are inked milestones; the rest wait in pencil',(L0.match(/fill="#d6cbb0"/g)||[]).length===18&&(L0.match(/stroke-dasharray=".8 .6"/g)||[]).length===21);
+check('three stars earn a gold-leaf compass star',(L0.match(/cl-gilt/g)||[]).length===1);
+check('the cartouche waits unsigned until the summit is conquered',L0.includes('cl-cartouche pending')&&!L0.includes('cl-cart-name'));
+const done=LORE.markup(lore({allRestored:true,summitDone:true,explorer:'Zoë <b>'}));
+check('a finished map is signed with the explorer\u2019s name, safely',done.includes('Zoë &lt;b&gt;')&&!done.includes('<b>')&&done.includes('cl-seal'));
+check('Mount Twelve wears gold-leaf rays once every realm is restored',LORE.markup(lore({allRestored:true})).includes('cl-summit')&&!L0.includes('cl-summit'));
+check('the painted map keeps its own details; the chart draws its own',/if\(data\.chart\)/.test(fs.readFileSync(path.join(__dirname,'..','public','map-backdrop.js'),'utf8'))&&html.includes("chart&&stars===3?'gilded':''"));
+check('zoom stays between 1\u00d7 and 2.6\u00d7',Z.clamp(.5)===1&&Z.clamp(9)===2.6&&Z.clamp(1.7)===1.7);
+const kf=Z.keepFocal({x:.5,y:.25},{left:-200,top:-100,width:1000,height:2000},{x:300,y:400});
+check('zooming keeps the point under the fingers in place',kf.dx===0&&kf.dy===0);
+check('zoom is offered only on the hand-drawn map, with buttons for mouse and keyboard',html.includes('MapZoom.setEnabled(chart)')&&/MapZoom\.step\(1\)/.test(fs.readFileSync(path.join(__dirname,'..','public','journey-ui.js'),'utf8')));
+check('every chart file is cached for offline play, including 0.35',['chart-lore.js','map-zoom.js'].every(f=>fs.readFileSync(path.join(__dirname,'..','public','sw.js'),'utf8').includes(`./${f}`)));
 check('paint version is a positive integer',Number.isInteger(CP.VERSION)&&CP.VERSION>0);
 const sw=fs.readFileSync(path.join(__dirname,'..','public','sw.js'),'utf8'),core=sw.match(/const CORE = \[([\s\S]*?)\];/)[1];
 check('every chart file is cached for offline play',['chart-world.js','chart-paint.js','chart-landmarks.js','chart-worker.js','map-chart.js','map-chart.css'].every(f=>core.includes(`./${f}`)));
