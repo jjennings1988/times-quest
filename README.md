@@ -25,6 +25,11 @@ public/
 ├── scene-transitions.css Calm and reduced-motion transition rules
 ├── realm-scene-registration.js Measured ground anchors for all 65 stages
 ├── journey-ui.js          Lessons, starting routes, encounters, resumable rewards
+├── chart-world.js         Hand-drawn map: rivers, lake, relief and landscapes around the realms
+├── chart-paint.js         Hand-drawn map: watercolour, ink, trees, peaks and cottages (canvas)
+├── chart-landmarks.js     Hand-drawn map: ink by realm stage, the twin crossing, living details
+├── chart-worker.js        Paints the hand-drawn map off the main thread
+├── map-chart.js / .css    Mounts, caches and inks the hand-drawn map (Parents switch)
 ├── opening.js             Illustrated title and Zero Marsh expedition
 ├── opening.css            Title and interactive guardian scenes
 ├── camp-guide.js          Parcel map and shelter upgrade previews
@@ -124,6 +129,27 @@ See [the opening slice and verification guide](OPENING-EXPEDITION.md),
 [the follow-up audit](FOLLOW-UP-EXPERIENCE-AUDIT.md), and
 [the prior learning upgrade checklist](LEARNING-UPGRADE-CHECKLIST.md).
 Tests now include test/opening.js for the complete first expedition.
+
+## The hand-drawn map — 0.30 beta (testing)
+
+- **A map drawn by the app itself:** a cartographer's chart painted in code:
+  watercolour washes with relief shading, engraved water lines, contours, and
+  thousands of individually drawn trees, peaks, dunes, reeds and cottages. Every
+  realm keeps its exact position; the route and buttons sit on top unchanged.
+- **Pencil becomes ink:** unexplored country is a warm pencil sketch. Each realm
+  inks outward as it is begun, restored and completed (the same stages as its
+  painted scene), with a spreading-ink moment when a realm is newly restored.
+- **One road through the world:** thirteen named roads join the realms in play
+  order (Fen Road, Woodland Way, Crossing Road … High Pass, Summit Stair). They
+  cross water only on a drawn bridge, stepping-stone ford or the island ferry,
+  pass through villages and waystations, and climb Mount Twelve by switchbacks.
+  On the hand-drawn map the dotted progress route walks this road.
+- **Double River finished first:** the twin crossing is rebuilt stone by stone,
+  lamps light at night, the mill turns and teal-and-gold banners fly at three stars.
+- **Phones first:** painted once per device in a worker, saved in the browser's
+  cache (about 2 MB), then only a small ink mask changes. Off by default: turn on
+  **Parents → Hand-drawn map (testing)**. `test/chart-gallery.html` previews the
+  chart outside the app (serve the repo root).
 
 ## Devices, returns, variety and camp depth — 0.27 beta
 

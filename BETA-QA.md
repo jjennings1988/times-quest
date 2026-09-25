@@ -22,6 +22,31 @@ The GitHub Actions workflow runs the same suite on every pull request and on pus
 
 ## Connected adventure regression (0.21.0-beta.1)
 
+### The hand-drawn map (0.30.0-beta.1, testing)
+
+Turn on **Parents → Preferences → Hand-drawn map (testing)** on a test profile only.
+The painted map stays the default; switching off returns it instantly.
+- **First open on a device:** a "The cartographer is drawing your map…" chip
+  appears for a moment (about 1–2 s on a laptop; note the time on each phone).
+  Later opens should be instant: the drawing is saved on the device. Record the
+  time on every device in the matrix.
+- **Pencil and ink:** realms not yet begun are a warm pencil sketch. Starting a
+  realm (Trial or 1 star) inks a small patch around it; restoring it spreads ink
+  and colour wide; three stars spreads a little further. When a realm is newly
+  restored, the ink should visibly spread outward from it the next time the map
+  opens (not in Calm or reduced motion).
+- **Double River, the twin crossing:** ruins before the realm is begun; stone
+  supports with timber arch frames at 1 star; both bridges rebuilt stone by stone
+  with lamps and walkers once restored; teal-and-gold banners and bunting at 3
+  stars. The windmill turns, chimneys smoke and a rowing boat drifts once restored.
+- **The road:** the dotted route follows the drawn road from realm to realm, over
+  a bridge, ford or the ferry wherever it meets water (never through a lake or
+  pool), and turns gold leg by leg as realms are restored.
+- **Night:** the chart darkens with the map; windows and bridge lamps glow.
+- **Check:** realm buttons, route and "You are here" sit exactly where they did
+  on the painted map; scrolling stays smooth; no console errors; the chart still
+  works offline after the first draw.
+
 ### The world around the map (0.29.0-beta.1)
 
 On screens wider than the map (tablet landscape, laptops, classroom displays):

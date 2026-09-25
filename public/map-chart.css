@@ -1,0 +1,70 @@
+/* The hand-drawn chart (map-chart.js). Decorative only; the realm nodes and route sit on top. */
+.map-art.map-chart{background:#efe3c4 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><filter id="n"><feTurbulence baseFrequency=".8" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 .45 0 0 0 0 .35 0 0 0 0 .2 0 0 0 .08 0"/></filter><rect width="120" height="120" filter="url(%23n)"/></svg>')}
+.chart-root{position:absolute;inset:0;overflow:hidden}
+.chart-root>canvas,.chart-root>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.chart-root>canvas{opacity:0;transition:opacity .9s ease}
+.chart-root.ready>canvas{opacity:1}
+.chart-ink{-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
+.chart-live{overflow:visible;pointer-events:none}
+.chart-loading{position:fixed;z-index:12;left:50%;top:calc(76px + var(--safe-top,0px));transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:9px 16px;border-radius:999px;background:rgba(246,236,210,.96);border:1.5px solid #9c7a4c;color:#3b2a1c;font:700 13px var(--body,system-ui);box-shadow:0 6px 18px rgba(40,20,8,.3);pointer-events:none;transition:opacity .5s}
+.chart-loading svg{width:22px;height:22px;animation:chart-quill 1.4s ease-in-out infinite}
+.chart-loading.done{opacity:0}
+@keyframes chart-quill{50%{transform:translate(4px,-2px) rotate(-8deg)}}
+
+/* Labels in a cartographer's hand */
+.cl-lab{font-family:'Iowan Old Style','Palatino Linotype',Palatino,'Book Antiqua',Georgia,serif;fill:#3b2a1c;paint-order:stroke;stroke:rgba(239,227,196,.8);stroke-width:3px;stroke-linejoin:round}
+.cl-lab.river{font-size:15px;font-style:italic;letter-spacing:1.6px;fill:#2c4e5c}
+.cl-lab.lake{font-size:15px;font-style:italic;letter-spacing:2.2px;fill:#2c4e5c}
+.cl-lab.region{font-size:14px;font-variant:small-caps;letter-spacing:3px;fill:#5a4128;opacity:.85}
+.cl-lab.edge{font-size:13px;font-style:italic;letter-spacing:4px;fill:#8a7254;stroke-width:0;opacity:.7}
+.cl-lab.n{font-size:10px;font-weight:700;stroke-width:2px}
+
+/* Water flows where a realm has been restored */
+.cl-flow{fill:none;stroke:#2c4e5c;stroke-width:.9;stroke-linecap:round;stroke-dasharray:3 15;opacity:.5;animation:cl-flow 6s linear infinite}
+@keyframes cl-flow{to{stroke-dashoffset:-180}}
+
+/* Bridges */
+.cl-ruin{fill:#cfc8b8;stroke:#6d6a66;stroke-width:.5}
+.cl-plank{fill:#b9ad98;stroke:#6d6a66;stroke-width:.4}
+.cl-stone{stroke:rgba(52,36,22,.5);stroke-width:.3}
+.cl-bridge.fresh .cl-stone{transform-box:fill-box;transform-origin:50% 100%;animation:cl-stone .5s cubic-bezier(.3,1.5,.5,1) both;animation-delay:var(--d,0s)}
+@keyframes cl-stone{from{opacity:0;transform:translateY(-6px) scale(.7)}}
+.cl-lamp{fill:#f7d26e;stroke:#3b2a1c;stroke-width:.4}
+.cl-glow{opacity:0;transition:opacity 1s}
+.cl-walker{animation:cl-walk 9s linear infinite}
+@keyframes cl-walk{0%{transform:translateX(-30px)}100%{transform:translateX(30px)}}
+.cl-banner{transform-box:fill-box;transform-origin:0 100%;animation:cl-flutter 2.4s ease-in-out infinite}
+@keyframes cl-flutter{50%{transform:skewY(4deg)}}
+
+/* Mill, boat, smoke, windows */
+.cl-mill .cl-sails{animation:cl-spin 16s linear infinite;animation-play-state:paused}
+.cl-mill.turning .cl-sails{animation-play-state:running}
+@keyframes cl-spin{to{transform:rotate(360deg)}}
+.cl-boat{transform:translate(var(--x),var(--y));animation:cl-row 14s ease-in-out infinite alternate}
+@keyframes cl-row{0%{transform:translate(var(--x),var(--y)) rotate(-3deg)}100%{transform:translate(var(--x),calc(var(--y) + 40px)) rotate(3deg)}}
+.cl-puff{fill:rgba(246,241,230,.85);stroke:rgba(59,42,28,.35);stroke-width:.25;transform-box:fill-box;transform-origin:center;animation:cl-puff 5.6s linear infinite}
+@keyframes cl-puff{0%{opacity:0;transform:translate(0,0) scale(.5)}15%{opacity:.9}100%{opacity:0;transform:translate(8px,-20px) scale(2.6)}}
+.cl-win{fill:#ffd36b;opacity:0;transition:opacity 1s}
+
+.cl-raft{animation:cl-ferry 11s ease-in-out infinite alternate}
+@keyframes cl-ferry{0%,12%{transform:translateX(0)}88%,100%{transform:translateX(var(--len))}}
+
+/* Sky: cloud shadows drift as composited layers (cheap on phones), birds cross in SVG */
+.chart-cloud{position:absolute;left:0;width:46%;aspect-ratio:2.4;border-radius:50%;background:radial-gradient(closest-side,rgba(42,42,64,.13),rgba(42,42,64,0));pointer-events:none;will-change:transform;animation:cl-drift 80s linear infinite}
+.chart-cloud.c0{top:32%}.chart-cloud.c1{top:66%;width:54%;animation-duration:105s;animation-delay:-45s}.chart-cloud.c2{top:14%;width:40%;animation-duration:90s;animation-delay:-20s}
+@keyframes cl-drift{from{transform:translateX(-110%)}to{transform:translateX(240%)}}
+.chart-root.night .chart-cloud{display:none}
+.cl-bird{fill:none;stroke:#3b2a1c;stroke-width:.8;animation:cl-birds 22s linear infinite}
+@keyframes cl-birds{0%{transform:translate(-40px,calc(1000px + var(--dy)))}100%{transform:translate(900px,calc(760px + var(--dy)))}}
+.cl-wet{fill:none;stroke:#3b2a1c;stroke-opacity:.16;stroke-width:14}
+
+/* Night: lamps and windows glow, and the living layer darkens with the chart */
+.chart-root.night .cl-win{opacity:.95;filter:drop-shadow(0 0 2px #ffb347)}
+.chart-root.night .cl-glow{opacity:1;animation:cl-lamp 3s ease-in-out infinite}
+@keyframes cl-lamp{50%{opacity:.65}}
+.chart-root.night .cl-sky{display:none}
+
+/* Stillness when asked */
+.chart-root.calm *{animation:none!important}
+.chart-root.calm .cl-boat{transform:translate(var(--x),var(--y))}
+@media(prefers-reduced-motion:reduce){.chart-root *{animation:none!important}.chart-root .cl-boat{transform:translate(var(--x),var(--y))}}

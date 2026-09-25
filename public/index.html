@@ -903,6 +903,7 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
 <link rel="stylesheet" href="nine-lesson.css">
 <link rel="stylesheet" href="family-lessons.css">
 <link rel="stylesheet" href="map-backdrop.css">
+<link rel="stylesheet" href="map-chart.css">
 </head>
 <body>
 <div id="app">
@@ -1068,6 +1069,10 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
 <script src="learning-items.js"></script>
 <script src="rounds.js"></script>
 <script src="map-backdrop.js"></script>
+<script src="chart-world.js"></script>
+<script src="chart-paint.js"></script>
+<script src="chart-landmarks.js"></script>
+<script src="map-chart.js"></script>
 <script src="device-check.js"></script>
 <script src="learning-journey.js"></script>
 <script src="realm-trail.js"></script>
@@ -1469,7 +1474,7 @@ const RATING_LABEL = ["undiscovered","discovered","befriending","befriending","c
    Defaults below reproduce the game's original behaviour exactly, so an
    existing save that predates settings plays identically until something
    is changed on purpose. */
-const APP_VERSION = '0.29.0-beta.1';
+const APP_VERSION = '0.30.0-beta.1';
 const FAST_MS = 4000;          // default bonus window
 const WINDOW_CHOICES = [3000,4000,6000,8000];
 const ROUND_CHOICES  = [8,12,16];
@@ -1484,6 +1489,7 @@ const PREF_DEFAULTS = {
   sound:  true,     // reward + feedback sounds
   clicks: true,     // keypad tap sounds
   ambience: false,  // optional, low-volume Base Camp soundscape
+  chartMap: false,  // testing: the hand-drawn, code-painted adventure map
 };
 const fastMs   = () => state.settings.window;
 const roundLen = () => state.settings.roundLen;
@@ -2131,13 +2137,23 @@ function mapLoreData(){
     positions:MAP_POSITIONS,allRestored:allConquered(),summitDone:!!state.summitDone,
     realms:REALM_ORDER.map(f=>({family:f,name:REALMS[f].name,pet:REALMS[f].petName,color:REALMS[f].color,unlocked:unlocked.includes(f),restored:!!state.realms[f].conquered,stars:realmStars(f).stars,trail:factTrailProgress(f).count,strategyNote:LearningJourney.lesson(f).idea}))};
 }
+/* The hand-drawn chart (testing): each realm's stage decides how far its ink has spread. */
+function useChartMap(){return !!(state.settings.chartMap&&window.MapChart&&MapChart.supported());}
+function mapChartData(){
+  const lore=mapLoreData();
+    const stage=f=>ChartLandmarks.stageFor({trial:!!state.realms[f].trial,conquered:!!state.realms[f].conquered,stars:realmStars(f).stars});
+  return {stages:Object.fromEntries(REALM_ORDER.map(f=>[f,stage(f)])),
+    all:!!state.summitDone,calm:lore.calm,sky:window.MapBackdrop?MapBackdrop.skyNow(lore):'day',profile:String(activeProfileId||'solo')};
+}
 function mapRouteSvg(completedCount){
   const width=864,height=1821;
   const points=MAP_POSITIONS.map(p=>({x:p.x/100*width,y:p.y/100*height}));
+  // On the hand-drawn map the dotted route walks the drawn road: over its bridges, fords and ferry, through its villages.
+  const roads=useChartMap()&&window.ChartWorld?ChartWorld.routePaths():null;
   const segment=(a,b,i)=>{
     const bend=i%2===0?125:-125;
     const midY=(a.y+b.y)/2;
-    const d=`M ${a.x} ${a.y} C ${a.x+bend} ${midY+48}, ${b.x-bend} ${midY-48}, ${b.x} ${b.y}`;
+    const d=roads?'M'+roads[i].filter((p,k,all)=>k%2===0||k===all.length-1).map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join('L'):`M ${a.x} ${a.y} C ${a.x+bend} ${midY+48}, ${b.x-bend} ${midY-48}, ${b.x} ${b.y}`;
     const cls=state.realms[REALM_ORDER[i]].conquered?'complete':REALM_ORDER[i]===currentFamily()?'current':'';
     return `<path class="map-route-segment ${cls}" d="${d}"/>`;
   };
@@ -2150,7 +2166,9 @@ function renderMap(){
   $('continue-skip').hidden=!act.offer;$('continue-skip').dataset.offer=act.offer||'';
   const unlocked=unlockedFamilies();
   const completedCount=conquestCount();
-  trail.innerHTML=`<div class="map-world"><div class="map-art" aria-hidden="true"></div>${mapRouteSvg(completedCount)}</div>`;
+  const chart=useChartMap();
+  trail.innerHTML=`<div class="map-world"><div class="map-art${chart?' map-chart':''}" aria-hidden="true"></div>${mapRouteSvg(completedCount)}</div>`;
+  if(!chart&&window.MapChart)MapChart.release();
   const world=trail.querySelector('.map-world');
   // summit node at the final background landmark
   const summit=document.createElement('div');
@@ -2186,6 +2204,7 @@ function renderMap(){
   world.appendChild(summit);
   improveMapNavigation();
   if(window.MapBackdrop)try{MapBackdrop.render($('screen-map'),mapLoreData());}catch(e){console.warn('Map backdrop',e);}
+  if(chart)try{MapChart.render(world.querySelector('.map-chart'),mapChartData());}catch(e){console.warn('Map chart',e);}
   // quest banner
   const q=questText();
   $('dq-title').textContent=state.questDone?'Daily Quest complete! ✅':q.t;
@@ -3148,6 +3167,9 @@ function renderParent(){
       <div class="toggle-row"><span class="lbl">${icon('keyboard')} Key clicks</span>${switchButton('Key clicks',st.clicks,"toggleSetting('clicks')")}</div>
       <div class="toggle-row"><span class="lbl">${icon('camp')} Camp ambience</span>${switchButton('Camp ambience',st.ambience,"toggleSetting('ambience')")}</div>
       <div class="pref-note">Camp ambience is optional, quiet, and pauses when the app is hidden. Calm mode always turns it off.</div>
+
+      <div class="toggle-row"><span class="lbl">${icon('map')} Hand-drawn map (testing)</span>${switchButton('Hand-drawn map',st.chartMap,"toggleSetting('chartMap')")}</div>
+      <div class="pref-note">Try the new chart drawn by the app itself: it starts as a pencil sketch and fills with ink and colour as each realm is restored. It is drawn once on this device, then saved.</div>
 
       <div class="toggle-row" style="margin-top:6px"><span class="lbl">${icon('trash')} Reset all progress</span><button class="btn coral small" onclick="resetAll()">Reset</button></div>
     </div>
