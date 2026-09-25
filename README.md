@@ -133,6 +133,53 @@ See [the opening slice and verification guide](OPENING-EXPEDITION.md),
 [the prior learning upgrade checklist](LEARNING-UPGRADE-CHECKLIST.md).
 Tests now include test/opening.js for the complete first expedition.
 
+## The map as an object — 0.38 beta (testing)
+
+- **Seasons:** the chart is painted in the season of the real calendar: blossom
+  and meadow flowers in spring, green in summer, gold and russet woods in autumn,
+  snow on the ground, trees and pines in winter, with the fen pools frozen. Each
+  season is cached separately, so the chart repaints once when the season turns.
+- **A made thing:** a neatline border with a graduated band and league numbers,
+  gilded corner marks, a scale bar in leagues, fold creases, worn corners, a tea
+  ring, and pencilled notes from an earlier traveller in four places.
+- **Willowbrook on the map:** the child's camp (tents, campfire, pennant, willows)
+  stands west of Ashford; tapping it opens the camp.
+- **Map key:** a Key button beside the zoom buttons explains the symbols (bridge,
+  ford, ferry, milestone, inn, village, mill, mine, spring, parchment, gold leaf,
+  camp).
+
+## Water and wild — 0.37 beta (testing)
+
+- **Water that behaves like water:** Sevenfold Falls tumbles down seven drops where
+  the Long River leaves the high country (a smaller fall at the glacier snout);
+  springs mark where Mill Beck, Fern Brook and the Dry Wash rise; Heron Isle and
+  Otter Rock stand in Sounding Lake, which carries depth soundings like a pilot's
+  chart; the upper river breaks over rapids at The Churn; and the Lower Weir spans
+  the river below Double River.
+- **Life:** sheep and cattle graze the Midlands pastures, deer stand at the wood's
+  edge, travellers and a pony cart walk the roads, a rowing boat crosses to Heron
+  Isle, fish leap in the lake, and geese pass over. Moving things rest in Calm mode
+  and at night.
+
+## A lived-in land — 0.36 beta (testing)
+
+The hand-drawn map now has ordinary life between the realms:
+- **Places:** the market town of Ashford (church, square and well), the villages
+  of Millbrook, Stonecross and Fernhollow, Greenhollow's stilt huts in the
+  jungle, four farms with barns, haystacks and hedged fields, three inns with
+  signboards (The Twelve Bells, The Crooked Gear, The Fen Lantern), two
+  watermills with wheels, Glimmer Mine, the Old Quarry, an orchard, sheep folds,
+  a woodcutters' camp and the ring of Twelve Oaks.
+- **Roads with meaning:** lanes join every place to the road (with plank
+  footbridges over Fern Brook), signposts point the way at four crossroads, and
+  roads leave the map toward the Coast Kingdoms, the Salt Road, the High Passes
+  and the Sunrise Road.
+- **Names everywhere, lettered like a real chart:** towns in bold small capitals,
+  villages in small capitals, hamlets and bridges in italics, water in blue
+  italics, regions spread wide (The Midlands, The High Country, The Lowlands),
+  with number-themed treats to find.
+- Every settlement's chimney smokes, and its windows light at night.
+
 ## Mountains that rise out of the ground — 0.35.2 beta (testing)
 
 Every peak, hill and mesa is now drawn on its own sheet whose foot fades into

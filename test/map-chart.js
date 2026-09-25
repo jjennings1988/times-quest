@@ -106,6 +106,32 @@ check('zooming out glides the map back to the middle',Z.recentre(500,200,2,1.5)=
 check('back at normal size no sideways scroll is left behind',/trail\.scrollLeft=0/.test(fs.readFileSync(path.join(__dirname,'..','public','map-zoom.js'),'utf8')));
 check('zoom is offered only on the hand-drawn map, with buttons for mouse and keyboard',html.includes('MapZoom.setEnabled(chart)')&&/MapZoom\.step\(1\)/.test(fs.readFileSync(path.join(__dirname,'..','public','journey-ui.js'),'utf8')));
 check('every chart file is cached for offline play, including 0.35',['chart-lore.js','map-zoom.js'].every(f=>fs.readFileSync(path.join(__dirname,'..','public','sw.js'),'utf8').includes(`./${f}`)));
+// 0.36: a lived-in land.
+check('the land is settled: a town, villages, farms, inns, mills and workings',['town','village','farm','inn','mill','mine','quarry','orchard','fold','woodcamp','copse'].every(k=>CW.SETTLEMENTS.some(q=>q.kind===k)));
+check('every settlement stands on dry land, clear of the realm buttons and landmarks',CW.SETTLEMENTS.every(q=>world.waterAt(q.x,q.y)<-4&&CW.NODES.every(n=>Math.hypot(n.x-q.x,n.y-q.y)>70)&&Object.values(CW.SITES).every(t=>Math.hypot(t.x-q.x,t.y-q.y)>t.r+14)));
+check('every town, village, farm and working has a lane to the road',CW.SETTLEMENTS.filter(q=>!['fold','orchard','copse'].includes(q.kind)).every(q=>world.LANES.some(l=>l.id===q.id)||[...CW.routePaths().flat(),...CW.SPURS.flatMap(t=>CW.spline(t,3))].some(([x,y])=>Math.hypot(x-q.x,y-q.y)<16)));
+check('lanes stay dry, or cross a brook on a footbridge (never the river)',world.LANES.every(l=>CW.spline(l.path,3).every(([x,y])=>world.waterAt(x,y)<(l.footbridge?4.5:-1.5))));
+check('roads run off the edge of the map toward a wider world',CW.SPURS.some(t=>t[t.length-1][0]<=0)&&CW.EDGE_SIGNS.length>=4);
+const LM=CL.markup(null,{},{});
+check('the map is named: towns in capitals, water in italics, regions spread wide',['Ashford','Millbrook','Twelve Oaks','Mill Beck','THE MIDLANDS'].every(t=>LM.includes(t))&&/cl-lab town/.test(LM)&&/cl-lab water/.test(LM)&&/cl-lab region/.test(LM));
+check('signposts point the way at the crossroads',(LM.match(/cl-signpost/g)||[]).length>=4);
+check('every settlement lights its windows at night',(CL.glowMarkup({}).match(/<polygon/g)||[]).length>60);
+// 0.37: water and wild.
+check('Sounding Lake has islands of dry land',CW.ISLANDS.length>=2&&CW.ISLANDS.every(i=>world.waterAt(i.x,i.y)<0&&world.waterAt(i.x+i.rx+8,i.y)>0));
+check('springs rise where the streams begin',CW.SPRINGS.every(p=>world.waterAt(p.x,p.y)>-4));
+const W1=CL.markup(null,{},{}),W2=CL.markup(null,{},{calm:true});
+check('Sevenfold Falls cascades in seven drops',W1.includes('Sevenfold Falls')&&(W1.match(/class="cl-fall"/g)||[]).length===10);
+check('travellers and a boat move on the roads and lake, and rest in Calm mode',(W1.match(/<animateMotion/g)||[]).length>=5&&!W2.includes('<animateMotion'));
+check('herds graze in the pastures, clear of the water',CW.HERDS.every(h=>world.waterAt(h.x,h.y)<-20));
+// 0.38: the map as an object.
+check('seasons follow the calendar',CP.seasonFor(new Date(2026,0,5))==='winter'&&CP.seasonFor(new Date(2026,3,5))==='spring'&&CP.seasonFor(new Date(2026,6,5))==='summer'&&CP.seasonFor(new Date(2026,9,5))==='autumn');
+{const r=s=>{const out=[];for(const v of CP.paint(ctx,world,{scale:1,makeCanvas:fakeCanvas,season:s}))out.push(v);return out[out.length-1];};check('every season paints to the end',['spring','summer','autumn','winter'].every(s=>r(s)==='done'));}
+const mapChartJs=fs.readFileSync(path.join(__dirname,'..','public','map-chart.js'),'utf8'),workerJs=fs.readFileSync(path.join(__dirname,'..','public','chart-worker.js'),'utf8');
+check('each season has its own cached chart, painted on or off the main thread',/chart-cache\/v\$\{CP\.VERSION\}\/\$\{season\(\)\}/.test(mapChartJs)&&/season:season\(\)/.test(mapChartJs)&&/renderAll\(ctx,world,\{scale,season/.test(workerJs));
+check('the chart has a neatline border, a scale bar in leagues and pencilled notes',W1.includes('cl-border')&&W1.includes('cl-scale')&&W1.includes('leagues')&&(W1.match(/class="cl-note"/g)||[]).length>=4);
+check('Willowbrook stands on dry ground in its own clearing, clear of the realms',world.waterAt(CW.CAMP.x,CW.CAMP.y)<-10&&CW.SETTLEMENTS.some(q=>q.kind==='camp'&&q.x===CW.CAMP.x)&&CW.NODES.every(n=>Math.hypot(n.x-CW.CAMP.x,n.y-CW.CAMP.y)>70)&&W1.includes('cl-camp'));
+check('tapping Willowbrook on the chart opens the camp',/camp-pin[\s\S]{0,400}visitCamp\(\)/.test(html));
+check('the map key explains the symbols, from the chart only',/showMapKey\(\)/.test(fs.readFileSync(path.join(__dirname,'..','public','journey-ui.js'),'utf8'))&&/function showMapKey/.test(fs.readFileSync(path.join(__dirname,'..','public','journey-ui.js'),'utf8')));
 check('paint version is a positive integer',Number.isInteger(CP.VERSION)&&CP.VERSION>0);
 const sw=fs.readFileSync(path.join(__dirname,'..','public','sw.js'),'utf8'),core=sw.match(/const CORE = \[([\s\S]*?)\];/)[1];
 check('every chart file is cached for offline play',['chart-world.js','chart-paint.js','chart-landmarks.js','chart-worker.js','map-chart.js','map-chart.css'].every(f=>core.includes(`./${f}`)));

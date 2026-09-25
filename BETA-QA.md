@@ -61,6 +61,17 @@ The painted map stays the default; switching off returns it instantly.
   scrolling still feels normal. Slide to one side while zoomed, then zoom all the
   way out: the map should glide back and end exactly centred (0.35.1). Note whether the chart sharpens a moment after a
   big zoom.
+- **A lived-in land (0.36):** town, village and farm names read clearly and don't
+  collide with realm labels; every lane reaches a road; signposts sit at
+  crossroads; roads run off the map edges with "to the …" signs.
+- **Water and wild (0.37):** Sevenfold Falls reads as a waterfall, not a ladder;
+  islands, rapids and the weir are labelled; travellers, the boat and geese move
+  by day and rest in Calm mode and at night.
+- **The map as an object (0.38):** the border, league numbers and scale bar frame
+  the map without covering realm buttons; the pencil notes are readable; the tree
+  colours match the current season (September to November is autumn); Willowbrook
+  sits west of Ashford and tapping it opens the camp; the Key button (hand-drawn
+  map only) opens a readable key and closes back to the map.
 - **Night:** the chart darkens with the map; windows, lanterns, the lighthouse
   beam, beacons and the power station orb glow above it.
 - **Check:** realm buttons, route and "You are here" sit exactly where they did

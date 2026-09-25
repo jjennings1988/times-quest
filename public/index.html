@@ -1477,7 +1477,7 @@ const RATING_LABEL = ["undiscovered","discovered","befriending","befriending","c
    Defaults below reproduce the game's original behaviour exactly, so an
    existing save that predates settings plays identically until something
    is changed on purpose. */
-const APP_VERSION = '0.35.2-beta.1';
+const APP_VERSION = '0.38.0-beta.1';
 const FAST_MS = 4000;          // default bonus window
 const WINDOW_CHOICES = [3000,4000,6000,8000];
 const ROUND_CHOICES  = [8,12,16];
@@ -2176,6 +2176,7 @@ function renderMap(){
   if(window.MapZoom){MapZoom.setEnabled(chart);MapZoom.apply();}
   if(!chart&&window.MapChart)MapChart.release();
   const world=trail.querySelector('.map-world');
+  if(chart){const c=ChartWorld.CAMP,pin=document.createElement('button');pin.className='camp-pin';pin.type='button';pin.style.cssText=`left:${c.x/ChartWorld.W*100}%;top:${(c.y+4)/ChartWorld.H*100}%`;pin.setAttribute('aria-label','Willowbrook, your camp. Visit your camp');pin.innerHTML='<span class="pin"></span><b>Willowbrook</b><small>your camp</small>';pin.onclick=()=>visitCamp();world.append(pin);}
   // summit node at the final background landmark
   const summit=document.createElement('div');
   summit.className='summit-node';

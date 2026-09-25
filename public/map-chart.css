@@ -19,6 +19,15 @@
 .cl-lab.edge{font-size:13px;font-style:italic;letter-spacing:4px;fill:#8a7254;stroke-width:0;opacity:.7}
 .cl-lab.n{font-size:10px;font-weight:700;stroke-width:2px}
 
+.cl-lab.town{font-size:11px;font-variant:small-caps;font-weight:700;letter-spacing:1.6px;fill:#2e2216}
+.cl-lab.village{font-size:8.5px;font-variant:small-caps;letter-spacing:1.1px;fill:#3b2a1c}
+.cl-lab.hamlet{font-size:6.6px;font-style:italic;fill:#4a3826;stroke-width:2.2px}
+.cl-lab.small{font-size:5.6px;font-style:italic;fill:#5a4128;stroke-width:1.8px}
+.cl-lab.water{font-size:7.4px;font-style:italic;letter-spacing:.8px;fill:#2c4e5c}
+.cl-lab.feature{font-size:8px;font-style:italic;letter-spacing:1.4px;fill:#5a4128}
+.cl-lab.beyond{font-size:7px;font-style:italic;letter-spacing:.6px;fill:#5a4128}
+.cl-board{font:italic 700 2.4px 'Iowan Old Style','Palatino Linotype',Georgia,serif;fill:#2b1c10}
+
 /* Water flows where a realm has been restored */
 .cl-flow{fill:none;stroke:#2c4e5c;stroke-width:.9;stroke-linecap:round;stroke-dasharray:3 15;opacity:.5;animation:cl-flow 6s linear infinite}
 @keyframes cl-flow{to{stroke-dashoffset:-180}}
@@ -33,7 +42,7 @@
 .cl-glow{opacity:0;transition:opacity 1s}
 .cl-walker{animation:cl-walk 9s linear infinite}
 @keyframes cl-walk{0%{transform:translateX(-30px)}100%{transform:translateX(30px)}}
-.cl-banner{transform-box:fill-box;transform-origin:0 100%;animation:cl-flutter 2.4s ease-in-out infinite}
+.cl-banner,.cl-pennant{transform-box:fill-box;transform-origin:0 100%;animation:cl-flutter 2.4s ease-in-out infinite}
 @keyframes cl-flutter{50%{transform:skewY(4deg)}}
 
 /* Mill, boat, smoke, windows */
@@ -117,6 +126,30 @@
 .chart-root.night .cl-glow{opacity:1;animation:cl-lamp 3s ease-in-out infinite}
 @keyframes cl-lamp{50%{opacity:.65}}
 .chart-root.night .cl-sky{display:none}
+
+.cl-fall{stroke-dasharray:1 1.6;animation:cl-fall .6s linear infinite}
+@keyframes cl-fall{to{stroke-dashoffset:-2.6}}
+.cl-spray{transform-box:fill-box;transform-origin:center;animation:cl-orb 2.4s ease-in-out infinite}
+.cl-fish{opacity:0;animation:cl-fish 7s ease-in-out infinite}
+@keyframes cl-fish{0%,84%,100%{opacity:0;transform:translate(0,0)}88%{opacity:1;transform:translate(2px,-4px) rotate(-30deg)}92%{opacity:1;transform:translate(4px,-1px) rotate(40deg)}95%{opacity:0;transform:translate(5px,1px)}}
+.cl-splash{opacity:0;transform-box:fill-box;transform-origin:center;animation:cl-splash 7s ease-out infinite}
+@keyframes cl-splash{0%,93%{opacity:0;transform:scale(.3)}95%{opacity:.9}100%{opacity:0;transform:scale(1.6)}}
+.cl-geese{animation:cl-geese 48s linear infinite}
+@keyframes cl-geese{0%{transform:translate(-80px,900px)}100%{transform:translate(960px,560px)}}
+.chart-root.night .cl-geese,.chart-root.night .cl-traveller{display:none}
+
+.cl-grat{font:italic 5.4px 'Iowan Old Style','Palatino Linotype',Georgia,serif;fill:#3b2a1c}
+.cl-note{font:6.6px 'Segoe Print','Bradley Hand','Comic Sans MS',cursive;fill:rgba(66,58,50,.9);stroke:rgba(244,236,214,.7);stroke-width:1.6px;paint-order:stroke;stroke-linejoin:round}
+/* Willowbrook on the map: the explorer's own camp */
+.map-world.charted .camp-pin{position:absolute;z-index:3;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;padding:0;border:0;background:none;cursor:pointer;font:inherit}
+.map-world.charted .camp-pin .pin{width:48px;height:36px;border-radius:14px}
+.map-world.charted .camp-pin:focus-visible .pin{outline:3px solid #b8860b;outline-offset:2px}
+.map-world.charted .camp-pin b{padding:2px 8px;border-radius:9px;background:rgba(250,236,200,.95);border:1.5px solid rgba(101,62,30,.4);color:#3b271b;font:800 10.5px var(--display,Georgia);white-space:nowrap}
+.map-world.charted .camp-pin small{font:700 8px var(--body,system-ui);color:#795534;letter-spacing:.3px}
+/* The map key */
+.map-key{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px 14px;margin:10px 0 14px;padding:0;list-style:none}
+.map-key li{display:flex;align-items:center;gap:10px;font-size:14px;line-height:1.25}
+.map-key svg{flex:0 0 44px;width:44px;height:30px;border-radius:6px;background:#efe3c4;border:1px solid rgba(101,62,30,.25)}
 
 /* Night lights above the darkened map */
 .chart-glow{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;opacity:0;transition:opacity 1.4s ease;mix-blend-mode:screen}

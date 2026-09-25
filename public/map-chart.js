@@ -5,7 +5,8 @@
 (function(root){
   'use strict';
   const CP=root.ChartPaint,CL=root.ChartLandmarks,CLO=root.ChartLore,CACHE='tq-chart';
-  const keyFor=scale=>`./chart-cache/v${CP.VERSION}/${scale}/`;
+  const season=()=>CP.seasonFor(new Date());
+  const keyFor=scale=>`./chart-cache/v${CP.VERSION}/${season()}/${scale}/`;
   let el=null,glow=null,base={scale:0,loading:null},layerKey='',pending=null,raf=0,current=null;
 
   function supported(){try{const c=document.createElement('canvas');return !!(c.getContext&&c.getContext('2d'))&&typeof createImageBitmap==='function';}catch(e){return false;}}
@@ -26,10 +27,10 @@
     const done=fn=>v=>{w.terminate();fn(v);};
     w.onmessage=e=>e.data.ok?done(resolve)(e.data):done(reject)(new Error(e.data.error));
     w.onerror=e=>{e.preventDefault&&e.preventDefault();done(reject)(new Error(e.message||'worker failed'));};
-    w.postMessage({id:1,scale});
+    w.postMessage({id:1,scale,season:season()});
   });}
   async function onMainThread(scale){
-    const world=root.ChartWorld.build(),W=Math.round(864*scale),H=Math.round(1821*scale),ink=makeCanvas(W,H),ctx=ink.getContext('2d'),it=CP.paint(ctx,world,{scale,makeCanvas});
+    const world=root.ChartWorld.build(),W=Math.round(864*scale),H=Math.round(1821*scale),ink=makeCanvas(W,H),ctx=ink.getContext('2d'),it=CP.paint(ctx,world,{scale,makeCanvas,season:season()});
     // Paint in short slices so taps and scrolling stay smooth.
     for(;;){const t=performance.now();let r;do r=it.next();while(!r.done&&performance.now()-t<12);if(r.done)break;await new Promise(res=>setTimeout(res,0));}
     const pencil=makeCanvas(W,H),pctx=pencil.getContext('2d'),dst=pctx.createImageData(W,H);CP.pencilize(ctx.getImageData(0,0,W,H),dst);pctx.putImageData(dst,0,0);
@@ -77,11 +78,11 @@
     if(!glow){glow=document.createElementNS('http://www.w3.org/2000/svg','svg');glow.setAttribute('class','chart-glow');glow.setAttribute('viewBox','0 0 864 1821');glow.setAttribute('preserveAspectRatio','none');glow.setAttribute('aria-hidden','true');}
     if(glow.previousSibling!==host)host.after(glow);glow.classList.toggle('on',data.sky!=='day');glow.classList.toggle('calm',!!data.calm);
     r.classList.toggle('night',data.sky!=='day');r.classList.toggle('calm',!!data.calm);r.dataset.marsh=String((data.stages||{})[0]|0);
-    const stages=data.stages||{},all=!!data.all,key=JSON.stringify([stages,all,data.profile,data.lore]);
+    const stages=data.stages||{},all=!!data.all,key=JSON.stringify([stages,all,data.profile,data.lore,!!data.calm]);
     if(key!==layerKey){
       layerKey=key;const seen=readSeen(data.profile),fresh={};let grow=null;
       if(seen&&!data.calm)for(const f of Object.keys(stages)){const was=seen[f]|0,now=stages[f]|0;if(now>was){fresh[f]=true;if(!grow||now>=3)grow={family:+f,from:CL.INK_RADIUS[was]||0};}}
-      r.querySelector('.chart-live').innerHTML=CL.markup(null,stages,{fresh,all})+(CLO?CLO.markup(data.lore):'');
+      r.querySelector('.chart-live').innerHTML=CL.markup(null,stages,{fresh,all,calm:!!data.calm})+(CLO?CLO.markup(data.lore):'');
       glow.innerHTML=CL.glowMarkup(stages);
       if(grow){applyMask(Object.assign({},stages,{[grow.family]:seen[grow.family]|0}),false);pending={...grow,stages,all};}
       else{pending=null;applyMask(stages,all);}
