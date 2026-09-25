@@ -58,11 +58,72 @@
 @keyframes cl-birds{0%{transform:translate(-40px,calc(1000px + var(--dy)))}100%{transform:translate(900px,calc(760px + var(--dy)))}}
 .cl-wet{fill:none;stroke:#3b2a1c;stroke-opacity:.16;stroke-width:14}
 
+/* Realm landmarks: graphite until begun, colour arriving with the ink */
+.cl-realm{transition:filter 1.2s ease,opacity 1.2s ease}
+.cl-realm.s0{filter:grayscale(1) sepia(.25) contrast(.85);opacity:.72}
+.cl-realm.s1,.cl-realm.s2{filter:grayscale(.55) sepia(.15)}
+.cl-realm.fresh .cl-bit{transform-box:fill-box;transform-origin:50% 100%;animation:cl-pop .6s cubic-bezier(.3,1.5,.5,1) both;animation-delay:var(--d,0s)}
+@keyframes cl-pop{from{opacity:0;transform:translateY(-5px) scale(.6)}}
+.cl-glow.off{display:none}
+.cl-fly{fill:#fff4a8;opacity:0;transform-box:fill-box;animation:cl-firefly 4s ease-in-out infinite}
+@keyframes cl-firefly{0%,100%{opacity:0;transform:translate(0,0)}50%{opacity:.9;transform:translate(3px,-4px)}}
+.chart-root:not(.night) .cl-fly{animation-duration:6s}
+.cl-bob{animation:cl-bob 3.4s ease-in-out infinite}
+@keyframes cl-bob{50%{transform:translateY(-1.6px)}}
+.cl-moor{animation:cl-bob 4.2s ease-in-out infinite}
+.cl-gull{animation:cl-gull 3s ease-in-out infinite}
+@keyframes cl-gull{50%{transform:translate(2px,-2px)}}
+.cl-flutter{animation:cl-gull 1.6s ease-in-out infinite}
+.cl-orb{animation:cl-orb 2.6s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+@keyframes cl-orb{50%{opacity:.55;transform:scale(.85)}}
+.cl-orbglow{animation:cl-orb 3.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.cl-beam{opacity:0;transition:opacity 1s}
+.chart-root.night .cl-beam{opacity:1;animation:cl-sweep 8s linear infinite}
+@keyframes cl-sweep{from{transform:translate(-8px,-66px) rotate(0deg)}to{transform:translate(-8px,-66px) rotate(360deg)}}
+.cl-sail{animation:cl-sailing 26s ease-in-out infinite alternate}
+@keyframes cl-sailing{to{transform:translateX(var(--x))}}
+.cl-spin{animation:cl-spin 7s linear infinite}.cl-spin-r{animation:cl-spin 6s linear infinite reverse}.cl-spin-slow{animation:cl-spin 18s linear infinite}
+.cl-glint{animation:cl-orb 2s ease-in-out infinite}
+.cl-rune{animation:cl-orb 3s ease-in-out infinite;filter:drop-shadow(0 0 1.5px #ffd36b)}
+.cl-rise{animation:cl-rise 7s ease-in infinite}
+@keyframes cl-rise{0%{opacity:0;transform:translateY(20px)}15%{opacity:1}100%{opacity:0;transform:translateY(-24px)}}
+.cl-twinkle{animation:cl-orb 2.2s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
+.cl-aurora path{animation:cl-aur 9s ease-in-out infinite}
+@keyframes cl-aur{50%{opacity:.08;transform:translateY(-4px)}}
+.cl-bolt{opacity:0;animation:cl-bolt 5s steps(1) infinite}
+.cl-bolt.off{display:none}
+@keyframes cl-bolt{0%,88%,94%,100%{opacity:0}90%,96%{opacity:1}}
+.cl-storm{animation:cl-bob 6s ease-in-out infinite}
+.cl-beams{animation:cl-orb 4s ease-in-out infinite}
+.cl-flame{transform-box:fill-box;transform-origin:50% 100%;animation:cl-flame .7s ease-in-out infinite alternate}
+@keyframes cl-flame{from{transform:scaleY(.86) skewX(-3deg);opacity:.85}to{transform:scaleY(1.08) skewX(3deg);opacity:1}}
+.cl-petal{animation:cl-petal 6s linear infinite}
+@keyframes cl-petal{0%{opacity:0;transform:translate(0,0)}15%{opacity:1}100%{opacity:0;transform:translate(-6px,18px) rotate(180deg)}}
+.cl-koi{animation:cl-koi 10s ease-in-out infinite alternate}
+@keyframes cl-koi{to{transform:translateX(3px)}}
+.cl-rain{animation:cl-rain .8s linear infinite}
+@keyframes cl-rain{from{transform:translate(0,-2px);opacity:.9}to{transform:translate(-1.4px,3px);opacity:.3}}
+.cl-arcs{animation:cl-bolt 2.6s steps(1) infinite}
+.cl-burst{transform-box:fill-box;transform-origin:center;animation:cl-burst 5s ease-out infinite}
+@keyframes cl-burst{0%,60%{opacity:0;transform:scale(.3)}70%{opacity:1}100%{opacity:0;transform:scale(1.3)}}
+.chart-mist{position:absolute;left:0;width:60%;aspect-ratio:3;border-radius:50%;background:radial-gradient(closest-side,rgba(250,248,240,.7),rgba(250,248,240,0));pointer-events:none;will-change:transform;animation:cl-mist 60s ease-in-out infinite alternate;opacity:.2;transition:opacity 2s}
+.chart-mist.m0{top:88%;left:-6%}.chart-mist.m1{top:92%;left:34%;animation-duration:75s;animation-delay:-30s}.chart-mist.m2{top:84.5%;left:12%;width:44%;animation-duration:50s;animation-delay:-12s}
+@keyframes cl-mist{to{transform:translateX(18%)}}
+.chart-root[data-marsh="0"] .chart-mist{opacity:.95}.chart-root[data-marsh="1"] .chart-mist,.chart-root[data-marsh="2"] .chart-mist{opacity:.6}
+.chart-root.night .chart-mist{background:radial-gradient(closest-side,rgba(190,200,220,.5),rgba(190,200,220,0))}
+
 /* Night: lamps and windows glow, and the living layer darkens with the chart */
 .chart-root.night .cl-win{opacity:.95;filter:drop-shadow(0 0 2px #ffb347)}
 .chart-root.night .cl-glow{opacity:1;animation:cl-lamp 3s ease-in-out infinite}
 @keyframes cl-lamp{50%{opacity:.65}}
 .chart-root.night .cl-sky{display:none}
+
+/* Night lights above the darkened map */
+.chart-glow{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;opacity:0;transition:opacity 1.4s ease;mix-blend-mode:screen}
+.chart-glow.on{opacity:1}
+.chart-glow .cg-halo{animation:cl-lamp 3.4s ease-in-out infinite}
+.chart-glow.calm .cg-halo{animation:none}
+@media(prefers-reduced-motion:reduce){.chart-glow .cg-halo{animation:none}}
 
 /* Stillness when asked */
 .chart-root.calm *{animation:none!important}

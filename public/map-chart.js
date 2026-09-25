@@ -6,14 +6,14 @@
   'use strict';
   const CP=root.ChartPaint,CL=root.ChartLandmarks,CACHE='tq-chart';
   const keyFor=scale=>`./chart-cache/v${CP.VERSION}/${scale}/`;
-  let el=null,base={scale:0,loading:null},layerKey='',pending=null,raf=0,current=null;
+  let el=null,glow=null,base={scale:0,loading:null},layerKey='',pending=null,raf=0,current=null;
 
   function supported(){try{const c=document.createElement('canvas');return !!(c.getContext&&c.getContext('2d'))&&typeof createImageBitmap==='function';}catch(e){return false;}}
   const makeCanvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
   function ensureRoot(){
     if(el)return el;
     el=document.createElement('div');el.className='chart-root';
-    el.innerHTML='<canvas class="chart-pencil"></canvas><canvas class="chart-ink"></canvas><svg class="chart-live" viewBox="0 0 864 1821" preserveAspectRatio="none" aria-hidden="true"></svg><i class="chart-cloud c0"></i><i class="chart-cloud c1"></i><i class="chart-cloud c2"></i>';
+    el.innerHTML='<canvas class="chart-pencil"></canvas><canvas class="chart-ink"></canvas><svg class="chart-live" viewBox="0 0 864 1821" preserveAspectRatio="none" aria-hidden="true"></svg><i class="chart-cloud c0"></i><i class="chart-cloud c1"></i><i class="chart-cloud c2"></i><i class="chart-mist m0"></i><i class="chart-mist m1"></i><i class="chart-mist m2"></i>';
     return el;
   }
 
@@ -73,19 +73,23 @@
   }
   function render(host,data){
     const r=ensureRoot();if(r.parentNode!==host)host.appendChild(r);current=data;
-    r.classList.toggle('night',data.sky!=='day');r.classList.toggle('calm',!!data.calm);
+    // The night glow sits beside the chart, above the map's night darkening.
+    if(!glow){glow=document.createElementNS('http://www.w3.org/2000/svg','svg');glow.setAttribute('class','chart-glow');glow.setAttribute('viewBox','0 0 864 1821');glow.setAttribute('preserveAspectRatio','none');glow.setAttribute('aria-hidden','true');}
+    if(glow.previousSibling!==host)host.after(glow);glow.classList.toggle('on',data.sky!=='day');glow.classList.toggle('calm',!!data.calm);
+    r.classList.toggle('night',data.sky!=='day');r.classList.toggle('calm',!!data.calm);r.dataset.marsh=String((data.stages||{})[0]|0);
     const stages=data.stages||{},all=!!data.all,key=JSON.stringify([stages,all,data.profile]);
     if(key!==layerKey){
       layerKey=key;const seen=readSeen(data.profile),fresh={};let grow=null;
       if(seen&&!data.calm)for(const f of Object.keys(stages)){const was=seen[f]|0,now=stages[f]|0;if(now>was){fresh[f]=true;if(!grow||now>=3)grow={family:+f,from:CL.INK_RADIUS[was]||0};}}
       r.querySelector('.chart-live').innerHTML=CL.markup(null,stages,{fresh,all});
+      glow.innerHTML=CL.glowMarkup(stages);
       if(grow){applyMask(Object.assign({},stages,{[grow.family]:seen[grow.family]|0}),false);pending={...grow,stages,all};}
       else{pending=null;applyMask(stages,all);}
       writeSeen(data.profile,stages);
     }
     ensureBase(host);if(pending)startGrow();
   }
-  function release(){if(!el)return;cancelAnimationFrame(raf);el.remove();el=null;base={scale:0,loading:null};layerKey='';pending=null;}
+  function release(){if(!el)return;cancelAnimationFrame(raf);el.remove();el=null;if(glow){glow.remove();glow=null;}base={scale:0,loading:null};layerKey='';pending=null;}
 
   const api={render,release,supported,keyFor};
   root.MapChart=api;

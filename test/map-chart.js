@@ -62,6 +62,28 @@ check('freshly restored stones animate in',CL.markup(null,{2:3},{fresh:{2:true}}
 const RS=require('../public/realm-scenes');
 check('map stages match the realm scenes for every painted realm',[0,1,2,3,5,6,7,8,9,10,11,12].every(f=>[[0,0,0],[1,0,1],[1,1,2],[1,1,3],[0,0,1]].every(([t,c,st])=>RS.view(f,{trial:!!t,conquered:!!c,stars:st}).index===CL.stageFor({trial:!!t,conquered:!!c,stars:st}))));
 check('Stone Valley, which has its own scene, still gets a stage',CL.stageFor({trial:true})===1&&CL.stageFor({conquered:true,stars:2})===3);
+// Realm landmarks (0.31-0.34): one per realm, beside it, visible on a phone, growing with its stage.
+const CR=require('../public/chart-realms'),only=(f,st)=>Object.fromEntries(CW.ORDER.map(g=>[g,g===f?st:0]));
+check('every realm but Double River has its own landmark site',CR.families.length===12&&!CR.families.includes(2)&&CW.ORDER.filter(f=>f!==2).every(f=>CW.SITES[f]));
+// The harbor's piers start at the shore beside the realm and reach out into the lake, so measure their middle.
+check('landmarks stand beside their realm, not under its button',CR.families.every(f=>{const n=CW.node(f),q=CW.SITES[f],c=f===5?[q.x+40,q.y-20]:[q.x,q.y];return Math.hypot(n.x-c[0],n.y-c[1])>72;}));
+check('the heart of every landmark sits within the part of the map a phone shows',CR.families.every(f=>CW.SITES[f].x-48>=100&&CW.SITES[f].x+48<=764));
+check('landmarks keep clear of one another',CR.families.every(a=>CR.families.every(b=>a===b||Math.hypot(CW.SITES[a].x-CW.SITES[b].x,CW.SITES[a].y-CW.SITES[b].y)>CW.SITES[a].r+CW.SITES[b].r)));
+check('landmarks on land, except the causeway and the piers, which stand in water',CR.families.every(f=>f===0||f===5||world.waterAt(CW.SITES[f].x,CW.SITES[f].y)<0));
+const grows=CR.families.every(f=>{const L=[0,1,3,4].map(st=>CR.markup(only(f,st)).length);return L[0]<L[1]&&L[1]<L[2]&&L[2]<L[3];});
+check('each landmark grows at every stage: ruins, foundation, restored, celebrated',grows);
+check('only restored landmarks light up at night',CR.families.every(f=>{CR.markup(only(f,1));const dark=CR.glows.length;CR.markup(only(f,3));return dark===0&&CR.glows.length>0;}));
+const grp=(f,st)=>CR.markup(only(f,st)).split('<g class="cl-realm cl-r'+f)[1].split('<g class="cl-realm')[0];
+check('the temple lights nine lanterns and leaves the tenth hook empty',(grp(9,3).match(/fill="#e8553a"/g)||[]).length===9&&(grp(9,3).match(/v1\.8"/g)||[]).length===10);
+check('the harbor moors five boats',(grp(5,3).match(/cl-moor/g)||[]).length===5);
+check('the oasis grows ten palms and two more',(grp(12,3).match(/stroke="#7a5a34"/g)||[]).length===12);
+check('Stone Valley stands four by four',(grp(4,3).match(/fill="#c9c1ae"/g)||[]).length===16);
+check('the power station orb carries a ten',grp(10,3).includes('>10</text>'));
+check('the sun engine turns once restored',grp(6,3).includes('cl-spin-slow')&&!grp(6,1).includes('cl-spin-slow'));
+check('the storm clears when the refuge is celebrated',grp(7,0).includes('cl-bolt"')&&!grp(7,4).includes('cl-bolt"'));
+check('night lights sit above the darkened map',CL.glowMarkup({2:3}).includes('cgLamp')&&/host\.after\(glow\)/.test(fs.readFileSync(path.join(__dirname,'..','public','map-chart.js'),'utf8')));
+check('the marsh mist thins as Zero Marsh is restored',/dataset\.marsh/.test(fs.readFileSync(path.join(__dirname,'..','public','map-chart.js'),'utf8'))&&/data-marsh="0"/.test(fs.readFileSync(path.join(__dirname,'..','public','map-chart.css'),'utf8')));
+
 check('paint version is a positive integer',Number.isInteger(CP.VERSION)&&CP.VERSION>0);
 const sw=fs.readFileSync(path.join(__dirname,'..','public','sw.js'),'utf8'),core=sw.match(/const CORE = \[([\s\S]*?)\];/)[1];
 check('every chart file is cached for offline play',['chart-world.js','chart-paint.js','chart-landmarks.js','chart-worker.js','map-chart.js','map-chart.css'].every(f=>core.includes(`./${f}`)));

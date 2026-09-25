@@ -1,5 +1,5 @@
 /* Times Quest service worker — offline-first app shell */
-const CACHE = 'times-quest-v96';
+const CACHE = 'times-quest-v99';
 const SQUARESTONE_ART=['landscape','ruins','foundation','walls','restored','celebrated'].map(name=>`./art/realm/squarestone/${name}-v1.webp`);
 const PAINTED_REALM_ART=Object.fromEntries(Array.from({length:13},(_,f)=>[f,f===4?[]:['ruins','foundation','walls','restored','celebrated','landscape'].map(stage=>`./art/realm/scenes/x${f}/${stage}-${stage==='landscape'?'v1':'v2'}.webp`)]));
 const CAMP_3D = ['./camp-v2-scene.js','./camp-world-details.js','./vendor/three/three.module.min.js','./vendor/three/three.core.min.js'];
@@ -21,6 +21,7 @@ const CORE = [
   './map-backdrop.css',
   './chart-world.js',
   './chart-paint.js',
+  './chart-realms.js',
   './chart-landmarks.js',
   './chart-worker.js',
   './map-chart.js',

@@ -27,7 +27,8 @@ public/
 ├── journey-ui.js          Lessons, starting routes, encounters, resumable rewards
 ├── chart-world.js         Hand-drawn map: rivers, lake, relief and landscapes around the realms
 ├── chart-paint.js         Hand-drawn map: watercolour, ink, trees, peaks and cottages (canvas)
-├── chart-landmarks.js     Hand-drawn map: ink by realm stage, the twin crossing, living details
+├── chart-realms.js        Hand-drawn map: the twelve other realm landmarks, stage by stage
+├── chart-landmarks.js     Hand-drawn map: ink by realm stage, the twin crossing, night lights
 ├── chart-worker.js        Paints the hand-drawn map off the main thread
 ├── map-chart.js / .css    Mounts, caches and inks the hand-drawn map (Parents switch)
 ├── opening.js             Illustrated title and Zero Marsh expedition
@@ -129,6 +130,56 @@ See [the opening slice and verification guide](OPENING-EXPEDITION.md),
 [the follow-up audit](FOLLOW-UP-EXPERIENCE-AUDIT.md), and
 [the prior learning upgrade checklist](LEARNING-UPGRADE-CHECKLIST.md).
 Tests now include test/opening.js for the complete first expedition.
+
+## One style for every landmark — 0.34.2 beta (testing)
+
+A style review against the painted chart's own rules: one three-quarter
+viewpoint lit from the upper left, watercolour ground (soft feathered patches,
+never hard outlined shapes), muted chart pigments, and trees drawn the chart's
+way (scalloped, inked lobes). One Woods' nursery was rebuilt from a flat plan
+into a walled garden in perspective with standing walls and coping, an open
+gate, raised timber beds planted by row, a glasshouse, a shed and apple trees.
+Ten City and Stone Valley now stand on soft ground, Triple Jungle's canopies
+match the painted jungle, Storm Peak's refuge sits on a ragged snow-capped
+knoll, and the ice cave rests on a snow drift.
+
+## Landmarks in detail — 0.34.1 beta (testing)
+
+Every realm landmark was rebuilt at the level of the Double River ship and
+cottages: coursed masonry, scalloped shingles, planked decks and rigging,
+shuttered windows, people and animals, and more work in progress at the
+foundation stage. Highlights: Ten City's clock tower stands at ten o'clock;
+the harbor has a jib crane, drying nets and a keeper's cottage; the Stone
+Valley henge is a true four-by-four square in perspective with gateways and an
+altar; the temple has a koi pond, stone lanterns and falling blossom; the sun
+engine has a riveted boiler, gauges and a segmented mirror; the refuge has a
+snow-laden roof, woodpile, bell and a burning beacon. The causeway now crosses
+the fen pool with a heron and a moored punt.
+
+## Realm landmarks on the hand-drawn map — 0.31–0.34 beta (testing)
+
+Every realm now has its own landmark on the hand-drawn map, drawn in five
+stages (ruins, foundation, walls, restored, celebrated). Restored places come
+alive, and at night their windows and lanterns glow above the darkened map.
+- **0.31:** Zero Marsh's lantern causeway (the fen mist thins as it is
+  restored; fireflies; floating lanterns), One Woods' walled nursery with its
+  glasshouse and flower beds, Ten City's walls and power station with its
+  glowing "10" orb, street lamps and chimney smoke.
+- **0.32:** High-Five Harbor's piers with five moored boats and a lighthouse
+  whose beam sweeps the lake at night; Twin Towers rebuilt and joined by a sky
+  bridge; Triple Jungle's canopy walkway between three giant trees.
+- **0.33:** Stone Valley's four-by-four square of standing stones capped into
+  trilithons with glowing runes; the Nine Ninja Temple's courtyard with ten
+  hooks and nine lanterns lit; Six Circuit's sun engine, five small gears and
+  one great wheel turning.
+- **0.34:** Dozen Desert's oasis with ten palms and two more; Eight Ice Caves'
+  crystal passage, crystals doubling around a glowing mouth (an aurora at three
+  stars); Seven Storm Peak's refuge with its beacon, the storm clearing to a
+  rainbow when celebrated.
+
+Each landmark sits beside its realm, clear of the realm button, label and
+climber, and within the part of the map a phone shows. `test/chart-gallery.html`
+can show every landmark at any stage, by day or night.
 
 ## The hand-drawn map — 0.30 beta (testing)
 

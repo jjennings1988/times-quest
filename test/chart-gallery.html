@@ -15,13 +15,14 @@
 </style>
 <header>
   <select id="scale"><option>1</option><option selected>1.5</option><option>2</option></select>
-  <select id="view"><option value="ink">Ink</option><option value="pencil">Pencil</option><option value="mixed" selected>Mixed (progress)</option></select>
+  <select id="view"><option value="ink">Ink</option><option value="pencil">Pencil</option><option value="mixed" selected>Mixed (progress)</option><option value="s0">All ruins</option><option value="s1">All foundations</option><option value="s3">All restored</option><option value="s4">All celebrated</option></select><select id="sky"><option value="day">Day</option><option value="night">Night</option></select>
   <select id="width"><option value="864">864 px</option><option value="520">Phone width</option><option value="1600">Zoomed</option></select>
   <button id="go">Redraw</button><span id="info"></span>
 </header>
-<div id="stage" class="chart-root ready"><canvas id="pencil"></canvas><canvas id="ink" class="chart-ink"></canvas><svg id="live" class="chart-live" viewBox="0 0 864 1821"></svg></div>
+<div id="stage" class="chart-root ready"><canvas id="pencil"></canvas><canvas id="ink" class="chart-ink"></canvas><svg id="live" class="chart-live" viewBox="0 0 864 1821"></svg><svg id="glow" class="chart-glow" viewBox="0 0 864 1821" preserveAspectRatio="none"></svg></div>
 <script src="../public/chart-world.js"></script>
 <script src="../public/chart-paint.js"></script>
+<script src="../public/chart-realms.js"></script>
 <script src="../public/chart-landmarks.js"></script>
 <script>
 const $=id=>document.getElementById(id);
@@ -30,13 +31,14 @@ function draw(){
   const ink=$('ink'),pencil=$('pencil');ink.width=pencil.width=Math.round(864*scale);ink.height=pencil.height=Math.round(1821*scale);
   const ctx=ink.getContext('2d');const stats=ChartPaint.renderAll(ctx,world,{scale,makeCanvas:(w,h)=>Object.assign(document.createElement('canvas'),{width:w,height:h})});const t2=performance.now();
   const src=ctx.getImageData(0,0,ink.width,ink.height),pc=pencil.getContext('2d'),dst=pc.createImageData(ink.width,ink.height);ChartPaint.pencilize(src,dst);pc.putImageData(dst,0,0);const t3=performance.now();
-  const v=$('view').value,stages={0:4,1:3,10:3,2:3,5:1};
-  ink.style.visibility=v==='pencil'?'hidden':'visible';
-  if(v==='mixed'&&window.ChartLandmarks){const url=ChartLandmarks.maskURL(stages,(w,h)=>Object.assign(document.createElement('canvas'),{width:w,height:h}),{});ink.style.webkitMaskImage=ink.style.maskImage=`url(${url})`;ink.style.webkitMaskSize=ink.style.maskSize='100% 100%';}
+  const v=$('view').value,all=n=>Object.fromEntries(ChartWorld.ORDER.map(f=>[f,n])),stages=v[0]==='s'?all(+v[1]):v==='ink'?all(3):v==='pencil'?{}:{0:4,1:3,10:3,2:3,5:1};
+  $('stage').classList.toggle('night',$('sky').value==='night');$('stage').dataset.marsh=String(stages[0]|0);const nf=$('sky').value==='night'?'saturate(.7) brightness(.62) hue-rotate(10deg)':'';for(const id of['ink','pencil','live'])$(id).style.filter=nf;$('glow').classList.toggle('on',!!nf);
+  ink.style.visibility=v==='pencil'||v==='s0'?'hidden':'visible';
+  if((v==='mixed'||v==='s1')&&window.ChartLandmarks){const url=ChartLandmarks.maskURL(stages,(w,h)=>Object.assign(document.createElement('canvas'),{width:w,height:h}),{});ink.style.webkitMaskImage=ink.style.maskImage=`url(${url})`;ink.style.webkitMaskSize=ink.style.maskSize='100% 100%';}
   else ink.style.webkitMaskImage=ink.style.maskImage='none';
-  if(window.ChartLandmarks)$('live').innerHTML=ChartLandmarks.markup(world,v==='pencil'?{}:v==='ink'?Object.fromEntries(ChartWorld.ORDER.map(f=>[f,3])):stages,{});
+  if(window.ChartLandmarks){$('live').innerHTML=ChartLandmarks.markup(world,stages,{});$('glow').innerHTML=ChartLandmarks.glowMarkup(stages);}
   $('info').textContent=`world ${Math.round(t1-t0)} ms · paint ${Math.round(t2-t1)} ms · pencil ${Math.round(t3-t2)} ms · ${stats.sprites} sprites`;
 }
-$('go').onclick=draw;$('width').onchange=()=>document.getElementById('stage').style.setProperty('--w',$('width').value+'px');$('view').onchange=draw;
+$('go').onclick=draw;$('width').onchange=()=>document.getElementById('stage').style.setProperty('--w',$('width').value+'px');$('view').onchange=draw;$('sky').onchange=draw;
 setTimeout(draw,50);
 </script>
