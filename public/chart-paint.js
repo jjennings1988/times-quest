@@ -4,7 +4,7 @@
    paint() is a generator: the caller decides how much to draw per slice. */
 (function(root){
   'use strict';
-  const VERSION=9; // bump whenever the drawing changes, so cached charts are redrawn
+  const VERSION=11; // bump whenever the drawing changes, so cached charts are redrawn
   const TAU=Math.PI*2,INK='rgba(52,36,22,.95)',INK2='rgba(52,36,22,.5)';
   const CW=typeof module!=='undefined'&&module.exports?require('./chart-world'):root.ChartWorld;
 
@@ -196,8 +196,14 @@
         ctx.strokeStyle='rgba(70,90,48,.55)';ctx.lineWidth=.9;path(ctx,q);ctx.stroke();
         ctx.fillStyle='rgba(84,112,62,.85)';for(let e=0;e<4;e++){const a=q[e],b=q[(e+1)%4];for(let t=.15;t<1;t+=.3){if(R()<.5)continue;const p=lerp(a,b,t);ctx.beginPath();ctx.arc(p[0],p[1],1.3+R(),0,TAU);ctx.fill();}}}}
     yield 'fields';
-    // 4. Contour lines over the land: a surveyor's topography, faint.
-    for(let lv=.22,n=0;lv<1.1;lv+=.08,n++)batch(ctx,`rgba(120,86,52,${n%4===3?.3:.16})`,n%4===3?.6:.4,line=>contour(world.height,GW,GH,G,lv,(x,y)=>onLand(x,y),(a,b,c,d)=>line(a,b,c,d)));
+    // 4. Topography: a contour every 25 units of height, every fourth an index contour lettered with its height.
+    const labelAt=[];
+    for(let n=0;n<40;n++){const lv=.1+n*.025,index=n%4===0,segs=[];
+      batch(ctx,index?'rgba(104,66,34,.58)':'rgba(120,84,50,.32)',index?.8:.45,line=>contour(world.height,GW,GH,G,lv,(x,y)=>onLand(x,y),(a,b,c,d)=>{line(a,b,c,d);if(index)segs.push([a,b,c,d]);}));
+      if(index)for(let i=0;i<segs.length;i+=7){const[a,b,c,d]=segs[i],x=(a+c)/2,y=(b+d)/2;if(world.landAt(x,y)<30||world.waterAt(x,y)>-10)continue;
+        if(world.NODES.some(q=>Math.hypot(q.x-x,q.y-y)<80)||Object.values(world.SITES).some(q=>Math.hypot(q.x-x,q.y-y)<q.r+20)||labelAt.some(q=>Math.hypot(q[0]-x,q[1]-y)<150))continue;
+        labelAt.push([x,y,Math.atan2(d-b,c-a),Math.round(lv*1000/25)*25]);}}
+    try{ctx.font='italic 6.5px Georgia, serif';ctx.textAlign='center';ctx.textBaseline='middle';for(const[x,y,an,v]of labelAt){let a=an;if(a>Math.PI/2)a-=Math.PI;if(a<-Math.PI/2)a+=Math.PI;ctx.save();ctx.translate(x,y);ctx.rotate(a);ctx.lineWidth=2.6;ctx.strokeStyle='rgba(236,226,198,.95)';ctx.strokeText(String(v),0,0);ctx.fillStyle='rgba(110,72,38,.9)';ctx.fillText(String(v),0,0);ctx.restore();}}catch(e){}
     yield 'contours';
     // 5. Hachures on the slopes that are not mountains.
     for(const[dark,alpha]of[[0,.24],[1,.42]])batch(ctx,`rgba(70,52,32,${alpha})`,.5,line=>{for(let y=4;y<H;y+=5.5)for(let x=4;x<W;x+=5.5){const jx=x+(N[3](x*.3,y*.3)-.5)*4,jy=y+(N[1](x*.3,y*.3)-.5)*4;if(!onLand(jx,jy))continue;const kind=world.kindAt(jx,jy);if(kind==='desert'||kind==='marsh'||kind==='fields')continue;

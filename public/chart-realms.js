@@ -23,6 +23,13 @@
   const blob=(cx,cy,rx,ry,R,j=.14,n=14)=>{const pts=[...Array(n)].map((_,i)=>{const t=i/n*TAU,m=1+(R()-.5)*j*2;return[cx+Math.cos(t)*rx*m,cy+Math.sin(t)*ry*m];});const mid=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2];let d=`M${mid(pts[n-1],pts[0]).map(f1).join(' ')}`;for(let i=0;i<n;i++){const m=mid(pts[i],pts[(i+1)%n]);d+=`Q${f1(pts[i][0])} ${f1(pts[i][1])} ${f1(m[0])} ${f1(m[1])}`;}return d+'Z';};
   const wash=(cx,cy,rx,ry,col,R,a=.5)=>[1,.82,.62].map((k,i)=>`<path d="${blob(cx,cy,rx*k,ry*k,R)}" fill="${col}" opacity="${f1(a*(.32+i*.12))}"/>`).join('');
   const tufts=(cx,cy,rx,ry,n,R,col='#6b7a42')=>{let d='';for(let i=0;i<n;i++){const a=R()*TAU,r=Math.sqrt(R()),x=cx+Math.cos(a)*rx*r,y=cy+Math.sin(a)*ry*r;d+=`M${f1(x-1.2)} ${f1(y-1.6)} L${f1(x-.3)} ${f1(y)} M${f1(x)} ${f1(y-2.2)} V${f1(y)} M${f1(x+1.2)} ${f1(y-1.6)} L${f1(x+.3)} ${f1(y)}`;}return`<path d="${d}" fill="none" stroke="${col}" stroke-width=".32" opacity=".7"/>`;};
+  /* A hillside falling away beneath a landmark, hatched with fall-lines like the chart's own slopes:
+     `edge` is the brow as [x,y] points; strokes run downhill and outward, darker on the shaded right. */
+  const apron=(edge,depth,R,col='#b9a878')=>{const cx=edge.reduce((a,p)=>a+p[0],0)/edge.length,xs=edge.map(p=>p[0]),w=(Math.max(...xs)-Math.min(...xs))/2;
+    const lo=edge.map(([x,y])=>{const t=(x-cx)/w;return[x+t*depth*.9,y+depth*(1-.35*t*t)];}).reverse();
+    let o=`<path d="M${edge.map(p=>p.map(f1).join(' ')).join('L')}L${lo.map(p=>p.map(f1).join(' ')).join('L')}Z" fill="${col}" opacity=".4"/>`+wash(cx,edge[0][1]+depth*.7,w+depth,depth*.8,col,R,.3);
+    let d='',dd='';for(let i=0;i<edge.length-1;i++){const[a,b]=[edge[i],edge[i+1]];for(let t=0;t<1;t+=.34){const x=a[0]+(b[0]-a[0])*t,y=a[1]+(b[1]-a[1])*t,u=(x-cx)/w,len=depth*(.45+R()*.35)*(1-.3*u*u),str=`M${f1(x)} ${f1(y+.6)} q${f1(u*1.6)} ${f1(len*.5)} ${f1(u*depth*.35)} ${f1(len)}`;if(u>.1)dd+=str;else d+=str;}}
+    return o+P(d,'none','rgba(70,52,32,.55)',.4)+P(dd,'none','rgba(56,38,22,.78)',.45);};
   /* Trees in the chart's own manner: every lobe inked, then painted over, so only the scalloped edge shows. */
   const canopy=(x,y,r,col,R,n=6,edge='#28402a',shadeCol='rgba(40,64,32,.38)')=>{const bl=[[0,0,r*.62]];for(let k=0;k<n;k++){const a=k/n*TAU+R()*.5;bl.push([Math.cos(a)*r*.5,Math.sin(a)*r*.42,r*(.4+R()*.16)]);}
     return bl.map(([dx,dy,rr])=>CI(x+dx,y+dy,rr,'none',edge,1.3)).join('')+bl.map(([dx,dy,rr])=>CI(x+dx,y+dy,rr,col,'none',0)).join('')+bl.map(([dx,dy,rr])=>dx<-r*.1&&dy<0?'':CI(x+dx+rr*.3,y+dy+rr*.3,rr*.7,shadeCol,'none',0)).join('')+CI(x-r*.3,y-r*.35,r*.26,'rgba(232,242,196,.5)','none',0);};
@@ -171,19 +178,30 @@
         if(broken)o+=P('M-18 10 l3 3 l3 -2 l2 4 M20 10 l2 5 l4 -3','#efe3c4',INK,.4)+[[-16,21],[22,22]].map(([x,y])=>[0,1,2].map(k=>RC(x+k*2.6,y-k*.4,2.4,1.6,'#c9bca0',INK,.25)).join('')).join('');
         return o;};
       const gate=()=>RC(-8,2,16,17,'#cbbf9f',INK,.5)+masonry(-8,2,16,17,'#cbbf9f',R,2.2)+P('M-4 19 v-7 a4 4 0 0 1 8 0 v7z','#3b2f26',INK,.45)+P('M-3.4 13 v6 M-1.7 12 v7 M0 11.6 v7.4 M1.7 12 v7 M3.4 13 v6 M-4 15 h8 M-4 17 h8','none','#8a8274',.35)+[...Array(4)].map((_,k)=>RC(-8.6+k*4.6,-.4,2.6,2.4,'#cbbf9f',INK,.3)).join('')+RC(-6,4,12,2,'#3f6fb0',INK,.3)+'';
-      if(st===0)return s+houses.map(([x,y,w,h])=>cottage(x,y,w,h,'#9a948a',R,{wall:'#d8d2c6',chimney:false})).join('')+masonry(-7,-6,14,22,'#b9b2a4',R)+P('M-7 -6 l3 -4 l2 3 l4 -5 l5 6','#b9b2a4',INK,.5)+wall(true)+tower(-44,19,true)+tower(44,19,true);
+      // The approach: a grassy bank falls from the wall to a moat, crossed by a drawbridge.
+      const inner='M-52 4 Q-55 25 -36 29 Q0 37 36 29 Q55 25 52 4',outer='M58 4 Q62 29 38 34 Q0 43 -38 34 Q-62 29 -58 4',band=inner+' L'+outer.slice(1)+'Z';
+      const brow=[...Array(13)].map((_,i)=>{const t=i/12,x=-60+120*t;return[x,4+Math.sin(t*Math.PI)*34.5-Math.abs(t-.5)*2];});
+      const approach=(st)=>{let o=apron(brow,16,R,'#a8a06e')+P('M-47 19 H47 L52 4 Q55 25 36 29 Q0 37 -36 29 Q-55 25 -52 4Z','#a9b27c','none',0)+P([...Array(26)].map((_,i)=>{const x=-46+i*3.6;return`M${f1(x)} 19.4 l.3 ${f1(2+(1-(x/50)**2)*6)}`;}).join(' '),'none','rgba(70,80,40,.5)',.3);
+        o+=st===0?P(band,'#b8a27a','#7d6e58',.4)+reeds(-30,33,R,4)+reeds(26,34,R,4):P(band,'#8ec3c6','none',0)+P('M-55 6 Q-58 27 -37 31.4 Q0 40 37 31.4 Q58 27 55 6','none','rgba(40,74,90,.5)',.3)+P('M-54 5 Q-56.6 26 -36.6 30.2','none','rgba(40,74,90,.35)',.3)+ripple(-24,34,2.4)+ripple(18,35,2)+lily(-40,31,1.2)+lily(34,31.4,1.1,true)+lily(-48,20,1,true);
+        o+=P(inner,'none',INK,.45)+P(outer,'none',INK,.5);
+        // The road winds down the hill from the drawbridge.
+        const road='M0 39 Q3 46 14 48 Q30 51 44 54';o+=P(road,'none','rgba(214,182,124,.96)',4.6)+P(road,'none','rgba(64,44,26,.8)',.55,' transform="translate(0 -2.4)"')+P(road,'none','rgba(64,44,26,.8)',.55,' transform="translate(0 2.4)"');
+        if(st>=3)o+=RC(-4,19,8,20.6,'#a57c4c',INK,.4)+[...Array(13)].map((_,k)=>P(`M-4 ${f1(20.4+k*1.5)} h8`,'none','rgba(60,36,18,.5)',.25)).join('')+P('M-4 19 L-6 12 M4 19 L6 12','none','#3b3b3b',.35)+P('M-4 39.6 h8','none',INK,.5);
+        else if(st>0)o+=P('M-4 20 l8 14 M4 20 l-8 14','none','#8b6a44',.6);
+        return o;};
+      if(st===0)return s+houses.map(([x,y,w,h])=>cottage(x,y,w,h,'#9a948a',R,{wall:'#d8d2c6',chimney:false})).join('')+masonry(-7,-6,14,22,'#b9b2a4',R)+P('M-7 -6 l3 -4 l2 3 l4 -5 l5 6','#b9b2a4',INK,.5)+wall(true)+tower(-44,19,true)+tower(44,19,true)+approach(0);
       s+=houses.map(([x,y,w,h,r],i)=>bit(.3+i*.08,cottage(x,y,w,h,r,R,{chimney:i%2===0,smoke:st>=3&&i%2===0,k:i,timber:i%3===0,box:i%2===1}))).join('');
       // The power station: brick tower, clock at ten o'clock, balcony, glass cupola and orb.
       let pw=shadow(3,17,10,2)+masonry(-7,-24,14,40,'#b86a45',R,2)+RC(-7,-24,14,40,'url(#crCyl)','none',0)+P('M-7 16 V-24 H7 V16','none',INK,.6)+windowS(-4.2,6,2,3,null,true)+windowS(2.2,6,2,3,null,true)+windowS(-1,-3,2,3,null,true);
       pw+=CI(0,-14,4.2,'#f6f0de',INK,.5)+[...Array(12)].map((_,k)=>{const a=k/12*TAU;return P(`M${f1(Math.sin(a)*3.4)} ${f1(-14-Math.cos(a)*3.4)} L${f1(Math.sin(a)*3.9)} ${f1(-14-Math.cos(a)*3.9)}`,'none',INK,k%3?.2:.45);}).join('')+P(`M0 -14 L${f1(Math.sin(-TAU/6)*2.2)} ${f1(-14-Math.cos(-TAU/6)*2.2)} M0 -14 V-17.2`,'none',INK,.5)+CI(0,-14,.4,INK,'none',0);
       s+=bit(.9,pw);
-      if(st<3)return s+wall(false)+bit(1.1,gate())+tower(-44,19,false)+tower(44,19,false)+P('M-11 -24 V-40 M11 -24 V-40 M-11 -28 H11 M-11 -34 H11 M-11 -40 H11 M-11 -28 L11 -34 M11 -28 L-11 -34','none','#8b5a32',.6)+P('M-11 -40 L-18 -44 M-18 -44 v8','none','#6b4527',.5);
+      if(st<3)return s+wall(false)+bit(1.1,gate())+tower(-44,19,false)+tower(44,19,false)+approach(st)+P('M-11 -24 V-40 M11 -24 V-40 M-11 -28 H11 M-11 -34 H11 M-11 -40 H11 M-11 -28 L11 -34 M11 -28 L-11 -34','none','#8b5a32',.6)+P('M-11 -40 L-18 -44 M-18 -44 v8','none','#6b4527',.5);
       light(0,-33,15);
       s+=bit(1.2,RC(-9,-26.4,18,2.4,'#6b4527',INK,.4)+[...Array(8)].map((_,k)=>P(`M${-8+k*2.2} -26.4 v-2`,'none',INK,.3)).join('')+P('M-9 -28.4 H9','none',INK,.4)+P('M-6 -28.4 v-5 a6 6 0 0 1 12 0 v5z','rgba(190,225,235,.55)','#8b5a32',.6)+P('M-3 -28.4 v-7 M0 -28.4 v-8 M3 -28.4 v-7 M-6 -32 h12','none','#8b5a32',.35));
       s+=bit(1.4,`<circle cx="0" cy="-33" r="12" fill="url(#clOrb)" class="cl-orb"/>`+CI(0,-33,3.8,'#bfe8ff',INK,.45)+P('M-1.6 -34.6 q1.6 -1.6 3.2 0','none','#fff',.4)+`<text x="0" y="-31.7" text-anchor="middle" font-size="3.2" font-weight="800" fill="#2c4e5c" font-family="system-ui,sans-serif">10</text>`+`<g class="cl-arcs">${[-1,1].map(d=>P(`M${d*4} -33 l${d*2} -1.4 l${-d*.8} 1.6 l${d*2.4} -.6`,'none','#bfe8ff',.45)).join('')}</g>`+P('M0 -45 V-41 M-1 -44 h2','none','#8b5a32',.5));
       // Cables from the station to the lamps on the walls, and the market square.
       s+=bit(1.6,P('M-7 -22 Q-26 -10 -44 -2 M7 -22 Q26 -10 44 -2','none',INK,.3)+[-20,20].map(x=>RC(x-4,11,8,4,'#efe3c6',INK,.25)+P(`M${x-4.6} 11 h9.2 l-1 -2.6 h-7.2z`,x<0?'#c0503a':'#2f8f8a',INK,.25)+P(`M${x-3} 11 l.6 -2.6 M${x} 11 v-2.6 M${x+3} 11 l-.6 -2.6`,'none','#fff',.4)).join(''));
-      s+=wall(false)+bit(1.1,gate())+tower(-44,19,false)+tower(44,19,false)+bit(1.8,lampPost(-24,7.6,7,1)+lampPost(24,7.6,7,-1)+lampPost(-44,-2,5,1)+lampPost(44,-2,5,-1))+flag(-44,-13,'#3f6fb0',6,0,'#e0b24a')+flag(44,-13,'#e0b24a',6,.6,'#3f6fb0');
+      s+=wall(false)+bit(1.1,gate())+tower(-44,19,false)+tower(44,19,false)+approach(st)+bit(1.8,lampPost(-24,7.6,7,1)+lampPost(24,7.6,7,-1)+lampPost(-44,-2,5,1)+lampPost(44,-2,5,-1))+flag(-44,-13,'#3f6fb0',6,0,'#e0b24a')+flag(44,-13,'#e0b24a',6,.6,'#3f6fb0');
       s+=person(-26,18,'#c0503a','#3b2f26',.8)+person(28,18.4,'#3f6fb0',null,.8)+bird(-10,-50,0)+bird(8,-56,1.6);
       if(st>=4)s+=`<g class="cl-beams"><path d="M0 -33 L-40 -84 L-28 -86Z" fill="#fff4c0" opacity=".32"/><path d="M0 -33 L30 -86 L42 -82Z" fill="#fff4c0" opacity=".32"/></g>`+[[-30,-60,'#f2c24e'],[26,-66,'#e7708a']].map(([x,y,c])=>`<g class="cl-burst" transform="translate(${x} ${y})">${[...Array(10)].map((_,k)=>{const a=k/10*TAU;return P(`M${f1(Math.cos(a)*2)} ${f1(Math.sin(a)*2)} L${f1(Math.cos(a)*6)} ${f1(Math.sin(a)*6)}`,'none',c,.6);}).join('')}</g>`).join('')+bunting(-40,8,40,8,2,['#3f6fb0','#e0b24a','#c0503a']);
       return s;},
@@ -309,7 +327,14 @@
 
     // Nine Ninja Temple: a three-tier pagoda, courtyard, koi pond; ten hooks, nine lanterns lit.
     9(st,R){let s='';
+      // The temple stands on a raised stone terrace: earth slopes to either side, a retaining wall in front.
+      const ruin=st===0;
+      s+=wash(0,14,62,20,'#cdb88c',R,.55)+apron([[-60,25],[-44,22.4],[0,22.4],[44,22.4],[60,25]],14,R,'#c4a878');
+      s+=[[-1,[[-32,-6],[-44,16],[-44,22],[-58,26],[-46,-4]]],[1,[[32,-6],[44,16],[44,22],[58,26],[46,-4]]]].map(([d,pts])=>{const o=P('M'+pts.map(p=>p.join(' ')).join('L')+'Z',d<0?'#c9b286':'#b0976c','none',0);let h='';for(let i=0;i<9;i++){const t=i/8,x=d*(33+t*12),y=-5+t*21;h+=`M${f1(x)} ${f1(y)} l${f1(d*(5+t*6))} ${f1(3+t*3)}`;}return o+P(h,'none','rgba(90,60,30,.5)',.3)+P(`M${pts[0].join(' ')} L${pts[4].join(' ')}`,'none',INK,.35);}).join('');
+      s+=masonry(-44,16,88,6,'#c4b391',R,2.2)+(ruin?P('M-30 16 l4 3 l3 -2 l4 4 M18 16 l3 4 l4 -2','#d9cfb2',INK,.35):'')+P('M-44 16 V22 H44 V16','none',INK,.5)+RC(-45,15.2,90,1.4,'#e3d8bd',INK,.3);
       s+=P('M-44 16 L-32 -6 L32 -6 L44 16Z','#d9cfb2',INK,.4)+clip('M-44 16 L-32 -6 L32 -6 L44 16Z',[...Array(9)].map((_,k)=>P(`M-50 ${-4+k*2.4} H50`,'none','rgba(90,70,50,.25)',.25)).join('')+[...Array(18)].map((_,k)=>P(`M${-44+k*5} 16 L${-34+k*3.8} -6`,'none','rgba(90,70,50,.2)',.25)).join(''));
+      // The grand stair, widening as it descends, with stone lanterns at its foot.
+      s+=[...Array(7)].map((_,i)=>{const w=10+i*1.1,y=16+i*2;return ruin&&i%3===1?'':RC(-w/2,y,w,2,shade('#d6cbb0',-i*.02),INK,.3)+P(`M${f1(-w/2)} ${f1(y+.5)} h${f1(w)}`,'none','rgba(255,255,255,.4)',.3);}).join('')+P('M-5 16 L-8.8 30 M5 16 L8.8 30','none',INK,.4);
       const tier=(hw,y,h,ok)=>{const col=ok?'#3f4a52':'#9a948a',roof=`M${-hw-3} ${y-3} Q${-hw} ${y} ${-hw*.55} ${y} H${hw*.55} Q${hw} ${y} ${hw+3} ${y-3} L${hw*.6} ${y-h} H${-hw*.6}Z`;
         return P(roof,col,INK,.5)+clip(roof,[...Array(Math.round(hw*1.6))].map((_,k)=>{const x=-hw+k*1.25;return P(`M${f1(x)} ${y+1} Q${f1(x*.85)} ${f1(y-h*.5)} ${f1(x*.6)} ${y-h}`,'none','rgba(255,255,255,.18)',.3);}).join(''))+P(`M${-hw*.6} ${y-h} H${hw*.6}`,'none','#2a3038',.9)+CI(-hw-3,y-3,.6,'#e0b24a','none',0)+CI(hw+3,y-3,.6,'#e0b24a','none',0);};
       const pagoda=ok=>{let o=RC(-13,-10,26,4,'#bfb293',INK,.4)+[0,1,2].map(k=>RC(-5+k*.8,-6+k*1.4,10-k*1.6,1.4,'#cfc6b2',INK,.25)).join('')+RC(-9,-22,18,12,'#c0503a',INK,.5)+[-8,-3,3,8].map(x=>RC(x-.7,-22,1.4,12,'#8a2a1e','none',0)).join('');
@@ -323,7 +348,7 @@
       s+=bit(.5,P('M-8 18 V4 M8 18 V4','none','#c0503a',1.8)+P('M-12 2.6 Q0 .6 12 2.6 L11 4.4 Q0 2.8 -11 4.4Z','#2a3038',INK,.4)+RC(-10,5.2,20,1.1,'#c0503a',INK,.3)+RC(-1.6,4.6,3.2,2.4,'#2a3038',INK,.25));
       s+=bit(.6,[...Array(6)].map((_,k)=>P(`M-40 ${2+k*1.6} q4 -1 8 0 t8 0`,'none','rgba(120,100,70,.5)',.3)).join('')+EL(-30,4,2.2,1.3,'#8f8778',INK,.3));
       const toro=(x,y)=>{light(x,y-5.4,6);return RC(x-1.6,y-1,3.2,1,'#bdb5a2',INK,.25)+RC(x-.6,y-4,1.2,3,'#bdb5a2',INK,.25)+RC(x-1.4,y-6.2,2.8,2.2,'#bdb5a2',INK,.3)+RC(x-.7,y-5.8,1.4,1.4,'#ffd36b','none',0,' class="cl-lamp"')+P(`M${x-2.4} ${y-6.2} L${x} ${y-8} L${x+2.4} ${y-6.2}Z`,'#8f8778',INK,.3);};
-      s+=bit(.7,toro(-20,10)+toro(20,10));
+      s+=bit(.7,toro(-20,10)+toro(20,10)+toro(-13,31)+toro(13,31));
       s+=bit(.8,EL(28,10,9,3.6,'#8ec3c6','#2c4e5c',.5)+`<g class="cl-koi">${EL(25,10,1.2,.5,'#e8783a')}${EL(31,9,1.2,.5,'#f4f0e8')}${EL(29,11.4,1,.45,'#e8783a')}</g>`+P('M22 9 Q28 5 34 9','none','#c0503a',.9)+P('M22 9.8 Q28 5.8 34 9.8','none','#8a2a1e',.3)+lily(32,11.6,1.2,true));
       s+=bit(.9,shadow(-36,-4,4)+P('M-36 -4 q-1 -3 1 -6','none','#6b4527',.8)+[[-38,-10,2.4],[-33,-11,2],[-36,-13,2]].map(([x,y,r])=>EL(x,y,r,r*.55,'#3f6a3a',INK,.25)).join(''));
       const hooks=[...Array(10)].map((_,i)=>[-36+i*8,-6+((i%2)?2:0)]);

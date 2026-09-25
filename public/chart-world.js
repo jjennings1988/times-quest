@@ -60,7 +60,11 @@
   const ROUTE_PATHS=ROUTE.map(r=>spline(r.pts,3));
   const routePaths=()=>ROUTE_PATHS.map(p=>p.map(q=>q.slice()));
   // Side roads: the east bank at Double River, past the cottage to the mill.
-  const SPURS=[[[640,1272],[680,1282],[744,1286],[800,1262],[866,1250]],[[744,1286],[748,1322],[748,1350]]];
+  const SPURS=[[[640,1272],[680,1282],[744,1286],[800,1262],[866,1250]],[[744,1286],[748,1322],[748,1350]],
+    // From Ten City's drawbridge and the temple stair down to their realms.
+    [[152,1389],[170,1398],[204,1404],[242,1406]],[[154,492],[160,508],[176,528],[190,543]]];
+  // Low hills that lift Ten City and the temple above the plain: [x, y, height, radius].
+  const BUMPS=[[152,1338,.16,46],[154,452,.2,44],[150,812,.08,40]];
   // Villages and waystations along the road (Double River's hamlet lives with its landmark).
   const VILLAGES=[
     {x:400,y:1458,w:15,h:10,d:8,wall:'timber',roof:'thatch',rc:'#c29a52',door:.2,shutter:'#4f7f86'},
@@ -131,8 +135,8 @@
     const RG=6,rw=Math.ceil(W/RG)+2,rh=Math.ceil(H/RG)+2,ridge=new Float32Array(rw*rh);for(let j=0;j<rh;j++)for(let i=0;i<rw;i++)ridge[j*rw+i]=ridgeHeight(i*RG,j*RG);
     const ridgeAt=(x,y)=>{const fx=x/RG,fy=y/RG,i=Math.min(rw-2,Math.floor(fx)),j=Math.min(rh-2,Math.floor(fy)),u=fx-i,v=fy-j,k=j*rw+i;return ridge[k]*(1-u)*(1-v)+ridge[k+1]*u*(1-v)+ridge[k+rw]*(1-u)*v+ridge[k+rw+1]*u*v;};
     for(let j=0;j<GH;j++)for(let i=0;i<GW;i++){const x=i*G,y=j*G,k=j*GW+i;
-      const base=N[0](x/160,y/160)*.18+N[1](x/60,y/60)*.07+N[2](x/22,y/22)*.03,valley=Math.max(0,1-Math.max(0,-sdf[k])/90)*.12;
-      height[k]=ridgeAt(x,y)+base-valley;
+      const base=N[0](x/160,y/160)*.18+N[1](x/60,y/60)*.1+N[4](x/95,y/95)*.06+N[2](x/22,y/22)*.03,valley=Math.max(0,1-Math.max(0,-sdf[k])/90)*.12;
+      height[k]=ridgeAt(x,y)+base-valley+BUMPS.reduce((h,[bx,by,bh,br])=>h+bh*Math.exp(-((x-bx)**2+((y-by)*1.3)**2)/(br*br)),0);
       const l=Math.min(x-landEdge(y,-1),landEdge(y,1)-x);land[k]=l;
       const w=biomeWeights(x,y);let best=0;for(let b=1;b<w.length;b++)if(w[b]>w[best])best=b;kind[k]=best;
       for(let c=0;c<3;c++){let v=0;for(let b=0;b<w.length;b++)v+=w[b]*BIOMES[BIOME_KEYS[b]].wash[c];wash[k*3+c]=v;}}
