@@ -4,7 +4,7 @@
    paint() is a generator: the caller decides how much to draw per slice. */
 (function(root){
   'use strict';
-  const VERSION=7; // bump whenever the drawing changes, so cached charts are redrawn
+  const VERSION=9; // bump whenever the drawing changes, so cached charts are redrawn
   const TAU=Math.PI*2,INK='rgba(52,36,22,.95)',INK2='rgba(52,36,22,.5)';
   const CW=typeof module!=='undefined'&&module.exports?require('./chart-world'):root.ChartWorld;
 
@@ -248,13 +248,13 @@
       ctx.restore();}
     yield 'roads';
     // 8. Everything that stands up, painted back to front.
-    const sprites=[],nodes=world.NODES,CN=CW.noise(313),clear=(x,y,r)=>nodes.some((n,i)=>{if(i>=13)return false;const a=Math.atan2(y-n.y,x-n.x);return Math.hypot(x-n.x,(y-n.y)*1.15)<r*(.5+CN(Math.cos(a)*1.4+i*5,Math.sin(a)*1.4)*.85);})||lm.clear.some(([cx,cy,cr])=>Math.hypot(x-cx,y-cy)<cr)||world.VILLAGES.some(v=>Math.hypot(x-v.x-3,y-v.y+5)<19)||nearRoad(x,y);
+    const sprites=[],nodes=world.NODES,CN=CW.noise(313),clear=(x,y,r)=>nodes.some((n,i)=>{if(i>=13)return false;const a=Math.atan2(y-n.y,x-n.x);return Math.hypot(x-n.x,(y-n.y)*1.15)<r*(.5+CN(Math.cos(a)*1.4+i*5,Math.sin(a)*1.4)*.85);})||lm.clear.some(([cx,cy,cr])=>Math.hypot(x-cx,y-cy)<cr)||world.VILLAGES.some(v=>Math.hypot(x-v.x-3,y-v.y+5)<19)||Object.values(world.SITES).some(q=>Math.hypot(x-q.x,(y-q.y)*1.2)<q.r)||nearRoad(x,y);
     // Mount Twelve, the summit massif, stands over everything in the north.
     const top=nodes[13];sprites.push({y:top.y+160,draw:()=>mountain(ctx,{x:top.x,y:top.y+160,w:330,h:230,style:'storm',peaks:[{t:.5,h:1,s:.52},{t:.24,h:.62,s:.3},{t:.8,h:.7,s:.28},{t:.66,h:.48,s:.18}]},CW.rng(12))});
     // Peaks: random candidates, tallest first, each keeping its own ground.
     const peaks=[],cands=[];for(let i=0;i<5200;i++){const x=R()*W,y=R()*H;if(!onLand(x,y)||world.landAt(x,y)<20)continue;const h=world.heightAt(x,y),kind=world.kindAt(x,y);if(kind==='meadow'||kind==='fields'||kind==='marsh')continue;if(h>.46)cands.push({x,y,h,kind});}
     cands.sort((a,b)=>b.h-a.h);
-    for(const c of cands){if(clear(c.x,c.y,66)||Math.abs(c.x-top.x)<165&&c.y<top.y+170)continue;const dry=c.kind==='badlands'||c.kind==='desert',size=Math.min(92,16+(c.h-.46)*150)*(.75+R()*.5),w=size*(dry?1.9+R()*.6:1.3+R()*.5),hh=size*(dry?.62:1);
+    for(const c of cands){if(clear(c.x,c.y,66)||Object.values(world.SITES).some(q=>Math.abs(c.x-q.x)<q.r+30&&c.y>q.y-q.r&&c.y<q.y+q.r+50)||Math.abs(c.x-top.x)<165&&c.y<top.y+170)continue;const dry=c.kind==='badlands'||c.kind==='desert',size=Math.min(92,16+(c.h-.46)*150)*(.75+R()*.5),w=size*(dry?1.9+R()*.6:1.3+R()*.5),hh=size*(dry?.62:1);
       if(peaks.some(p=>Math.abs(p.x-c.x)<(p.w+w)*.3&&Math.abs(p.y-c.y)<(p.h+hh)*.22))continue;
       if([-.45,-.2,0,.2,.45].some(t=>roadDist(c.x+t*w,c.y-hh*.15)<10+Math.abs(t)*4||roadDist(c.x+t*w*.5,c.y-hh*.5)<8))continue;
       const m={x:c.x,y:c.y,w,h:hh,style:c.kind==='ice'?'ice':c.kind==='alpine'&&c.y<280?'storm':c.kind==='badlands'||c.kind==='desert'?'desert':'rock'};peaks.push(m);sprites.push({y:c.y,draw:()=>mountain(ctx,m,R)});}
@@ -273,8 +273,7 @@
     for(let y=6;y<H;y+=15)for(let x=6;x<W;x+=15){const jx=x+(N[0](x*.4,y*.4)-.5)*12,jy=y+(N[2](x*.4,y*.4)-.5)*12;if(!onLand(jx,jy)||clear(jx,jy,58))continue;const kind=world.kindAt(jx,jy),h=world.heightAt(jx,jy);
       if(kind==='desert'&&h<.3&&R()<.55){const m={x:jx,y:jy,w:18+R()*20,h:5+R()*4};sprites.push({y:jy-3,draw:()=>dune(ctx,m)});}
       else if((kind==='stone'&&R()<.34)||(kind==='highland'||kind==='alpine')&&R()<.14){const m={x:jx,y:jy,w:3+R()*5};sprites.push({y:jy,draw:()=>rock(ctx,m,R)});}}
-    // Standing stones hint at Stone Valley; a ring of them waits beside the realm.
-    {const n=CW.node(4);for(let i=0;i<7;i++){const a=i/7*TAU,m={x:n.x+118+Math.cos(a)*22,y:n.y-40+Math.sin(a)*10,w:3.2};sprites.push({y:m.y,draw:()=>stone(ctx,m)});}}
+    // Each realm's landmark site is kept clear; the living layer draws the landmark itself.
     // Grass tufts across open country: three quick strokes each, all in one path.
     batch(ctx,'rgba(84,96,52,.55)',.45,line=>{for(let i=0;i<16000;i++){const x=R()*W,y=R()*H;if(!onLand(x,y)||world.landAt(x,y)<14||world.waterAt(x,y)>-8)continue;const kind=world.kindAt(x,y);if(!['meadow','highland','stone','fields','hills','badlands','desert','marsh'].includes(kind))continue;if((kind==='desert'||kind==='badlands')&&R()<.7)continue;if(clear(x,y,34))continue;const s=.8+R()*.5;line(x-1.6*s,y-2.2*s,x-.4*s,y);line(x,y-3*s,x,y);line(x+1.6*s,y-2.2*s,x+.4*s,y);}});
     // Reeds along the banks and through the fen.

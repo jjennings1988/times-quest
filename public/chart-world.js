@@ -149,7 +149,7 @@
     return {W,H,G,GW,GH,sdf,height,land,wash,kind,NODES,RIVERS,LAKE,POOLS,BIOME_KEYS,
       waterAt:(x,y)=>sample(sdf,x,y),heightAt:(x,y)=>sample(height,x,y),landAt:(x,y)=>sample(land,x,y),kindAt,
       washAt:(x,y)=>{x=Math.max(0,Math.min(W-.01,x))/G;y=Math.max(0,Math.min(H-.01,y))/G;const i=Math.min(GW-2,Math.floor(x)),j=Math.min(GH-2,Math.floor(y)),u=x-i,v=y-j,out=[0,0,0];for(let c=0;c<3;c++){const k=(j*GW+i)*3+c;out[c]=wash[k]*(1-u)*(1-v)+wash[k+3]*u*(1-v)+wash[k+GW*3]*(1-u)*v+wash[k+GW*3+3]*u*v;}return out;},
-      landmarks:LANDMARKS,ROUTE,ROUTE_PATHS,SPURS,VILLAGES,crossings};
+      landmarks:LANDMARKS,SITES,ROUTE,ROUTE_PATHS,SPURS,VILLAGES,crossings};
   }
 
   /* ---- Landmarks drawn into the chart (static parts) and over it (living parts) ---- */
@@ -171,6 +171,9 @@
     },
   };
 
-  const api={W,H,G,POSITIONS,ORDER,NODES,RIVERS,LAKE,POOLS,BIOMES,ANCHORS,LANDMARKS,ROUTE,SPURS,VILLAGES,routePaths,build,rng,noise,spline,node};
+  // Where each realm's landmark stands (chart-realms.js): beside its realm, clear of the
+  // realm button, its label and the climber. Double River's is in LANDMARKS above.
+  const SITES={0:{x:152,y:1642,r:58},1:{x:700,y:1486,r:48},10:{x:152,y:1340,r:58},5:{x:348,y:1140,r:40},11:{x:150,y:815,r:52},3:{x:712,y:690,r:58},4:{x:355,y:562,r:38},9:{x:154,y:455,r:46},6:{x:702,y:452,r:62},12:{x:185,y:338,r:48},8:{x:690,y:245,r:44},7:{x:232,y:138,r:44}};
+  const api={W,H,G,POSITIONS,ORDER,NODES,RIVERS,LAKE,POOLS,BIOMES,ANCHORS,LANDMARKS,SITES,ROUTE,SPURS,VILLAGES,routePaths,build,rng,noise,spline,node};
   root.ChartWorld=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

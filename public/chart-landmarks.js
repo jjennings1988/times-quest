@@ -4,7 +4,7 @@
 (function(root){
   'use strict';
   const node=typeof module!=='undefined'&&module.exports?require:null;
-  const CW=node?node('./chart-world'):root.ChartWorld,CP=node?node('./chart-paint'):root.ChartPaint;
+  const CW=node?node('./chart-world'):root.ChartWorld,CP=node?node('./chart-paint'):root.ChartPaint,CR=node?node('./chart-realms'):root.ChartRealms;
   const TAU=Math.PI*2,f1=v=>+(+v).toFixed(1);
 
   /* How far the ink has spread at each stage: ruins, foundation, walls, restored, celebrated. */
@@ -74,8 +74,8 @@
     for(const r of CW.RIVERS){if(r.w[1]<6)continue;const pts=r.path;for(let a=0;a<pts.length-8;a+=24){const chunk=pts.slice(a,a+26);const mid=chunk[chunk.length>>1];if(!inInk(mid[0],mid[1]))continue;let d='';for(const k of[-1,1]){const o=k*r.w[1]*.18;d+='M'+chunk.map(([x,y],i)=>{const q=chunk[Math.min(chunk.length-1,i+1)],p=chunk[Math.max(0,i-1)],an=Math.atan2(q[1]-p[1],q[0]-p[0])+Math.PI/2;return`${f1(x+Math.cos(an)*o)} ${f1(y+Math.sin(an)*o)}`;}).join('L');}s+=`<path class="cl-flow" d="${d}"/>`;}}
     // Labels in a cartographer's hand.
     const upper=CW.RIVERS[0].path.slice(165,215);s+=`<path id="clRiverName" d="M${upper.map(([x,y])=>`${f1(x+14)} ${f1(y)}`).join('L')}" fill="none"/><text class="cl-lab river"><textPath href="#clRiverName" startOffset="6%">The Long River</textPath></text>`;
-    s+=`<text class="cl-lab lake" x="${CW.LAKE.x+18}" y="${CW.LAKE.y+14}" text-anchor="middle">Sounding Lake</text>`;
-    s+=`<text class="cl-lab region" x="620" y="1800" text-anchor="middle">Reedwater Fen</text><text class="cl-lab region" x="760" y="1080" text-anchor="middle" transform="rotate(-8 760 1080)">The Green Deep</text><text class="cl-lab region" x="112" y="336" text-anchor="middle" transform="rotate(-6 112 336)">Sunscorch Waste</text>`;
+    s+=`<text class="cl-lab lake" x="${CW.LAKE.x+62}" y="${CW.LAKE.y+24}" text-anchor="middle">Sounding Lake</text>`;
+    s+=`<text class="cl-lab region" x="620" y="1800" text-anchor="middle">Reedwater Fen</text><text class="cl-lab region" x="760" y="1080" text-anchor="middle" transform="rotate(-8 760 1080)">The Green Deep</text><text class="cl-lab region" x="236" y="298" text-anchor="middle" transform="rotate(-6 236 298)">Sunscorch Waste</text>`;
     s+=`<text class="cl-lab edge" transform="translate(22 1000) rotate(-90)" text-anchor="middle">terra incognita</text><text class="cl-lab edge" transform="translate(846 700) rotate(90)" text-anchor="middle">terra incognita</text>`;
     // A compass rose in the west, over the meadows.
     s+=`<g class="cl-compass" transform="translate(96 1060)"><circle r="21" fill="rgba(239,227,196,.55)" stroke="#3b2a1c" stroke-width=".6"/><circle r="17" fill="none" stroke="#3b2a1c" stroke-width=".35" stroke-dasharray="1 2"/>${[0,1,2,3].map(i=>`<g transform="rotate(${i*90})"><path d="M0 -26 L4 -4 L0 0Z" fill="#3b2a1c"/><path d="M0 -26 L-4 -4 L0 0Z" fill="#efe3c4" stroke="#3b2a1c" stroke-width=".5"/></g>`).join('')}${[0,1,2,3].map(i=>`<g transform="rotate(${45+i*90})"><path d="M0 -15 L2.4 -3 L0 0Z" fill="#8b5a32"/><path d="M0 -15 L-2.4 -3 L0 0Z" fill="#e0b24a"/></g>`).join('')}<circle r="2" fill="#e0b24a" stroke="#3b2a1c" stroke-width=".4"/><text y="-29" text-anchor="middle" class="cl-lab n">N</text></g>`;
@@ -88,11 +88,25 @@
       s+=`<g class="cl-smoke">${feats.flatMap((f,i)=>f.chimneys.map(([x,y])=>[0,1,2,3].map(k=>`<circle cx="${f1(x)}" cy="${f1(y)}" r="1.3" class="cl-puff" style="animation-delay:${-(k*1.4+i*.6).toFixed(1)}s"/>`).join(''))).join('')}</g>`;
       s+=`<g class="cl-windows">${feats.flatMap(f=>f.windows.map(p=>`<polygon points="${p.map(q=>q.map(f1).join(',')).join(' ')}" class="cl-win"/>`)).join('')}</g>`;}
     s+='</g>';
+    // Every other realm's landmark, at its own stage.
+    if(CR)s+=CR.markup(stages,fresh);
     // Life over the whole chart: cloud shadows and birds.
     s+=`<g class="cl-sky">${[0,1,2,3].map(i=>`<path class="cl-bird" style="animation-delay:${-i*1.3}s;--dy:${i*10}px" d="M-4 0 Q-2 -2.6 0 0 Q2 -2.6 4 0"/>`).join('')}</g>`;
     s+=`<circle class="cl-wet" cx="0" cy="0" r="0"/>`;
     return s;
   }
-  const api={INK_RADIUS,stageFor,inkCircles,maskURL,markup};
+  /* Night lights, drawn above the darkened chart so windows and lanterns really shine. */
+  function glowMarkup(stages){
+    const out=[],lm=CW.LANDMARKS[2];
+    if((stages[2]|0)>=3){for(const b of lm.bridges)for(const x of[-b.len/2,0,b.len/2])out.push(['c',b.x+x,b.y-27,10]);
+      for(const o of lm.houses)for(const p of CP.houseFeatures(o,Math.round(o.x)).windows)out.push(['p',p]);out.push(['r',lm.mill.x-1.1,lm.mill.y-16,2.2,2.8]);}
+    if(CR){CR.markup(stages,{});out.push(...CR.glows);}
+    const halo=[],pane=[];
+    for(const g of out){if(g[0]==='c')halo.push(`<circle cx="${f1(g[1])}" cy="${f1(g[2])}" r="${f1(g[3]*1.5)}" fill="url(#cgLamp)"/>`);
+      else{const pts=g[0]==='p'?g[1]:[[g[1],g[2]],[g[1]+g[3],g[2]],[g[1]+g[3],g[2]+g[4]],[g[1],g[2]+g[4]]],cx=pts.reduce((a,p)=>a+p[0],0)/pts.length,cy=pts.reduce((a,p)=>a+p[1],0)/pts.length;
+        halo.push(`<circle cx="${f1(cx)}" cy="${f1(cy)}" r="6.5" fill="url(#cgWin)"/>`);pane.push(`<polygon points="${pts.map(p=>p.map(f1).join(',')).join(' ')}"/>`);}}
+    return `<defs><radialGradient id="cgLamp"><stop offset="0" stop-color="#ffe7a0" stop-opacity=".95"/><stop offset=".3" stop-color="#ffc766" stop-opacity=".72"/><stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient><radialGradient id="cgWin"><stop offset="0" stop-color="#ffd98a" stop-opacity=".85"/><stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient></defs><g class="cg-halo">${halo.join('')}</g><g class="cg-pane" fill="#ffdc7a">${pane.join('')}</g>`;
+  }
+  const api={INK_RADIUS,stageFor,inkCircles,maskURL,markup,glowMarkup};
   root.ChartLandmarks=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

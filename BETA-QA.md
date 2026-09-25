@@ -42,7 +42,14 @@ The painted map stays the default; switching off returns it instantly.
 - **The road:** the dotted route follows the drawn road from realm to realm, over
   a bridge, ford or the ferry wherever it meets water (never through a lake or
   pool), and turns gold leg by leg as realms are restored.
-- **Night:** the chart darkens with the map; windows and bridge lamps glow.
+- **Realm landmarks (0.31–0.34):** each realm's landmark appears in graphite
+  before it is begun, gains its foundations at 1 star, is complete and alive
+  once restored (smoke, boats, birds, fireflies, turning gears and wheels), and
+  gains a celebration at 3 stars (flags, floating or sky lanterns, aurora,
+  rainbow). Check each one sits beside its realm and is not hidden by the realm
+  button, its label or the climber, in portrait on a phone.
+- **Night:** the chart darkens with the map; windows, lanterns, the lighthouse
+  beam, beacons and the power station orb glow above it.
 - **Check:** realm buttons, route and "You are here" sit exactly where they did
   on the painted map; scrolling stays smooth; no console errors; the chart still
   works offline after the first draw.
