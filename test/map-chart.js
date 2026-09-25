@@ -42,6 +42,7 @@ const fakeCanvas=(w,h)=>({width:w,height:h,getContext:()=>ctx});
 const steps=[];const it=CP.paint(ctx,world,{scale:1,makeCanvas:fakeCanvas});let r;do{r=it.next();if(!r.done)steps.push(r.value);}while(!r.done);
 check('painting passes through every stage',['paper','wash','fields','contours','hachures','water','roads','sprites','done'].every(s=>steps.includes(s)));
 check('the chart is full of drawn things',r.value.sprites>3000);
+check('no mountain or mesa spreads across a realm landmark',r.value.peaks.length>40&&r.value.peaks.every(p=>Object.values(CW.SITES).every(q=>!(p.x+p.w/2>q.x-q.r*1.2&&p.x-p.w/2<q.x+q.r*1.2&&p.y>q.y-q.r*1.2&&p.y-p.h<q.y+q.r*.6))));
 const src={data:new Uint8ClampedArray([20,120,200,255,250,250,250,255])},dst={data:new Uint8ClampedArray(8)};CP.pencilize(src,dst);
 check('pencil turns colour into warm graphite on paper',dst.data[0]<dst.data[4]&&dst.data[4]>225&&dst.data[3]===255);
 check('resolution buckets stay within phone memory',CP.scaleFor(500,3)===1.5&&CP.scaleFor(1044,2)===2&&CP.scaleFor(300,1)===1);
@@ -101,6 +102,8 @@ check('the painted map keeps its own details; the chart draws its own',/if\(data
 check('zoom stays between 1\u00d7 and 2.6\u00d7',Z.clamp(.5)===1&&Z.clamp(9)===2.6&&Z.clamp(1.7)===1.7);
 const kf=Z.keepFocal({x:.5,y:.25},{left:-200,top:-100,width:1000,height:2000},{x:300,y:400});
 check('zooming keeps the point under the fingers in place',kf.dx===0&&kf.dy===0);
+check('zooming out glides the map back to the middle',Z.recentre(500,200,2,1.5)===350&&Z.recentre(500,200,2,1)===200&&Z.recentre(500,200,1.5,2)===500);
+check('back at normal size no sideways scroll is left behind',/trail\.scrollLeft=0/.test(fs.readFileSync(path.join(__dirname,'..','public','map-zoom.js'),'utf8')));
 check('zoom is offered only on the hand-drawn map, with buttons for mouse and keyboard',html.includes('MapZoom.setEnabled(chart)')&&/MapZoom\.step\(1\)/.test(fs.readFileSync(path.join(__dirname,'..','public','journey-ui.js'),'utf8')));
 check('every chart file is cached for offline play, including 0.35',['chart-lore.js','map-zoom.js'].every(f=>fs.readFileSync(path.join(__dirname,'..','public','sw.js'),'utf8').includes(`./${f}`)));
 check('paint version is a positive integer',Number.isInteger(CP.VERSION)&&CP.VERSION>0);

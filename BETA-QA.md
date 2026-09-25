@@ -58,7 +58,8 @@ The painted map stays the default; switching off returns it instantly.
   Android): it should zoom around your fingers, pan in every direction when
   zoomed, never zoom the whole page, and realm buttons stay the same size. Check
   the − / + buttons, "find my explorer" while zoomed, and that one-finger
-  scrolling still feels normal. Note whether the chart sharpens a moment after a
+  scrolling still feels normal. Slide to one side while zoomed, then zoom all the
+  way out: the map should glide back and end exactly centred (0.35.1). Note whether the chart sharpens a moment after a
   big zoom.
 - **Night:** the chart darkens with the map; windows, lanterns, the lighthouse
   beam, beacons and the power station orb glow above it.

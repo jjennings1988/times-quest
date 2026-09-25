@@ -133,6 +133,22 @@ See [the opening slice and verification guide](OPENING-EXPEDITION.md),
 [the prior learning upgrade checklist](LEARNING-UPGRADE-CHECKLIST.md).
 Tests now include test/opening.js for the complete first expedition.
 
+## Mountains that rise out of the ground — 0.35.2 beta (testing)
+
+Every peak, hill and mesa is now drawn on its own sheet whose foot fades into
+the chart before it is laid down, with a soft shadow and fall-lines running out
+onto the plain, so they rise from the relief instead of standing on a ruled
+line. Peaks, hills and mesas keep their whole outline, not just their foot, off
+every realm landmark (Storm Peak's refuge was being crossed by a neighbour).
+"The Long River" and "Sunscorch Waste" are lettered on clear ground.
+
+## Zooming out recentres the map — 0.35.1 beta (testing)
+
+Zooming out now glides the map back to the middle: how far it sits off-centre
+shrinks in step with the zoom, so it is exactly centred by the time it is back to
+normal size (before, sliding right and zooming out left it stuck off-centre). A
+pinch that ends just above normal size settles at exactly 1×.
+
 ## Learning in the chart's own hand, and pinch-to-zoom — 0.35 beta (testing)
 
 On the hand-drawn map, the old on-map details are redrawn in the chart's style

@@ -4,7 +4,7 @@
    paint() is a generator: the caller decides how much to draw per slice. */
 (function(root){
   'use strict';
-  const VERSION=11; // bump whenever the drawing changes, so cached charts are redrawn
+  const VERSION=12; // bump whenever the drawing changes, so cached charts are redrawn
   const TAU=Math.PI*2,INK='rgba(52,36,22,.95)',INK2='rgba(52,36,22,.5)';
   const CW=typeof module!=='undefined'&&module.exports?require('./chart-world'):root.ChartWorld;
 
@@ -256,18 +256,31 @@
     // 8. Everything that stands up, painted back to front.
     const sprites=[],nodes=world.NODES,CN=CW.noise(313),clear=(x,y,r)=>nodes.some((n,i)=>{if(i>=13)return false;const a=Math.atan2(y-n.y,x-n.x);return Math.hypot(x-n.x,(y-n.y)*1.15)<r*(.5+CN(Math.cos(a)*1.4+i*5,Math.sin(a)*1.4)*.85);})||lm.clear.some(([cx,cy,cr])=>Math.hypot(x-cx,y-cy)<cr)||world.VILLAGES.some(v=>Math.hypot(x-v.x-3,y-v.y+5)<19)||Object.values(world.SITES).some(q=>Math.hypot(x-q.x,(y-q.y)*1.2)<q.r)||nearRoad(x,y);
     // Mount Twelve, the summit massif, stands over everything in the north.
-    const top=nodes[13];sprites.push({y:top.y+160,draw:()=>mountain(ctx,{x:top.x,y:top.y+160,w:330,h:230,style:'storm',peaks:[{t:.5,h:1,s:.52},{t:.24,h:.62,s:.3},{t:.8,h:.7,s:.28},{t:.66,h:.48,s:.18}]},CW.rng(12))});
+    /* Peaks, hills and mesas are drawn on a scratch sheet whose foot is faded before it is laid on the chart,
+       so each rises out of the ground instead of standing on a ruled line. */
+    const scratch=makeCanvas(Math.ceil(360*scale),Math.ceil(270*scale)),sx=scratch.getContext('2d');
+    const blended=(m,draw,fade=.32)=>{const pad=8,bw=m.w+pad*2,bh=m.h+pad*2,W2=Math.ceil(bw*scale)+2,H2=Math.ceil(bh*scale)+2;
+      sx.setTransform(1,0,0,1,0,0);sx.clearRect(0,0,W2,H2);sx.setTransform(scale,0,0,scale,(m.w/2+pad-m.x)*scale,(m.h+pad-m.y)*scale);draw(sx);
+      sx.globalCompositeOperation='destination-out';const g=sx.createLinearGradient(0,m.y-m.h*fade,0,m.y+2);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(.65,'rgba(0,0,0,.5)');g.addColorStop(1,'rgba(0,0,0,.96)');sx.fillStyle=g;sx.fillRect(m.x-m.w/2-pad,m.y-m.h*fade,m.w+pad*2,m.h*fade+pad);sx.globalCompositeOperation='source-over';
+      ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(scratch,0,0,W2,H2,Math.floor((m.x-m.w/2-pad)*scale),Math.floor((m.y-m.h-pad)*scale),W2,H2);ctx.restore();
+      // Where the slope meets the ground: a soft shadow and a few fall-lines running out onto the plain.
+      shadowAt(ctx,m.x+m.w*.12,m.y-m.h*.05,m.w*.5,Math.max(1.6,m.h*.08),.1);
+      ctx.strokeStyle='rgba(70,52,32,.34)';ctx.lineWidth=.45;ctx.beginPath();for(let i=0;i<Math.max(3,Math.round(m.w/7));i++){const t=R(),x=m.x-m.w*.46+t*m.w*.92,y0=m.y-m.h*(.14+R()*.1),d=(t-.5)*2;ctx.moveTo(x,y0);ctx.quadraticCurveTo(x+d*2,y0+m.h*.08,x+d*4,y0+m.h*.16+2);}ctx.stroke();};
+    const onSite=(x,y,w,h)=>Object.values(world.SITES).some(q=>x+w/2>q.x-q.r*1.5&&x-w/2<q.x+q.r*1.5&&y>q.y-q.r*1.6&&y-h<q.y+q.r*.8);
+    const top=nodes[13],massif={x:top.x,y:top.y+160,w:330,h:230,style:'storm',peaks:[{t:.5,h:1,s:.52},{t:.24,h:.62,s:.3},{t:.8,h:.7,s:.28},{t:.66,h:.48,s:.18}]};sprites.push({y:top.y+160,draw:()=>blended(massif,c=>mountain(c,massif,CW.rng(12)),.22)});
     // Peaks: random candidates, tallest first, each keeping its own ground.
     const peaks=[],cands=[];for(let i=0;i<5200;i++){const x=R()*W,y=R()*H;if(!onLand(x,y)||world.landAt(x,y)<20)continue;const h=world.heightAt(x,y),kind=world.kindAt(x,y);if(kind==='meadow'||kind==='fields'||kind==='marsh')continue;if(h>.46)cands.push({x,y,h,kind});}
     cands.sort((a,b)=>b.h-a.h);
-    for(const c of cands){if(clear(c.x,c.y,66)||Object.values(world.SITES).some(q=>Math.abs(c.x-q.x)<q.r+30&&c.y>q.y-q.r&&c.y<q.y+q.r+50)||Math.abs(c.x-top.x)<165&&c.y<top.y+170)continue;const dry=c.kind==='badlands'||c.kind==='desert',size=Math.min(92,16+(c.h-.46)*150)*(.75+R()*.5),w=size*(dry?1.9+R()*.6:1.3+R()*.5),hh=size*(dry?.62:1);
+    for(const c of cands){if(clear(c.x,c.y,66)||Math.abs(c.x-top.x)<165&&c.y<top.y+170)continue;const dry=c.kind==='badlands'||c.kind==='desert',size=Math.min(92,16+(c.h-.46)*150)*(.75+R()*.5),w=size*(dry?1.9+R()*.6:1.3+R()*.5),hh=size*(dry?.62:1);
+      // Keep a peak's whole outline, not just its foot, off every realm landmark.
+      if(onSite(c.x,c.y,w,hh))continue;
       if(peaks.some(p=>Math.abs(p.x-c.x)<(p.w+w)*.3&&Math.abs(p.y-c.y)<(p.h+hh)*.22))continue;
       if([-.45,-.2,0,.2,.45].some(t=>roadDist(c.x+t*w,c.y-hh*.15)<10+Math.abs(t)*4||roadDist(c.x+t*w*.5,c.y-hh*.5)<8))continue;
-      const m={x:c.x,y:c.y,w,h:hh,style:c.kind==='ice'?'ice':c.kind==='alpine'&&c.y<280?'storm':c.kind==='badlands'||c.kind==='desert'?'desert':'rock'};peaks.push(m);sprites.push({y:c.y,draw:()=>mountain(ctx,m,R)});}
+      const m={x:c.x,y:c.y,w,h:hh,style:c.kind==='ice'?'ice':c.kind==='alpine'&&c.y<280?'storm':c.kind==='badlands'||c.kind==='desert'?'desert':'rock'};peaks.push(m);sprites.push({y:c.y,draw:()=>blended(m,cx=>mountain(cx,m,R))});}
     // Foothills and mesas, scattered rather than gridded.
     for(let i=0;i<4200;i++){const x=R()*W,y=R()*H;if(!onLand(x,y)||world.landAt(x,y)<20||clear(x,y,60))continue;const h=world.heightAt(x,y),kind=world.kindAt(x,y);
-      if(h>.28&&h<=.5&&['hills','highland','stone','jungle','pine','badlands'].includes(kind)&&R()<.22&&roadDist(x,y)>18){if(peaks.some(p=>Math.abs(p.x-x)<p.w*.5&&Math.abs(p.y-y)<12))continue;const m={x,y,w:20+R()*16,h:5+(h-.28)*32,style:kind==='badlands'?'desert':kind==='stone'?'stone':'hills'};sprites.push({y,draw:()=>hill(ctx,m,R)});}
-      else if((kind==='badlands'||kind==='desert')&&h>.2&&R()<.05){const m={x,y,w:22+R()*20,h:9+R()*10};if(peaks.some(p=>Math.abs(p.x-x)<(p.w+m.w)*.4&&Math.abs(p.y-y)<16))continue;peaks.push({x,y,w:m.w,h:m.h});sprites.push({y,draw:()=>mesa(ctx,m,R)});}}
+      if(h>.28&&h<=.5&&['hills','highland','stone','jungle','pine','badlands'].includes(kind)&&R()<.22&&roadDist(x,y)>18){if(peaks.some(p=>Math.abs(p.x-x)<p.w*.5&&Math.abs(p.y-y)<12))continue;const m={x,y,w:20+R()*16,h:5+(h-.28)*32,style:kind==='badlands'?'desert':kind==='stone'?'stone':'hills'};if(onSite(x,y,m.w,m.h*2))continue;sprites.push({y,draw:()=>blended(m,cx=>hill(cx,m,R),.5)});}
+      else if((kind==='badlands'||kind==='desert')&&h>.2&&R()<.05){const m={x,y,w:22+R()*20,h:9+R()*10};if(onSite(x,y,m.w,m.h))continue;if(peaks.some(p=>Math.abs(p.x-x)<(p.w+m.w)*.4&&Math.abs(p.y-y)<16))continue;peaks.push({x,y,w:m.w,h:m.h});sprites.push({y,draw:()=>blended(m,cx=>mesa(cx,m,R),.3)});}}
     const density={pine:.8,jungle:.95,meadow:.1,fields:.03,highland:.1,stone:.06,hills:.42,badlands:.04,desert:.012,ice:.05,alpine:.05,marsh:.06};
     for(let y=4;y<H;y+=7)for(let x=4;x<W;x+=7){const jx=x+(N[2](x*.31,y*.31)-.5)*7,jy=y+(N[3](x*.31,y*.31)-.5)*7;if(!onLand(jx,jy)||world.landAt(jx,jy)<16)continue;const w=world.waterAt(jx,jy),kind=world.kindAt(jx,jy),h=world.heightAt(jx,jy);
       if(w>-6||h>.5||clear(jx,jy,58))continue;
@@ -287,7 +300,7 @@
     // Double River's hamlet and the villages along the road.
     for(const o of world.VILLAGES)sprites.push({y:o.y,draw:()=>drawHouse(ctx,o,CW.rng(Math.round(o.x*3)),{windows:[],chimneys:[]})});
     for(const o of lm.houses)sprites.push({y:o.y,draw:()=>drawHouse(ctx,o,CW.rng(Math.round(o.x)),{windows:[],chimneys:[]})});
-    sprites.sort((a,b)=>a.y-b.y);stats.sprites=sprites.length;
+    sprites.sort((a,b)=>a.y-b.y);stats.sprites=sprites.length;stats.peaks=peaks.map(p=>({x:p.x,y:p.y,w:p.w,h:p.h}));
     for(let i=0;i<sprites.length;i++){sprites[i].draw();if(i%500===499)yield 'sprites';}
     // Mountain trails climb over the peaks: a pale track with a dashed inked line and cairns.
     for(const t of trails){ctx.strokeStyle='rgba(244,236,214,.9)';ctx.lineWidth=3;ctx.lineCap='round';ctx.lineJoin='round';ctx.beginPath();t.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.stroke();
