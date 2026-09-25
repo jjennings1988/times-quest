@@ -131,6 +131,17 @@ See [the opening slice and verification guide](OPENING-EXPEDITION.md),
 [the prior learning upgrade checklist](LEARNING-UPGRADE-CHECKLIST.md).
 Tests now include test/opening.js for the complete first expedition.
 
+## Landmarks set into the land, and a surveyor's topography — 0.34.3 beta (testing)
+
+Ten City and the Nine Ninja Temple now rise on low hills in the map itself, so
+the painted relief, hill shading and contours wrap around them, and a road runs
+from each gate down to its realm. Ten City's walls fall to a grassy bank and a
+moat that wraps the corner towers, crossed by a drawbridge; the temple stands on
+a stone terrace with earth slopes and a grand stair between stone lanterns. Both
+sit on hillsides hatched like the chart's own slopes. Across the whole map a
+contour runs every 25 units of height, every fourth an index contour lettered
+with its height, and the lowlands gently undulate so meadows carry contours too.
+
 ## One style for every landmark — 0.34.2 beta (testing)
 
 A style review against the painted chart's own rules: one three-quarter
