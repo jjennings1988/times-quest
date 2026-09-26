@@ -4,7 +4,8 @@
    so it runs in a worker, on the main thread or in tests. */
 (function(root){
   'use strict';
-  const W=864,H=1821,G=3,GW=Math.ceil(W/G)+1,GH=Math.ceil(H/G)+1,TAU=Math.PI*2;
+  // TOP: blank paper above the land's top edge (y from -TOP to 0), for scrolling up past the summit.
+  const TOP=400,W=864,H=1821,G=3,GW=Math.ceil(W/G)+1,GH=Math.ceil(H/G)+1,TAU=Math.PI*2;
   // The same percentages as MAP_POSITIONS in index.html, in REALM_ORDER order, then the summit.
   const POSITIONS=[[31,91.5],[70,84.3],[28,77.2],[69,70.1],[34,63.1],[25,48.9],[74,41.8],[50,34.7],[22,29.8],[69,27.7],[34,21.0],[70,15.0],[38,9.3],[57,3.8]];
   const ORDER=[0,1,10,2,5,11,3,4,9,6,12,8,7];
@@ -245,6 +246,6 @@
   // Where each realm's landmark stands (chart-realms.js): beside its realm, clear of the
   // realm button, its label and the climber. Double River's is in LANDMARKS above.
   const SITES={0:{x:152,y:1642,r:58},1:{x:700,y:1486,r:48},10:{x:152,y:1340,r:58},5:{x:348,y:1140,r:40},11:{x:150,y:815,r:52},3:{x:712,y:690,r:58},4:{x:355,y:562,r:38},9:{x:154,y:455,r:46},6:{x:702,y:452,r:62},12:{x:185,y:338,r:48},8:{x:690,y:245,r:44},7:{x:232,y:138,r:44}};
-  const api={W,H,G,POSITIONS,ORDER,NODES,RIVERS,LAKE,POOLS,BIOMES,ANCHORS,LANDMARKS,SITES,ROUTE,SPURS,VILLAGES,SETTLEMENTS,SETTLE_R,CAMP,FIELD_PATCHES,EDGE_TRAILS,EDGE_SIGNS,ISLANDS,SPRINGS,RAPIDS,WEIR,HERDS,buildingsFor,routePaths,build,rng,noise,spline,node};
+  const api={TOP,W,H,G,POSITIONS,ORDER,NODES,RIVERS,LAKE,POOLS,BIOMES,ANCHORS,LANDMARKS,SITES,ROUTE,SPURS,VILLAGES,SETTLEMENTS,SETTLE_R,CAMP,FIELD_PATCHES,EDGE_TRAILS,EDGE_SIGNS,ISLANDS,SPRINGS,RAPIDS,WEIR,HERDS,buildingsFor,routePaths,build,rng,noise,spline,node};
   root.ChartWorld=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

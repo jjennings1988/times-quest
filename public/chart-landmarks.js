@@ -16,11 +16,11 @@
 
   /* A soft, ragged ink mask at quarter resolution. `grow` animates one realm's spread. */
   function maskURL(stages,makeCanvas,{all=false,grow=null}={}){
-    const q=4,w=Math.ceil(CW.W/q),h=Math.ceil(CW.H/q),c=makeCanvas(w,h),ctx=c.getContext('2d');
+    const q=4,w=Math.ceil(CW.W/q),h=Math.ceil((CW.H+CW.TOP)/q),c=makeCanvas(w,h),ctx=c.getContext('2d');
     if(all){ctx.fillStyle='#000';ctx.fillRect(0,0,w,h);return c.toDataURL();}
     const n=CW.noise(211);
     for(const k of inkCircles(stages)){let r=k.r;if(grow&&grow.family===k.family)r=grow.from+(k.r-grow.from)*grow.t;if(r<=1)continue;
-      const cx=k.x/q,cy=k.y/q,rr=r/q,g=ctx.createRadialGradient(cx,cy,0,cx,cy,rr*1.12);g.addColorStop(0,'#000');g.addColorStop(.7,'#000');g.addColorStop(1,'rgba(0,0,0,0)');
+      const cx=k.x/q,cy=(k.y+CW.TOP)/q,rr=r/q,g=ctx.createRadialGradient(cx,cy,0,cx,cy,rr*1.12);g.addColorStop(0,'#000');g.addColorStop(.7,'#000');g.addColorStop(1,'rgba(0,0,0,0)');
       ctx.fillStyle=g;ctx.beginPath();for(let i=0;i<=48;i++){const a=i/48*TAU,m=1+(n(Math.cos(a)*1.6+k.family*3,Math.sin(a)*1.6)-.5)*.42;const px=cx+Math.cos(a)*rr*1.12*m,py=cy+Math.sin(a)*rr*1.12*m;i?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.fill();}
     return c.toDataURL();
   }
@@ -69,7 +69,7 @@
   const FEATURES=[
     {x:250,y:840,t:'Mill Beck',c:'water',r:10},{x:706,y:676,t:'Parrot Brook',c:'water',r:-2},{x:545,y:1614,t:'Fern Brook',c:'water',r:3},
     {x:330,y:326,t:'The Dry Wash',c:'water',r:17},{x:130,y:700,t:'The Tally Hills',c:'feature',r:-8},{x:470,y:204,t:'Frostgate Pass',c:'feature',r:-14},
-    {x:748,y:212,t:'The Long Glacier',c:'feature',r:-48},{x:178,y:292,t:'The Dozen Dunes',c:'feature',r:-5},{x:440,y:1560,t:'Fen Bridge',c:'small',r:0},
+    {x:712,y:300,t:'The Long Glacier',c:'feature',r:-33},{x:178,y:292,t:'The Dozen Dunes',c:'feature',r:-5},{x:440,y:1560,t:'Fen Bridge',c:'small',r:0},
     {x:514,y:1476,t:'Old Stone Bridge',c:'small',r:-18},{x:458,y:944,t:'Canopy Bridge',c:'small',r:0},
     {x:660,y:1030,t:'THE MIDLANDS',c:'region',r:-4},{x:694,y:584,t:'THE HIGH COUNTRY',c:'region',r:-3},{x:140,y:1540,t:'THE LOWLANDS',c:'region',r:-6}];
   // Signposts where roads meet: each board points toward a destination.
@@ -128,14 +128,22 @@
 
   /* ---------- the map as an object (0.38) ---------- */
   const NOTES=[{x:452,y:414,t:'ford runs deep after spring rain',r:-4},{x:566,y:872,t:'see the Falls from here!',r:-6},{x:560,y:1718,t:'wolves? none seen',r:5},{x:446,y:246,t:'ask for lanterns at the mine',r:-3}];
-  function object(){let s='';const W=CW.W,H=CW.H,b=5,t=10;
-    // A neatline border with a graduated band, lettered every few leagues.
-    s+=`<g class="cl-border"><rect x="${b}" y="${b}" width="${W-2*b}" height="${H-2*b}" fill="none" stroke="#3b2a1c" stroke-width=".9"/><rect x="${t}" y="${t}" width="${W-2*t}" height="${H-2*t}" fill="none" stroke="#3b2a1c" stroke-width=".4"/>`;
-    let bars='';for(let y=t,i=0;y<H-t;y+=40,i++)if(i%2===0)bars+=`M${b} ${y}h${t-b}v${Math.min(40,H-t-y)}h${b-t}z M${W-t} ${y}h${t-b}v${Math.min(40,H-t-y)}h${b-t}z`;
-    for(let x=t,i=0;x<W-t;x+=40,i++)if(i%2===0)bars+=`M${x} ${b}v${t-b}h${Math.min(40,W-t-x)}v${b-t}z M${x} ${H-t}v${t-b}h${Math.min(40,W-t-x)}v${b-t}z`;
+  // The margin above the land: notes on the view from the top, and the chart's title.
+  const TOP_NOTES=[{x:560,y:-96,t:'from the summit you can see every realm at once!',r:-2},{x:236,y:-112,t:'mountains beyond: not yet charted',r:-4},{x:640,y:-150,t:'storms roll in from the north-east',r:3},{x:664,y:-50,t:'ice caves glow blue at dusk',r:-3}];
+  function object(){let s='';const W=CW.W,H=CW.H,Y0=-CW.TOP,FH=H-Y0,b=5,t=10;
+    // A neatline border with a graduated band round the whole sheet, lettered every few leagues.
+    s+=`<g class="cl-border"><rect x="${b}" y="${Y0+b}" width="${W-2*b}" height="${FH-2*b}" fill="none" stroke="#3b2a1c" stroke-width=".9"/><rect x="${t}" y="${Y0+t}" width="${W-2*t}" height="${FH-2*t}" fill="none" stroke="#3b2a1c" stroke-width=".4"/>`;
+    let bars='';for(let y=Y0+t,i=0;y<H-t;y+=40,i++)if(i%2===0)bars+=`M${b} ${y}h${t-b}v${Math.min(40,H-t-y)}h${b-t}z M${W-t} ${y}h${t-b}v${Math.min(40,H-t-y)}h${b-t}z`;
+    for(let x=t,i=0;x<W-t;x+=40,i++)if(i%2===0)bars+=`M${x} ${Y0+b}v${t-b}h${Math.min(40,W-t-x)}v${b-t}z M${x} ${H-t}v${t-b}h${Math.min(40,W-t-x)}v${b-t}z`;
     s+=`<path d="${bars}" fill="#3b2a1c" opacity=".75"/>`;
-    for(let y=240;y<H-40;y+=240)s+=`<text class="cl-grat" x="${t+3}" y="${y+2}">${Math.round((H-y)/40)}</text><text class="cl-grat" x="${W-t-3}" y="${y+2}" text-anchor="end">${Math.round((H-y)/40)}</text>`;
-    s+=[[t,t],[W-t,t],[t,H-t],[W-t,H-t]].map(([x,y])=>`<path d="M${x} ${y-4} l3 4 l-3 4 l-3 -4z" fill="#b8860b" stroke="#3b2a1c" stroke-width=".35"/>`).join('')+'</g>';
+    for(let y=H-240;y>Y0+40;y-=240)s+=`<text class="cl-grat" x="${t+3}" y="${y+2}">${Math.round((H-y)/40)}</text><text class="cl-grat" x="${W-t-3}" y="${y+2}" text-anchor="end">${Math.round((H-y)/40)}</text>`;
+    s+=[[t,Y0+t],[W-t,Y0+t],[t,H-t],[W-t,H-t]].map(([x,y])=>`<path d="M${x} ${y-4} l3 4 l-3 4 l-3 -4z" fill="#b8860b" stroke="#3b2a1c" stroke-width=".35"/>`).join('')+'</g>';
+    // The title, lettered in the open paper above the mountains, with a flourish either side.
+    const ty=-206;s+=`<g class="cl-titleblock"><text class="cl-title" x="${W/2}" y="${ty}" text-anchor="middle">The Twelve Realms</text><text class="cl-subtitle" x="${W/2}" y="${ty+20}" text-anchor="middle">and the Climb to Mount Twelve</text>`+
+      [-1,1].map(d=>`<path d="M${W/2+d*172} ${ty-8} q${d*30} -10 ${d*58} 0 q${d*16} 6 ${d*6} 12 q${-d*8} 5 ${-d*12} -3 q${-d*2} -6 ${d*6} -6" fill="none" stroke="#3b2a1c" stroke-width=".7"/><path d="M${W/2+d*120} ${ty+26} h${d*96}" stroke="#3b2a1c" stroke-width=".5"/><circle cx="${W/2+d*222}" cy="${ty+26}" r="1.4" fill="#b8860b" stroke="#3b2a1c" stroke-width=".3"/>`).join('')+`</g>`;
+    s+=TOP_NOTES.map(n=>`<text class="cl-note" x="${n.x}" y="${n.y}" text-anchor="middle" transform="rotate(${n.r} ${n.x} ${n.y})">${n.t}</text>`).join('');
+    // A pencilled arrow from the note down to the summit.
+    {const sm=CW.NODES[13],ax=sm.x+34,ay=-46;s+=`<path d="M${sm.x+56} -86 q-6 18 -22 40" fill="none" stroke="rgba(66,58,50,.7)" stroke-width=".6" stroke-linecap="round"/><path d="M${ax} ${ay} l.4 -5 M${ax} ${ay} l4.6 -2" stroke="rgba(66,58,50,.7)" stroke-width=".6" stroke-linecap="round"/>`;}
     // Scale bar in leagues (a league is forty chart units).
     const sx=664,sy=1806;s+=`<g class="cl-scale">${[0,1,2].map(i=>`<rect x="${sx+i*20}" y="${sy}" width="20" height="2.2" fill="${i%2?'#efe3c4':'#3b2a1c'}" stroke="#3b2a1c" stroke-width=".35"/>`).join('')}<rect x="${sx+60}" y="${sy}" width="20" height="2.2" fill="#3b2a1c" stroke="#3b2a1c" stroke-width=".35"/>${[0,1,2].map(i=>`<text class="cl-grat" x="${sx+i*40}" y="${sy-1.6}" text-anchor="middle">${i}</text>`).join('')}<text class="cl-grat" x="${sx+40}" y="${sy+8}" text-anchor="middle">leagues</text></g>`;
     // Notes pencilled by the cartographer.

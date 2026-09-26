@@ -10,35 +10,41 @@
   button,select{min-height:36px;border-radius:10px;border:1px solid #5a4630;background:#34271c;color:#f1e6cb;font:600 13px system-ui;padding:6px 12px}
   #stage{position:relative;margin:0 auto;width:min(100%,var(--w,864px))}
   #stage>*{position:absolute;inset:0;width:100%;height:100%}
-  #stage{aspect-ratio:864/1821}
+  #stage{aspect-ratio:864/2221}
   #info{color:#bba983}
 </style>
 <header>
   <select id="scale"><option>1</option><option selected>1.5</option><option>2</option></select>
-  <select id="view"><option value="ink">Ink</option><option value="pencil">Pencil</option><option value="mixed" selected>Mixed (progress)</option><option value="s0">All ruins</option><option value="s1">All foundations</option><option value="s3">All restored</option><option value="s4">All celebrated</option></select><select id="sky"><option value="day">Day</option><option value="night">Night</option></select><select id="season"><option value="">This season</option><option value="spring">Spring</option><option value="summer">Summer</option><option value="autumn">Autumn</option><option value="winter">Winter</option></select>
+  <select id="view"><option value="ink">Ink</option><option value="pencil">Pencil</option><option value="mixed" selected>Mixed (progress)</option><option value="s0">All ruins</option><option value="s1">All foundations</option><option value="s3">All restored</option><option value="s4">All celebrated</option><option value="p3">Pencil mode, all restored</option></select><select id="sky"><option value="day">Day</option><option value="night">Night</option></select><select id="season"><option value="">This season</option><option value="spring">Spring</option><option value="summer">Summer</option><option value="autumn">Autumn</option><option value="winter">Winter</option></select>
   <select id="width"><option value="864">864 px</option><option value="520">Phone width</option><option value="1600">Zoomed</option></select>
-  <button id="go">Redraw</button><span id="info"></span>
+  <select id="bake"><option value="1">Baked landmarks</option><option value="0">Vector landmarks</option></select><button id="go">Redraw</button><span id="info"></span>
 </header>
-<div id="stage" class="chart-root ready"><canvas id="pencil"></canvas><canvas id="ink" class="chart-ink"></canvas><svg id="live" class="chart-live" viewBox="0 0 864 1821"></svg><svg id="glow" class="chart-glow" viewBox="0 0 864 1821" preserveAspectRatio="none"></svg></div>
+<div id="stage" class="chart-root ready"><canvas id="pencil"></canvas><canvas id="ink" class="chart-ink"></canvas><svg id="live" class="chart-live" viewBox="0 -400 864 2221"></svg><svg id="glow" class="chart-glow" viewBox="0 -400 864 2221" preserveAspectRatio="none"></svg></div>
 <script src="../public/chart-world.js"></script>
 <script src="../public/chart-paint.js"></script>
 <script src="../public/chart-realms.js"></script>
 <script src="../public/chart-landmarks.js"></script>
+<script src="../public/chart-bake.js"></script>
 <script>
 const $=id=>document.getElementById(id);
-function draw(){
+let CSS=null;const mk=(w,h)=>Object.assign(document.createElement('canvas'),{width:w,height:h});
+async function draw(){
   const scale=+$('scale').value,t0=performance.now(),world=ChartWorld.build(),t1=performance.now();
-  const ink=$('ink'),pencil=$('pencil');ink.width=pencil.width=Math.round(864*scale);ink.height=pencil.height=Math.round(1821*scale);
+  const ink=$('ink'),pencil=$('pencil');const sh=ChartPaint.sheet(scale);ink.width=pencil.width=sh.w;ink.height=pencil.height=sh.h;
   const ctx=ink.getContext('2d');const stats=ChartPaint.renderAll(ctx,world,{scale,season:$('season').value||ChartPaint.seasonFor(),makeCanvas:(w,h)=>Object.assign(document.createElement('canvas'),{width:w,height:h})});const t2=performance.now();
   const src=ctx.getImageData(0,0,ink.width,ink.height),pc=pencil.getContext('2d'),dst=pc.createImageData(ink.width,ink.height);ChartPaint.pencilize(src,dst);pc.putImageData(dst,0,0);const t3=performance.now();
-  const v=$('view').value,all=n=>Object.fromEntries(ChartWorld.ORDER.map(f=>[f,n])),stages=v[0]==='s'?all(+v[1]):v==='ink'?all(3):v==='pencil'?{}:{0:4,1:3,10:3,2:3,5:1};
-  $('stage').classList.toggle('night',$('sky').value==='night');$('stage').dataset.marsh=String(stages[0]|0);const nf=$('sky').value==='night'?'saturate(.7) brightness(.62) hue-rotate(10deg)':'';for(const id of['ink','pencil','live'])$(id).style.filter=nf;$('glow').classList.toggle('on',!!nf);
+  const v=$('view').value,all=n=>Object.fromEntries(ChartWorld.ORDER.map(f=>[f,n])),stages=v[0]==='s'||v[0]==='p'?all(+v[1]):v==='ink'?all(3):v==='pencil'?{}:{0:4,1:3,10:3,2:3,5:1};
+  $('stage').classList.toggle('pencil',v[0]==='p');$('stage').classList.toggle('night',$('sky').value==='night');$('stage').dataset.marsh=String(stages[0]|0);const nf=$('sky').value==='night'?'saturate(.7) brightness(.62) hue-rotate(10deg)':'';for(const id of['ink','pencil','live'])$(id).style.filter=nf;$('glow').classList.toggle('on',!!nf);
   ink.style.visibility=v==='pencil'||v==='s0'?'hidden':'visible';
   if((v==='mixed'||v==='s1')&&window.ChartLandmarks){const url=ChartLandmarks.maskURL(stages,(w,h)=>Object.assign(document.createElement('canvas'),{width:w,height:h}),{});ink.style.webkitMaskImage=ink.style.maskImage=`url(${url})`;ink.style.webkitMaskSize=ink.style.maskSize='100% 100%';}
   else ink.style.webkitMaskImage=ink.style.maskImage='none';
-  if(window.ChartLandmarks){$('live').innerHTML=ChartLandmarks.markup(world,stages,{});$('glow').innerHTML=ChartLandmarks.glowMarkup(stages);}
-  $('info').textContent=`world ${Math.round(t1-t0)} ms · paint ${Math.round(t2-t1)} ms · pencil ${Math.round(t3-t2)} ms · ${stats.sprites} sprites`;
+  const markup=window.ChartLandmarks?ChartLandmarks.markup(world,stages,{}):'';
+  if(window.ChartLandmarks){$('live').innerHTML=`<style>${ChartBake.LIVE_CSS}</style><g class="cl-world">${markup}</g>`;$('glow').innerHTML=ChartLandmarks.glowMarkup(stages);}
+  $('live').classList.remove('baked');let tb=0;
+  if($('bake').value==='1'){CSS=CSS||await fetch('../public/map-chart.css').then(r=>r.text());const b0=performance.now();
+    try{await ChartBake.bake({ink,pencil,markup,css:CSS,W:864,H:1821,top:ChartWorld.TOP,scale,makeCanvas:mk});$('live').classList.add('baked');}catch(e){console.warn('bake',e);}tb=performance.now()-b0;}
+  $('info').textContent=`world ${Math.round(t1-t0)} ms · paint ${Math.round(t2-t1)} ms · pencil ${Math.round(t3-t2)} ms · bake ${Math.round(tb)} ms · ${stats.sprites} sprites`;
 }
-$('go').onclick=draw;$('width').onchange=()=>document.getElementById('stage').style.setProperty('--w',$('width').value+'px');$('view').onchange=draw;$('sky').onchange=draw;$('season').onchange=draw;
+$('go').onclick=draw;$('width').onchange=()=>document.getElementById('stage').style.setProperty('--w',$('width').value+'px');$('view').onchange=draw;$('sky').onchange=draw;$('season').onchange=draw;$('bake').onchange=draw;
 setTimeout(draw,50);
 </script>

@@ -75,6 +75,15 @@ The painted map stays the default; switching off returns it instantly.
 - **Pencil (0.38.1):** tap Pencil: the colour fades out to graphite everywhere,
   the button turns dark, and at night the windows and lamps still glow. Reload:
   it stays in pencil. Tap again for colour.
+- **One hand-drawn map (0.39):** in both colour and Pencil, the bridges,
+  lighthouse, docks, boats, Twin Towers and realm landmarks should look drawn
+  on the paper like the trees, not pasted over them. Smoke, flags, fish and
+  lights still move. The first map visit after progress may show crisp landmarks
+  for a moment before they settle into the paper; note if that swap is jarring
+  or slow on a phone. Scroll to the very top: open paper, the title and notes
+  sit below the map buttons, and Mount Twelve's peak is whole. Zoom in and out:
+  the top margin grows and shrinks with the map. Eight Ice Caves (once unlocked)
+  sits in the foot of its mountain.
 - **Night:** the chart darkens with the map; windows, lanterns, the lighthouse
   beam, beacons and the power station orb glow above it.
 - **Check:** realm buttons, route and "You are here" sit exactly where they did

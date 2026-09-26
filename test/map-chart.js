@@ -140,4 +140,24 @@ const sw=fs.readFileSync(path.join(__dirname,'..','public','sw.js'),'utf8'),core
 check('every chart file is cached for offline play',['chart-world.js','chart-paint.js','chart-landmarks.js','chart-worker.js','map-chart.js','map-chart.css'].every(f=>core.includes(`./${f}`)));
 check('app updates keep the painted chart cache',/k !== 'tq-chart'/.test(sw));
 check('the hand-drawn map starts switched off, behind a Parents switch',/chartMap:\s*false/.test(html)&&html.includes("toggleSetting('chartMap')"));
+// 0.39: a complete hand-crafted map.
+const CB=require('../public/chart-bake');
+check('the sheet reaches above the land, and the page makes room for exactly that margin',CW.TOP>=300&&CP.sheet(2).h===Math.round((CW.H+CW.TOP)*2)&&mcss.split(`margin-top:calc(var(--mw) * ${CW.TOP} / ${CW.W})`).length===3&&/--mw/.test(fs.readFileSync(path.join(__dirname,'..','public','map-zoom.js'),'utf8')));
+{let size=null;CL.maskURL({0:3},(w,h)=>{size=[w,h];return{getContext:()=>new Proxy({},{get:(t,k)=>k==='createRadialGradient'?()=>({addColorStop(){}}):()=>{}}),toDataURL:()=>'data:'};});check('the ink mask covers the whole sheet, margin included',size&&size[1]===Math.ceil((CW.H+CW.TOP)/4));}
+const M0=CL.markup(null,{},{});
+check('the margin carries the border, the title and notes on the view from the summit',M0.includes(`y="${-CW.TOP+5}"`)&&M0.includes('The Twelve Realms')&&M0.includes('from the summit you can see every realm at once!'));
+check('moving things, lights and lettering stay live; everything else is baked into the paper',['cl-puff','cl-flame','cl-banner','cl-traveller','cl-fish','cl-win','cl-glow','cl-fall','fresh'].every(c=>CB.LIVE.includes(c))&&!CB.LIVE.includes('cl-bit')&&/text\{display:none!important\}/.test(CB.rasterCSS(''))&&/visibility:hidden/.test(CB.LIVE_CSS));
+{const svg=CB.svgFor('<g/>','.a{background:url("data:x,<svg a=\\"b\\">")}',{W:864,H:1821,top:CW.TOP,scale:1});check('the rasterised copy holds the stylesheet safely and spans the whole sheet',svg.includes('<![CDATA[')&&svg.includes(`viewBox="0 ${-CW.TOP} 864 ${1821+CW.TOP}"`));}
+{// The hand: only drawn pixels change; white becomes paper and black becomes sepia ink, never pure.
+  const w=64,h=64,mk=()=>({data:new Uint8ClampedArray(w*h*4)}),src=mk(),ink=mk(),pencil=mk();
+  for(let i=0;i<w*h;i++){ink.data.set([200,210,190,255],i*4);pencil.data.set([230,222,200,255],i*4);}
+  for(let y=16;y<48;y++)for(let x=16;x<48;x++){const v=x<32?255:0;src.data.set([v,v,v,255],(y*w+x)*4);}
+  for(const _ of CB.hand(src,ink,pencil,w,h,1));
+  const at=(d,x,y)=>[...d.data.slice((y*w+x)*4,(y*w+x)*4+3)];
+  check('the hand leaves blank paper alone',JSON.stringify(at(ink,2,2))==='[200,210,190]'&&JSON.stringify(at(pencil,60,60))==='[230,222,200]');
+  const white=at(ink,24,32),black=at(ink,40,32),pb=at(pencil,40,32);
+  check('white is laid in as paper and black as sepia ink',white.every(v=>v<250)&&black[0]>=40&&black[0]<120&&pb[0]<200);}
+const mapJs=fs.readFileSync(path.join(__dirname,'..','public','map-chart.js'),'utf8');
+check('the app bakes each set of landmarks once and keeps it offline',/bakedKeyFor/.test(mapJs)&&/class=\\"cl-world\\"|class="cl-world"/.test(mapJs)&&html.indexOf('chart-bake.js')>0&&html.indexOf('chart-bake.js')<html.indexOf('map-chart.js')&&core.includes('./chart-bake.js'));
+check('Eight Ice Caves open into the foot of their own ice mountain',/Eight Ice Caves open into the foot of their own ice mountain/.test(fs.readFileSync(path.join(__dirname,'..','public','chart-paint.js'),'utf8'))&&!/const cliff=/.test(fs.readFileSync(path.join(__dirname,'..','public','chart-realms.js'),'utf8')));
 console.log(`${checks} map chart checks passed (world built in ${built} ms)`);

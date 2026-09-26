@@ -4,7 +4,7 @@ importScripts('chart-world.js','chart-paint.js');
 self.onmessage=async e=>{
   const{id,scale,season}=e.data;
   try{
-    const world=ChartWorld.build(),W=Math.round(ChartWorld.W*scale),H=Math.round(ChartWorld.H*scale);
+    const world=ChartWorld.build(),{w:W,h:H}=ChartPaint.sheet(scale);
     const ink=new OffscreenCanvas(W,H),ctx=ink.getContext('2d');
     if(!ctx)throw new Error('No 2D canvas in this worker');
     ChartPaint.renderAll(ctx,world,{scale,season,makeCanvas:(w,h)=>new OffscreenCanvas(w,h)});

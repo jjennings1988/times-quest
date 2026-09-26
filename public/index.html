@@ -156,7 +156,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[role="button"]:
   background:linear-gradient(90deg,rgba(57,26,12,.14),transparent 8%,transparent 92%,rgba(57,26,12,.14));
   box-shadow:inset 0 0 42px rgba(63,31,14,.22);
 }
-.map-world{position:relative;left:50%;width:clamp(720px,184vw,1044px);aspect-ratio:864/1821;transform:translateX(-50%);isolation:isolate}
+.map-world{--mw:clamp(720px,184vw,1044px);position:relative;left:50%;width:var(--mw);aspect-ratio:864/1821;transform:translateX(-50%);isolation:isolate}
 .map-art{position:absolute;z-index:0;inset:0;background:url('art/map/bg-adventure-map.webp') center/100% 100% no-repeat}
 .map-route{position:absolute;z-index:1;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;filter:drop-shadow(0 2px 0 rgba(255,244,205,.42))}
 .map-route-segment{fill:none;stroke:#6A482E;stroke-width:4;stroke-dasharray:2 10;stroke-linecap:round;vector-effect:non-scaling-stroke;opacity:.52}
@@ -214,7 +214,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[role="button"]:
 @media(max-width:520px){
   /* Keep every landmark on its map coordinate, but show a wider slice of the
      world and use compact pins so the edge realms remain tappable on phones. */
-  .map-world{width:clamp(480px,132vw,600px)}
+  .map-world{--mw:clamp(480px,132vw,600px)}
   .realm-node{width:100px}
   .realm-bubble{width:64px;height:64px;min-width:64px;border-width:3px;font-size:27px}
   .realm-node .meta{min-width:100px;max-width:100px;padding:4px 5px 5px}
@@ -1074,6 +1074,7 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
 <script src="chart-realms.js"></script>
 <script src="chart-landmarks.js"></script>
 <script src="chart-lore.js"></script>
+<script src="chart-bake.js"></script>
 <script src="map-zoom.js"></script>
 <script src="map-chart.js"></script>
 <script src="device-check.js"></script>
@@ -1477,7 +1478,7 @@ const RATING_LABEL = ["undiscovered","discovered","befriending","befriending","c
    Defaults below reproduce the game's original behaviour exactly, so an
    existing save that predates settings plays identically until something
    is changed on purpose. */
-const APP_VERSION = '0.38.1-beta.1';
+const APP_VERSION = '0.39.0-beta.1';
 const FAST_MS = 4000;          // default bonus window
 const WINDOW_CHOICES = [3000,4000,6000,8000];
 const ROUND_CHOICES  = [8,12,16];

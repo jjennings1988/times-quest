@@ -14,10 +14,10 @@
   function recentre(scroll,centred,prevZ,nextZ){if(nextZ>=prevZ||prevZ<=1)return scroll;const k=Math.max(0,Math.min(1,(nextZ-1)/(prevZ-1)));return centred+(scroll-centred)*k;}
   let screen=null,trail=null,enabled=false,z=1,base=0,onEnd=null,endTimer=0,raf=0,pending=null;
   const world=()=>trail&&trail.querySelector('.map-world');
-  function measureBase(){const w=world();if(!w)return 0;const had=trail.classList.contains('zoomed'),inline=w.style.width;trail.classList.remove('zoomed');w.style.width='';const b=w.getBoundingClientRect().width;if(had)trail.classList.add('zoomed');w.style.width=inline;return b;}
+  function measureBase(){const w=world();if(!w)return 0;const had=trail.classList.contains('zoomed'),inline=w.style.width,mw=w.style.getPropertyValue('--mw');trail.classList.remove('zoomed');w.style.width='';w.style.removeProperty('--mw');const b=w.getBoundingClientRect().width;if(had)trail.classList.add('zoomed');w.style.width=inline;if(mw)w.style.setProperty('--mw',mw);return b;}
   function apply(){const w=world();if(!w)return;
-    if(!enabled||z<=1.001){z=1;trail.classList.remove('zoomed');w.style.width='';trail.scrollLeft=0;return;}
-    if(!base)base=measureBase();trail.classList.add('zoomed');w.style.width=f(base*z)+'px';}
+    if(!enabled||z<=1.001){z=1;trail.classList.remove('zoomed');w.style.width='';w.style.removeProperty('--mw');trail.scrollLeft=0;return;}
+    if(!base)base=measureBase();trail.classList.add('zoomed');w.style.width=f(base*z)+'px';w.style.setProperty('--mw',f(base*z)+'px');}
   const f=v=>Math.round(v*10)/10;
   function setZoom(next,focal){const w=world();if(!w||!enabled)return;next=clamp(next);if(Math.abs(next-z)<.001)return;
     if(!base)base=measureBase();

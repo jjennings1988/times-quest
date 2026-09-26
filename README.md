@@ -133,6 +133,25 @@ See [the opening slice and verification guide](OPENING-EXPEDITION.md),
 [the prior learning upgrade checklist](LEARNING-UPGRADE-CHECKLIST.md).
 Tests now include test/opening.js for the complete first expedition.
 
+## One hand-drawn map — 0.39 beta (testing)
+
+- **Landmarks drawn in the same hand as the land:** bridges, the lighthouse, the
+  harbour and its boats, Twin Towers and every realm landmark are now baked into
+  the painted paper (chart-bake.js). They're rasterised once, then redrawn with
+  lines that wander slightly, pigment that catches the paper's grain, hatched
+  mid-tones, and colours held between sepia ink and the paper, so they match the
+  trees and rivers in both colour and Pencil. Smoke, flags, water, lights,
+  travellers and lettering stay live on top. Each set of landmarks is baked once
+  (a fraction of a second) and cached offline; a newly restored landmark stays
+  live for its reveal and is baked on the next visit.
+- **Eight Ice Caves:** now a cave mouth cut into the foot of its own ice
+  mountain, with the Long Glacier redrawn as a tapering tongue of ice (ogives,
+  crevasses, moraines) that curves down off the mountain to the river's source.
+- **Room above the summit:** the map continues past its top edge into open paper
+  (400 chart units), so you can scroll up past Mount Twelve. The land fades
+  softly into it, with a far range sketched in, clouds, the chart's title, and
+  pencilled notes about the view from the top.
+
 ## Pencil map — 0.38.1 beta (testing)
 
 - A **Pencil** button beside the map's zoom buttons shows the whole hand-drawn

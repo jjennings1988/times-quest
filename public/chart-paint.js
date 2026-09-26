@@ -4,7 +4,7 @@
    paint() is a generator: the caller decides how much to draw per slice. */
 (function(root){
   'use strict';
-  const VERSION=15; // bump whenever the drawing changes, so cached charts are redrawn
+  const VERSION=16; // bump whenever the drawing changes, so cached charts are redrawn
   const TAU=Math.PI*2,INK='rgba(52,36,22,.95)',INK2='rgba(52,36,22,.5)';
   // The season the map is painted in (0.38): spring blossom, summer green, autumn gold, winter snow.
   let SEASON='summer';
@@ -212,17 +212,17 @@
 
   /* ---------- the painting ---------- */
   function* paint(ctx,world,opts){
-    const{scale=1,makeCanvas}=opts,{W,H,G,GW,GH}=world,R=CW.rng(7),N=[CW.noise(11),CW.noise(29),CW.noise(53),CW.noise(71)];SEASON=opts.season||'summer';
+    const{scale=1,makeCanvas}=opts,{W,H,G,GW,GH}=world,TOP=CW.TOP,R=CW.rng(7),N=[CW.noise(11),CW.noise(29),CW.noise(53),CW.noise(71)];SEASON=opts.season||'summer';
     const stats={sprites:0};
-    ctx.setTransform(scale,0,0,scale,0,0);
-    // 1. Paper: warm stock, foxing and fibres.
-    ctx.fillStyle='#efe3c4';ctx.fillRect(0,0,W,H);
-    for(let i=0;i<240;i++){const x=R()*W,y=R()*H,r=40+R()*150,g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,`rgba(${R()<.55?'170,128,66':'255,250,236'},.075)`);g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2);}
-    batch(ctx,'rgba(130,100,60,.07)',.5,line=>{for(let i=0;i<5200;i++){const x=R()*W,y=R()*H,a=R()*TAU;line(x,y,x+Math.cos(a)*6,y+Math.sin(a)*6);}});
+    ctx.setTransform(scale,0,0,scale,0,TOP*scale);
+    // 1. Paper: warm stock, foxing and fibres, over the whole sheet including the margin above the land.
+    ctx.fillStyle='#efe3c4';ctx.fillRect(0,-TOP,W,H+TOP);
+    for(let i=0;i<240;i++){const x=R()*W,y=R()*(H+TOP)-TOP,r=40+R()*150,g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,`rgba(${R()<.55?'170,128,66':'255,250,236'},.075)`);g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2);}
+    batch(ctx,'rgba(130,100,60,.07)',.5,line=>{for(let i=0;i<5200;i++){const x=R()*W,y=R()*(H+TOP)-TOP,a=R()*TAU;line(x,y,x+Math.cos(a)*6,y+Math.sin(a)*6);}});
     yield 'paper';
     // 2. Watercolour washes, at half resolution (watercolour is soft), with relief shading.
     const sw=Math.ceil(W/2),sh=Math.ceil(H/2),small=makeCanvas(sw,sh),sc=small.getContext('2d'),img=sc.createImageData(sw,sh),D=img.data;
-    for(let j=0;j<sh;j++){for(let i=0;i<sw;i++){const x=i*2+1,y=j*2+1,k=(j*sw+i)*4,la=Math.max(0,Math.min(1,(world.landAt(x,y)+8)/34));if(la<=0)continue;
+    for(let j=0;j<sh;j++){for(let i=0;i<sw;i++){const x=i*2+1,y=j*2+1,k=(j*sw+i)*4,la=Math.max(0,Math.min(1,(world.landAt(x,y)+8)/34))*Math.min(1,Math.max(0,(y+6-(N[1](x/60,3)-.5)*30)/66));if(la<=0)continue;
         const w=world.waterAt(x,y)+(N[2](x/9,y/9)-.5)*2.6,gran=N[2](x*.9,y*.9)-.5,low=N[0](x/70,y/70);let r,g,b,a;
         if(w>0){const depth=Math.min(1,w/26),edge=Math.max(0,1-w/3)*38;r=146-depth*72-edge;g=188-depth*60-edge;b=190-depth*28-edge*.6;a=.66+depth*.22;}
         else{const c=world.washAt(x,y),h0=world.heightAt(x-3,y-3),h1=world.heightAt(x+3,y+3),lit=Math.max(.64,Math.min(1.2,1-(h0-h1)*4.2)),hh=world.heightAt(x,y),kind=world.kindAt(x,y);
@@ -235,9 +235,9 @@
     sc.putImageData(img,0,0);ctx.imageSmoothingEnabled=true;ctx.imageSmoothingQuality='high';ctx.drawImage(small,0,0,W,H);small.width=small.height=1;
     // Pigment granulation over everything, like cold-pressed paper.
     const tile=makeCanvas(96,96),tc=tile.getContext('2d'),TR=CW.rng(3);for(let i=0;i<900;i++){tc.fillStyle=`rgba(${TR()<.5?'90,70,40':'255,250,235'},${.05+TR()*.12})`;tc.fillRect(TR()*96,TR()*96,.6+TR()*1.4,.6+TR()*1.4);}
-    ctx.save();ctx.fillStyle=ctx.createPattern(tile,'repeat');ctx.globalAlpha=.9;ctx.fillRect(0,0,W,H);ctx.restore();
-    if(SEASON==='winter'){const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'rgba(250,251,252,.62)');g.addColorStop(.45,'rgba(246,248,250,.34)');g.addColorStop(1,'rgba(244,246,248,.18)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);}
-    if(SEASON==='autumn'){ctx.fillStyle='rgba(206,150,70,.07)';ctx.fillRect(0,0,W,H);}
+    ctx.save();ctx.fillStyle=ctx.createPattern(tile,'repeat');ctx.globalAlpha=.9;ctx.fillRect(0,-TOP,W,H+TOP);ctx.restore();
+    if(SEASON==='winter'){const g=ctx.createLinearGradient(0,-TOP,0,H);g.addColorStop(0,'rgba(250,251,252,.62)');g.addColorStop(.45,'rgba(246,248,250,.34)');g.addColorStop(1,'rgba(244,246,248,.18)');ctx.fillStyle=g;ctx.fillRect(0,-TOP,W,H+TOP);}
+    if(SEASON==='autumn'){ctx.fillStyle='rgba(206,150,70,.07)';ctx.fillRect(0,-TOP,W,H+TOP);}
     // Blooms: where the wet wash pooled and dried a little darker or lighter.
     for(let i=0;i<140;i++){const x=R()*W,y=R()*H;if(world.landAt(x,y)<10||world.waterAt(x,y)>0)continue;const r=50+R()*110,c=world.washAt(x,y),k=R()<.5?.84:1.1,g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,`rgba(${c[0]*k|0},${c[1]*k|0},${c[2]*k|0},.1)`);g.addColorStop(.7,`rgba(${c[0]*k|0},${c[1]*k|0},${c[2]*k|0},.08)`);g.addColorStop(1,'rgba(0,0,0,0)');ctx.fillStyle=g;ctx.beginPath();ctx.ellipse(x,y,r,r*(.5+R()*.4),R()*Math.PI,0,TAU);ctx.fill();}
     yield 'wash';
@@ -277,14 +277,25 @@
     const wob=(x,y)=>(N[3](x*.08,y*.08)-.5)*.9;
     batch(ctx,'rgba(52,36,22,.92)',1.2,line=>contour(world.sdf,GW,GH,G,0,(x,y)=>world.landAt(x,y)>-10,(a,b,c,d)=>line(a+wob(a,b),b-wob(a,b),c+wob(c,d),d-wob(c,d))));
     for(const r of world.RIVERS)for(let k=-1;k<=1;k++){if(r.w[1]<8&&k)continue;const pts=r.path,n=pts.length;batch(ctx,'rgba(40,70,86,.42)',.55,line=>{for(let i=2;i<n-3;i+=6+((k+2)%3)){if(R()<.3)continue;const[x,y]=pts[i],[x2,y2]=pts[i+2],a=Math.atan2(y2-y,x2-x)+Math.PI/2,o=k*(r.w[0]+(r.w[1]-r.w[0])*i/n)*.22;line(x+Math.cos(a)*o,y+Math.sin(a)*o,x2+Math.cos(a)*o,y2+Math.sin(a)*o);}});}
-    // The glacier that feeds the great river, tumbling down from the ice fields.
-    {const spine=CW.spline([[800,150],[764,206],[716,262],[670,306],[640,334]],4),n=spine.length,left=[],right=[];
-      spine.forEach(([x,y],i)=>{const q=spine[Math.min(n-1,i+1)],p=spine[Math.max(0,i-1)],a=Math.atan2(q[1]-p[1],q[0]-p[0])+Math.PI/2,w=30-18*i/n+(N[1](x/20,y/20)-.5)*6;left.push([x+Math.cos(a)*w,y+Math.sin(a)*w]);right.push([x-Math.cos(a)*w,y-Math.sin(a)*w]);});
-      const shape=[...left,...right.reverse()];poly(ctx,shape,'rgba(232,242,246,.96)');
-      clip(ctx,shape,()=>{ctx.fillStyle='rgba(120,168,190,.28)';path(ctx,[...left.slice(0),...left.slice().reverse().map(([x,y])=>[x-10,y-4])]);ctx.fill();
-        batch(ctx,'rgba(60,110,140,.6)',.5,line=>{for(let i=3;i<n-2;i+=2){const[x,y]=spine[i],q=spine[i+1],a=Math.atan2(q[1]-y,q[0]-x)+Math.PI/2,w=30-18*i/n;for(let k=-2;k<=2;k++){if(R()<.35)continue;const o=k*w*.32,cx=x+Math.cos(a)*o,cy=y+Math.sin(a)*o,l=2+R()*4;line(cx-Math.cos(a)*l,cy-Math.sin(a)*l+1.2,cx+Math.cos(a)*l,cy+Math.sin(a)*l+1.2);}}});
-        ctx.fillStyle='rgba(120,110,96,.5)';for(let i=0;i<n;i+=1){const[x,y]=spine[i];for(let k=0;k<2;k++){ctx.beginPath();ctx.arc(x+(R()-.5)*8,y+(R()-.5)*8,.6+R()*.6,0,TAU);ctx.fill();}}});
-      poly(ctx,shape,null,'rgba(52,70,84,.85)',.9);}
+    // The glacier that feeds the great river: a tongue of ice curving down off the Ice Caves' mountain, banded with ogives,
+    // split by crevasses at its margins and edged with moraine, ending in a blunt snout where the river is born.
+    {const spine=CW.spline([[826,112],[800,160],[768,210],[742,254],[712,292],[676,318],[642,334]],3),n=spine.length,left=[],right=[],WD=i=>{const t=i/(n-1);return 25-15*t+(N[1](i*.07,4)-.5)*7;};
+      spine.forEach(([x,y],i)=>{const q=spine[Math.min(n-1,i+1)],p=spine[Math.max(0,i-1)],a=Math.atan2(q[1]-p[1],q[0]-p[0])+Math.PI/2,w=WD(i),jl=(N[3](x/14,y/14)-.5)*4,jr=(N[3](x/14+9,y/14)-.5)*4;left.push([x+Math.cos(a)*(w+jl),y+Math.sin(a)*(w+jl)]);right.push([x-Math.cos(a)*(w+jr),y-Math.sin(a)*(w+jr)]);});
+      const[ex,ey]=spine[n-1],[px,py]=spine[n-4],da=Math.atan2(ey-py,ex-px),snout=[];for(let k=1;k<8;k++){const a=da+Math.PI/2-k/8*Math.PI,w=WD(n-1);snout.push([ex+Math.cos(a)*w*.9+Math.cos(da)*w*.5*Math.sin(k/8*Math.PI),ey+Math.sin(a)*w*.9+Math.sin(da)*w*.5*Math.sin(k/8*Math.PI)]);}
+      const shape=[...left,...snout,...right.reverse()];
+      poly(ctx,shape,'rgba(236,244,247,.95)');
+      clip(ctx,shape,()=>{
+        // Shade on the far side, and a cool wash down the middle.
+        const sh=ctx.createLinearGradient(left[0][0],left[0][1],right[0][0],right[0][1]);sh.addColorStop(0,'rgba(120,160,184,.34)');sh.addColorStop(.5,'rgba(170,200,214,.12)');sh.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=sh;ctx.fillRect(560,90,300,280);
+        // Ogives: shallow arcs across the ice, bowed downstream.
+        batch(ctx,'rgba(78,120,146,.42)',.5,line=>{for(let i=6;i<n-4;i+=7){const[x,y]=spine[i],q=spine[i+1],a=Math.atan2(q[1]-y,q[0]-x),nx=Math.cos(a+Math.PI/2),ny=Math.sin(a+Math.PI/2),w=WD(i)*.92;let lx=x+nx*w,ly=y+ny*w;for(let k=1;k<=12;k++){const t=k/12*2-1,bow=(1-t*t)*w*.35,cx=x-nx*w*t+Math.cos(a)*bow,cy=y-ny*w*t+Math.sin(a)*bow;line(lx,ly,cx,cy);lx=cx;ly=cy;}}});
+        // Crevasses where the ice pulls at its edges.
+        batch(ctx,'rgba(52,86,108,.62)',.55,line=>{for(let i=4;i<n-3;i+=3){if(R()<.4)continue;const[x,y]=spine[i],q=spine[i+1],a=Math.atan2(q[1]-y,q[0]-x),nx=Math.cos(a+Math.PI/2),ny=Math.sin(a+Math.PI/2),w=WD(i);for(const side of[-1,1]){if(R()<.35)continue;const o=side*w*(.62+R()*.26),cx=x+nx*o,cy=y+ny*o,l=2+R()*3.4;line(cx-nx*l*.2-Math.cos(a)*l*.5,cy-ny*l*.2-Math.sin(a)*l*.5,cx+nx*l*.2+Math.cos(a)*l*.5*(R()-.5),cy+ny*l*.2+Math.sin(a)*l*.5*(R()-.5));}}});
+        // A medial moraine: a dotted stripe of rubble down the middle.
+        ctx.fillStyle='rgba(110,98,84,.5)';for(let i=10;i<n;i+=2){const[x,y]=spine[i];ctx.beginPath();ctx.arc(x+(R()-.5)*2.4,y+(R()-.5)*2.4,.45+R()*.45,0,TAU);ctx.fill();}});
+      // Lateral moraines: rubble spilled along both banks, and a firm, slightly broken outline.
+      ctx.fillStyle='rgba(120,106,88,.55)';for(const edge of[left,right])for(let i=0;i<edge.length;i+=2){const[x,y]=edge[i];ctx.beginPath();ctx.arc(x+(R()-.5)*3,y+(R()-.5)*3,.5+R()*.6,0,TAU);ctx.fill();}
+      ctx.strokeStyle='rgba(52,70,84,.8)';ctx.lineWidth=.8;ctx.lineJoin='round';for(let i=0;i<shape.length-1;i++){if(R()<.06)continue;ctx.beginPath();ctx.moveTo(shape[i][0],shape[i][1]);ctx.lineTo(shape[i+1][0],shape[i+1][1]);ctx.stroke();}}
     // Soundings: depths lettered across the lake, as on a pilot's chart.
     try{ctx.font='italic 5px Georgia, serif';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='rgba(40,74,90,.75)';
       for(let y=world.LAKE.y-50;y<=world.LAKE.y+50;y+=15)for(let x=world.LAKE.x-110;x<=world.LAKE.x+110;x+=19){const jx=x+((y/15)%2?9:0),d=world.waterAt(jx,y);if(d<9)continue;if(jx<432&&Math.abs(y-1140)<48)continue;if(Math.abs(jx-514)<60&&Math.abs(y-1158)<9)continue;if(world.ISLANDS.some(i=>Math.hypot(jx-i.x,y-i.y)<i.rx+8))continue;ctx.fillText(String(Math.max(1,Math.round(d/3.4))),jx,y);}}catch(e){}
@@ -330,6 +341,18 @@
       if(lane.footbridge){const wet=pts.filter(([x,y])=>world.waterAt(x,y)>-1.2);if(wet.length){const a=wet[0],b=wet[wet.length-1],an=Math.atan2(b[1]-a[1],b[0]-a[0]),L=Math.hypot(b[0]-a[0],b[1]-a[1])+8;
         ctx.save();ctx.translate(a[0],a[1]);ctx.rotate(an);ctx.fillStyle='#b48a58';ctx.fillRect(-4,-1.8,L,3.6);ctx.strokeStyle='rgba(60,36,18,.55)';ctx.lineWidth=.3;ctx.beginPath();for(let x=-3;x<L-4;x+=1.3){ctx.moveTo(x,-1.8);ctx.lineTo(x,1.8);}ctx.stroke();ctx.strokeStyle=INK;ctx.lineWidth=.45;ctx.beginPath();ctx.moveTo(-4,-2.1);ctx.lineTo(L-4,-2.1);ctx.moveTo(-4,2.1);ctx.lineTo(L-4,2.1);ctx.stroke();ctx.restore();}}}
     yield 'roads';
+    // The top edge of the land dissolves into blank paper: soft, uneven washes of bare paper over the linework.
+    {const RR=CW.rng(61);for(let x=-40;x<=W+40;x+=26){const cy=-22+(N[1](x/90,5)-.5)*56,r=70+RR()*50,g=ctx.createRadialGradient(x,cy,0,x,cy,r);g.addColorStop(0,'rgba(239,227,196,.95)');g.addColorStop(.55,'rgba(239,227,196,.7)');g.addColorStop(1,'rgba(239,227,196,0)');ctx.fillStyle=g;ctx.fillRect(x-r,cy-r,r*2,r*2);}
+      ctx.save();ctx.fillStyle=ctx.createPattern(tile,'repeat');ctx.globalAlpha=.55;ctx.fillRect(0,-60,W,170);ctx.restore();}
+    // The margin above: one far range sketched lightly, a few clouds and birds; the rest is left for notes.
+    {const RR=CW.rng(77),rn=CW.noise(78),ridge=[];for(let x=-10;x<=W+10;x+=3){const v=Math.pow(rn(x/46,1),2.2)*1.3+rn(x/13,4)*.25;ridge.push([x,-26-v*52]);}
+      ctx.strokeStyle='rgba(70,58,44,.3)';ctx.lineWidth=.6;ctx.lineJoin='round';ctx.beginPath();let on=false;for(const[x,y]of ridge){if(rn(x/20,9)<.2){on=false;continue;}on?ctx.lineTo(x,y):ctx.moveTo(x,y);on=true;}ctx.stroke();
+      // Shade: short strokes down the slopes that face away from the light.
+      batch(ctx,'rgba(70,58,44,.2)',.4,line=>{for(let i=1;i<ridge.length;i++){const[x,y]=ridge[i],[px,py]=ridge[i-1];if(y<=py||RR()<.35)continue;const l=6+RR()*14*Math.min(1,(-26-y)/30+.3);line(x,y+.6,x-1.2,y+l);}});
+      const cloud=(cx,cy,s)=>{ctx.beginPath();let x=cx-s*1.6;ctx.moveTo(x,cy);for(const[dx,r]of[[.5,.5],[1,.8],[1.1,.6],[.7,.45]]){const nx=x+dx*s;ctx.arc((x+nx)/2,cy,(nx-x)/2,Math.PI,0);x=nx;}ctx.lineTo(cx-s*1.6,cy);ctx.stroke();
+        ctx.beginPath();for(let k=0;k<5;k++){const hx=cx-s*1.2+k*s*.55;ctx.moveTo(hx,cy-1);ctx.lineTo(hx+s*.3,cy-s*.28);}ctx.stroke();};
+      ctx.strokeStyle='rgba(84,72,58,.32)';ctx.lineWidth=.55;for(const[cx,cy,s]of[[150,-316,22],[690,-338,26],[590,-262,16],[250,-150,14],[420,-356,18]])cloud(cx,cy,s);
+      ctx.strokeStyle='rgba(60,48,36,.5)';ctx.lineWidth=.6;ctx.beginPath();for(const[bx,by,bs]of[[632,-196,4],[646,-204,3.2],[618,-208,2.6],[250,-262,3.4],[268,-268,2.6]]){ctx.moveTo(bx-bs,by);ctx.quadraticCurveTo(bx-bs*.4,by-bs*.6,bx,by);ctx.quadraticCurveTo(bx+bs*.4,by-bs*.6,bx+bs,by);}ctx.stroke();}
     // 8. Everything that stands up, painted back to front.
     const sprites=[],nodes=world.NODES,CN=CW.noise(313),clear=(x,y,r)=>nodes.some((n,i)=>{if(i>=13)return false;const a=Math.atan2(y-n.y,x-n.x);return Math.hypot(x-n.x,(y-n.y)*1.15)<r*(.5+CN(Math.cos(a)*1.4+i*5,Math.sin(a)*1.4)*.85);})||lm.clear.some(([cx,cy,cr])=>Math.hypot(x-cx,y-cy)<cr)||world.VILLAGES.some(v=>Math.hypot(x-v.x-3,y-v.y+5)<19)||world.SETTLEMENTS.some(q=>Math.hypot(x-q.x,(y-q.y)*1.3)<world.SETTLE_R[q.kind])||world.FIELD_PATCHES.some(([cx,cy,,c,r])=>Math.abs(x-cx)<c*11&&Math.abs(y-cy)<r*8)||Object.values(world.SITES).some(q=>Math.hypot(x-q.x,(y-q.y)*1.2)<q.r)||nearRoad(x,y);
     // Mount Twelve, the summit massif, stands over everything in the north.
@@ -339,12 +362,14 @@
     const blended=(m,draw,fade=.32)=>{const pad=8,bw=m.w+pad*2,bh=m.h+pad*2,W2=Math.ceil(bw*scale)+2,H2=Math.ceil(bh*scale)+2;
       sx.setTransform(1,0,0,1,0,0);sx.clearRect(0,0,W2,H2);sx.setTransform(scale,0,0,scale,(m.w/2+pad-m.x)*scale,(m.h+pad-m.y)*scale);draw(sx);
       sx.globalCompositeOperation='destination-out';const g=sx.createLinearGradient(0,m.y-m.h*fade,0,m.y+2);g.addColorStop(0,'rgba(0,0,0,0)');g.addColorStop(.65,'rgba(0,0,0,.5)');g.addColorStop(1,'rgba(0,0,0,.96)');sx.fillStyle=g;sx.fillRect(m.x-m.w/2-pad,m.y-m.h*fade,m.w+pad*2,m.h*fade+pad);sx.globalCompositeOperation='source-over';
-      ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(scratch,0,0,W2,H2,Math.floor((m.x-m.w/2-pad)*scale),Math.floor((m.y-m.h-pad)*scale),W2,H2);ctx.restore();
+      ctx.save();ctx.setTransform(1,0,0,1,0,0);ctx.drawImage(scratch,0,0,W2,H2,Math.floor((m.x-m.w/2-pad)*scale),Math.floor((m.y-m.h-pad+TOP)*scale),W2,H2);ctx.restore();
       // Where the slope meets the ground: a soft shadow and a few fall-lines running out onto the plain.
       shadowAt(ctx,m.x+m.w*.12,m.y-m.h*.05,m.w*.5,Math.max(1.6,m.h*.08),.1);
       ctx.strokeStyle='rgba(70,52,32,.34)';ctx.lineWidth=.45;ctx.beginPath();for(let i=0;i<Math.max(3,Math.round(m.w/7));i++){const t=R(),x=m.x-m.w*.46+t*m.w*.92,y0=m.y-m.h*(.14+R()*.1),d=(t-.5)*2;ctx.moveTo(x,y0);ctx.quadraticCurveTo(x+d*2,y0+m.h*.08,x+d*4,y0+m.h*.16+2);}ctx.stroke();};
     const onSite=(x,y,w,h)=>Object.values(world.SITES).some(q=>x+w/2>q.x-q.r*1.5&&x-w/2<q.x+q.r*1.5&&y>q.y-q.r*1.6&&y-h<q.y+q.r*.8)||world.SETTLEMENTS.some(q=>{const r=world.SETTLE_R[q.kind];return x+w/2>q.x-r*1.2&&x-w/2<q.x+r*1.2&&y>q.y-r&&y-h<q.y+r*.7;});
     const top=nodes[13],massif={x:top.x,y:top.y+160,w:330,h:230,style:'storm',peaks:[{t:.5,h:1,s:.52},{t:.24,h:.62,s:.3},{t:.8,h:.7,s:.28},{t:.66,h:.48,s:.18}]};sprites.push({y:top.y+160,draw:()=>blended(massif,c=>mountain(c,massif,CW.rng(12)),.22)});
+    // Eight Ice Caves open into the foot of their own ice mountain.
+    {const q=world.SITES[8],host={x:q.x+4,y:q.y+22,w:196,h:146,style:'ice',peaks:[{t:.46,h:1,s:.42},{t:.2,h:.58,s:.24},{t:.76,h:.74,s:.3}]};sprites.push({y:host.y-30,draw:()=>blended(host,c=>mountain(c,host,CW.rng(88)),.3)});}
     // Peaks: random candidates, tallest first, each keeping its own ground.
     const peaks=[],cands=[];for(let i=0;i<5200;i++){const x=R()*W,y=R()*H;if(!onLand(x,y)||world.landAt(x,y)<20)continue;const h=world.heightAt(x,y),kind=world.kindAt(x,y);if(kind==='meadow'||kind==='fields'||kind==='marsh')continue;if(h>.46)cands.push({x,y,h,kind});}
     cands.sort((a,b)=>b.h-a.h);
@@ -399,8 +424,8 @@
     for(let i=0;i<1400;i++){const x=R()*W,y=1560+R()*(H-1560),w=world.waterAt(x,y);if(w<2||w>10)continue;ctx.fillStyle='rgba(104,140,74,.9)';ctx.beginPath();ctx.ellipse(x,y,2.2,1.3,0,.25,TAU-.25);ctx.lineTo(x,y);ctx.fill();ctx.strokeStyle='rgba(40,60,30,.7)';ctx.lineWidth=.35;ctx.stroke();if(R()<.12){ctx.fillStyle='#f4d6e0';ctx.beginPath();ctx.arc(x+.6,y-.5,.8,0,TAU);ctx.fill();}}
     // The map as an object: folded in six, its corners worn, a tea ring from a long night of planning.
     const crease=(x0,y0,x1,y1,vertical)=>{const g=vertical?ctx.createLinearGradient(x0-5,0,x0+5,0):ctx.createLinearGradient(0,y0-5,0,y0+5);g.addColorStop(0,'rgba(90,64,30,0)');g.addColorStop(.42,'rgba(90,64,30,.1)');g.addColorStop(.5,'rgba(255,252,240,.22)');g.addColorStop(.58,'rgba(90,64,30,.06)');g.addColorStop(1,'rgba(90,64,30,0)');ctx.fillStyle=g;if(vertical)ctx.fillRect(x0-5,y0,10,y1-y0);else ctx.fillRect(x0,y0-5,x1-x0,10);};
-    crease(W/2,0,W/2,H,true);crease(0,H/3,W,H/3,false);crease(0,2*H/3,W,2*H/3,false);
-    for(const[cx,cy]of[[0,0],[W,0],[0,H],[W,H]]){const g=ctx.createRadialGradient(cx,cy,0,cx,cy,110);g.addColorStop(0,'rgba(120,80,30,.26)');g.addColorStop(1,'rgba(120,80,30,0)');ctx.fillStyle=g;ctx.fillRect(cx-110,cy-110,220,220);}
+    const FH=H+TOP;crease(W/2,-TOP,W/2,H,true);crease(0,FH/3-TOP,W,FH/3-TOP,false);crease(0,2*FH/3-TOP,W,2*FH/3-TOP,false);
+    for(const[cx,cy]of[[0,-TOP],[W,-TOP],[0,H],[W,H]]){const g=ctx.createRadialGradient(cx,cy,0,cx,cy,110);g.addColorStop(0,'rgba(120,80,30,.26)');g.addColorStop(1,'rgba(120,80,30,0)');ctx.fillStyle=g;ctx.fillRect(cx-110,cy-110,220,220);}
     {const tx=636,ty=1706;ctx.strokeStyle='rgba(140,90,40,.2)';ctx.lineWidth=2.2;ctx.beginPath();for(let i=0;i<=40;i++){const a=i/40*TAU,r=17+(N[1](Math.cos(a)*2,Math.sin(a)*2)-.5)*3;i?ctx.lineTo(tx+Math.cos(a)*r,ty+Math.sin(a)*r):ctx.moveTo(tx+Math.cos(a)*r,ty+Math.sin(a)*r);}ctx.stroke();ctx.fillStyle='rgba(160,110,50,.05)';ctx.fill();}
     yield 'done';
     return stats;
@@ -411,8 +436,10 @@
   function pencilize(src,dst){const s=src.data,d=dst.data;for(let i=0;i<s.length;i+=4){const L=(s[i]*.3+s[i+1]*.55+s[i+2]*.15)/255;let k=Math.max(0,Math.min(1,(.9-L)*1.35));k=Math.pow(k,1.15)*.82;d[i]=238+(78-238)*k;d[i+1]=229+(72-229)*k;d[i+2]=206+(66-206)*k;d[i+3]=255;}return dst;}
 
   /* Resolution buckets: fine enough for the screen, capped for phone memory. */
+  /* The painted sheet in canvas pixels: the land plus the margin above it. */
+  const sheet=scale=>({w:Math.round(CW.W*scale),h:Math.round((CW.H+CW.TOP)*scale)});
   function scaleFor(cssWidth,dpr){const want=Math.min(dpr||1,2)*cssWidth/864;return want<=1?1:want<=1.5?1.5:2;}
 
-  const api={VERSION,paint,renderAll,pencilize,scaleFor,seasonFor,houseFeatures,drawHouse,contour,shade,NULL_CTX};
+  const api={VERSION,paint,renderAll,pencilize,scaleFor,sheet,seasonFor,houseFeatures,drawHouse,contour,shade,NULL_CTX};
   root.ChartPaint=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);
