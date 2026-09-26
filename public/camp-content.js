@@ -30,26 +30,37 @@
     bench:{name:'Log Bench',w:2,h:1,layer:'solid',price:12,wood:2,rotate:true,action:'Sit together'},
     lantern:{name:'Lantern',w:1,h:1,layer:'solid',price:8,wood:0,art:'camp-light-t1.png'},
     path:{name:'Stone Path',w:1,h:1,layer:'surface',price:3,wood:0,connect:'path'},
-    deck:{name:'Wooden Deck',w:1,h:1,layer:'surface',price:4,wood:1},
+    deck:{name:'Wooden Deck',w:1,h:1,layer:'surface',price:2,wood:0,connect:'deck'},
+    // Seed plots: lay them out in rows and columns and the garden becomes an array.
+    plot:{name:'Seed Plot',w:1,h:1,layer:'surface',price:1,wood:0,connect:'plot'},
+    // Things that give a little every day you visit (0.44). Nothing withers while you are away.
+    fruittree:{name:'Apple Tree',w:1,h:1,layer:'solid',price:20,wood:2,need:2,action:'Pick apples',daily:3},
+    beehive:{name:'Beehive',w:1,h:1,layer:'solid',price:24,wood:3,need:4,action:'Collect honey',daily:4},
+    // A home for a companion from the expedition team: they move in and come back to it.
+    critterhome:{name:'Creature Cottage',w:1,h:1,layer:'solid',price:18,wood:3,action:'Visit'},
     pine:{name:'Great Pine',w:2,h:2,layer:'solid',price:15,wood:0,art:'camp-garden-t4.png'},
     feeder:{name:'Bird Feeder',w:1,h:1,layer:'solid',price:12,wood:2,art:'camp-life-bird-feeder.png',action:'Watch birds'},
     fence:{name:'Picket Fence',w:1,h:1,layer:'solid',price:2,wood:1,rotate:true,next:'palisade',connect:'wall'},
     gate:{name:'Garden Gate',w:1,h:1,layer:'surface',price:5,wood:2,rotate:true,action:'Walk through',next:'fortgate',connect:'wall'},
     palisade:{name:'Timber Palisade',w:1,h:1,layer:'solid',price:7,wood:4,need:5,next:'stonewall',rotate:true,connect:'wall'},
     fortgate:{name:'Fort Gate',w:1,h:1,layer:'surface',price:16,wood:8,need:6,next:'stonegate',rotate:true,connect:'wall',action:'Walk through'},
-    stonewall:{name:'Stone Wall',w:1,h:1,layer:'solid',price:10,wood:0,stone:5,need:9,rotate:true,connect:'wall'},
-    stonegate:{name:'Stone Gateway',w:1,h:1,layer:'surface',price:24,wood:4,stone:12,need:10,rotate:true,connect:'wall',action:'Walk through'},
-    lodge:{name:'Timber Lodge',w:3,h:3,layer:'solid',price:90,wood:22,stone:4,need:6,next:'stonehome',action:'Rest'},
-    stonehome:{name:'Stone Cottage',w:3,h:3,layer:'solid',price:120,wood:12,stone:30,need:9,next:'keep',action:'Rest'},
-    keep:{name:'Stone Keep',w:4,h:3,layer:'solid',price:180,wood:16,stone:55,need:11,action:'Rest'},
-    well:{name:'Garden Well',w:1,h:1,layer:'solid',price:18,wood:5,stone:4,need:3,next:'stonewell',action:'Draw water'},
-    stonewell:{name:'Courtyard Well',w:1,h:1,layer:'solid',price:25,wood:3,stone:12,need:10,action:'Draw water'},
+    stonewall:{name:'Stone Wall',w:1,h:1,layer:'solid',price:8,wood:0,stone:3,need:9,rotate:true,connect:'wall'},
+    stonegate:{name:'Stone Gateway',w:1,h:1,layer:'surface',price:20,wood:4,stone:8,need:10,rotate:true,connect:'wall',action:'Walk through'},
+    lodge:{name:'Timber Lodge',w:3,h:3,layer:'solid',price:70,wood:16,stone:4,need:6,next:'stonehome',action:'Rest'},
+    stonehome:{name:'Stone Cottage',w:3,h:3,layer:'solid',price:95,wood:12,stone:20,need:9,next:'keep',action:'Rest'},
+    keep:{name:'Stone Keep',w:4,h:3,layer:'solid',price:140,wood:16,stone:34,need:11,action:'Rest'},
+    well:{name:'Garden Well',w:1,h:1,layer:'solid',price:18,wood:5,stone:3,need:3,next:'stonewell',action:'Draw water'},
+    stonewell:{name:'Courtyard Well',w:1,h:1,layer:'solid',price:25,wood:3,stone:8,need:10,action:'Draw water'},
     tower:{name:'Timber Watchtower',w:2,h:2,layer:'solid',price:45,wood:16,stone:3,need:7,action:'Look out'},
     cobble:{name:'Cobblestone Path',w:1,h:1,layer:'surface',price:4,wood:0,stone:1,need:11,connect:'path'},
     flowerbed:{name:'Flower Border',w:1,h:1,layer:'solid',price:5,wood:0,need:2},
-    moat:{name:'Moat Channel',w:1,h:1,layer:'water',price:9,wood:0,stone:4,need:13,connect:'moat'},
+    moat:{name:'Moat Channel',w:1,h:1,layer:'water',price:9,wood:0,stone:3,need:13,connect:'moat'},
     drawbridge:{name:'Drawbridge',w:1,h:1,layer:'surface',price:22,wood:10,stone:4,need:13,rotate:true,action:'Walk through'}
   };
+  // Each restored family sends its signature build as a ready-to-place kit, once. Gems then buy extras.
+  const kits={1:{fence:6,gate:1},2:{flowerbed:4,lantern:1},3:{canvas:1,well:1},4:{cabin:1,bench:1},5:{palisade:8},6:{fortgate:1,lodge:1},7:{tower:1},8:{palisade:8,pine:1},9:{stonewall:8,stonehome:1},10:{stonegate:1,stonewell:1},11:{keep:1,cobble:10},12:{stonewall:10},13:{moat:6,drawbridge:1}};
+  // The trophy garden: realm keepsakes arrive around the Story Stones, one spot per realm (map order), with fallbacks.
+  const trophySpots=[[-8,-2],[-6,-2],[-4,-2],[-2,-2],[-2,0],[-2,2],[-2,4],[-4,4],[-6,4],[-8,4],[-8,2],[-8,0],[-1,-3],[-3,-3],[-5,-3],[-7,-3],[-1,1],[-1,3]];
   const zones=[
     {id:'grove',name:'Woodland Grove',x:-4,y:5,w:4,h:5,need:1},
     {id:'north',name:'North Meadow',x:0,y:-4,w:12,h:4,need:4},
@@ -69,7 +80,15 @@
     {id:'inn',type:'townhall',x:36,y:0,w:4,h:3},{id:'mill',type:'lodge',x:21,y:13,w:3,h:3},
     {id:'rosehouse',type:'townhouse',x:39,y:22,w:3,h:3},{id:'bluehouse',type:'townhouse',x:45,y:22,w:3,h:3},{id:'gardenhouse',type:'townhouse',x:51,y:22,w:3,h:3}];
   const locations=[{id:'store',name:'Willowbrook Supply Store',x:26,y:4},{id:'fish',name:'Fishing Dock',x:14,y:8},
-    {id:'sanctuary',name:'Guardian Grove',x:71,y:3},{id:'market',name:'Market Square',x:31,y:-9},{id:'gardens',name:'Rosewater Gardens',x:49,y:19},{id:'mill',name:'Willow Watermill',x:23,y:17}];
+    {id:'sanctuary',name:'Guardian Grove',x:71,y:3},{id:'bakery',name:'Honeycrust Bakery',x:31,y:4},{id:'library',name:'Willow Library',x:25,y:-3},{id:'inn',name:'The Willow Inn',x:38,y:4},{id:'workshop',name:'Tink’s Workshop',x:34,y:-3},{id:'market',name:'Market Square',x:31,y:-9},{id:'gardens',name:'Rosewater Gardens',x:49,y:19},{id:'mill',name:'Willow Watermill',x:23,y:17}];
+  // The people of Willowbrook: where they work, how they look, and something new to say each day.
+  const villagers=[
+    {id:'mara',name:'Mara',role:'storekeeper',place:'store',x:26.6,y:3.4,coat:'#7fa59a',skin:'#c28d67',hat:'#b35e40',lines:['Fish from the river are worth their weight in stone, you know.','A fishing rod opens a whole river of trips.','Orders today! Crates never pack themselves.','Your camp is the talk of the market.']},
+    {id:'bram',name:'Bram',role:'baker',place:'bakery',x:31.8,y:3.5,coat:'#f1e6cf',skin:'#dba575',hat:'#fbf7ee',lines:['Six trays of four makes twenty-four fine buns.','The oven is warm. Fancy a baking order?','Flour on my nose again, I expect.','Honeycrust rolls rise best in rows.']},
+    {id:'wren',name:'Wren',role:'librarian',place:'library',x:25.8,y:-3.6,coat:'#6486a1',skin:'#a87654',hat:'#46586e',lines:['Every fact you build is written in the album.','Shh… the postcards are on the wall.','A garden of facts, one bed at a time.','Did you know 7 × 8 is 56? I write it everywhere.']},
+    {id:'oak',name:'Old Oak',role:'innkeeper',place:'inn',x:38.6,y:3.5,coat:'#8a5a3a',skin:'#c28d67',hat:'#5b3f28',lines:['Check the notice board: a guardian has asked for you.','Travellers say your camp has the best fire in the valley.','The inn keeps a room for every explorer.','News from the realms arrives every evening.']},
+    {id:'tink',name:'Tink',role:'tinker',place:'workshop',x:34.8,y:-3.6,coat:'#b35e40',skin:'#dba575',hat:'#e0b24a',lines:['Bring me any home and I will show you its next shape.','A lick of paint makes any tent your own.','Planks, pegs and patience. That is all it takes.','Gears and hinges: all neatly in rows.']},
+    {id:'millie',name:'Millie',role:'miller',place:'mill',x:23.6,y:16.4,coat:'#9caf71',skin:'#a87654',hat:'#e8dcc0',lines:['The wheel shares the logs out fair and even.','Twenty logs in four stacks? Five each, of course.','The stream never stops turning.','Fair shares make good planks.']}];
   const guardianKinds=['ghost','bunny','fox','monkey','turtle','frog','bee','wolf','penguin','owl','robot','parrot','dragon'];
   // Rendering, tree clearing and navigation share one authored world layout.
   const bounds={minX:-36,maxX:86,minY:-24,maxY:44};
@@ -119,6 +138,6 @@
     for(const {open} of cells.values())result[open?'openCells':'futureCells']++;
     return result;
   }
-  root.CampContent={order,milestones,catalog,zones,town,locations,guardianPads,grove,groveFence,guardianTrail,bounds,roads,roadAt,civic,offers,inZone,mask,corner,landGrid};
+  root.CampContent={order,milestones,catalog,kits,trophySpots,villagers,zones,town,locations,guardianPads,grove,groveFence,guardianTrail,bounds,roads,roadAt,civic,offers,inZone,mask,corner,landGrid};
   if(typeof module!=='undefined'&&module.exports)module.exports=root.CampContent;
 })(typeof window!=='undefined'?window:globalThis);

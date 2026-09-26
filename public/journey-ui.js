@@ -23,9 +23,26 @@ function creditLearningRound(qz,extra=0,deferDelivery=false){
 }
 function checkpointRound(nextIndex=quiz?.idx){if(!quiz)return;state.journey.resume=JSON.parse(JSON.stringify({...quiz,idx:nextIndex,answer:'',locked:false}));}
 function resumeRound(){const saved=state.journey.resume;if(!LearningJourney.validResume(saved)){state.journey.resume=null;saveState();showScreen('screen-map');return;}lastConfig={fn:resumeRound,args:[]};startQuiz({resume:saved,mode:saved.mode,fams:saved.fams,queue:saved.queue});}
+/* One wallet: state.gems is the only gem balance. Every reward already lands there, and the camp spends it.
+   The first time, a camp that kept its own balance merges by taking the larger of the two, never the sum. */
+const CAMP_WELCOME_GEMS=30;
+function syncCampWallet(){
+  if(!state.campV2||!CampV2.validSave(state.campV2))return;
+  if(!state.walletUnified){state.gems=Math.max(Math.floor(Number(state.gems)||0),state.campV2.gems+(state.journey.pendingGems||0));state.walletUnified=1;}
+  if(state.campV2.gems!==state.gems)state.campV2={...state.campV2,gems:Math.max(0,Math.floor(Number(state.gems)||0))};
+}
+/* A new camp starts from the one wallet, with a small welcome gift so the first build is possible. */
+function createCamp(){
+  const camp=state.journey.openingEdition?CampV2.freshExpedition():CampV2.fresh();
+  if(!state.campWelcomeGift){state.gems=Math.floor(Number(state.gems)||0)+CAMP_WELCOME_GEMS;state.campWelcomeGift=1;}
+  state.walletUnified=1;camp.gems=state.gems;return camp;
+}
 function deliverCampGrants(){
   if(!state.campV2||!CampV2.validSave(state.campV2))return;
-  if(state.journey.pendingGems)state.campV2=CampV2.awardLearning(CampV2.syncProgress(state.campV2,campMasteredCount(),isCampTester()),state.journey.pendingGems);
+  syncCampWallet();
+  // Round gems are already in the wallet; a finished round still refreshes wood, stone and river trips.
+  if(state.journey.pendingGems)state.campV2=CampV2.awardLearning(CampV2.syncProgress(state.campV2,campMasteredCount(),isCampTester()),0);
+  else state.campV2=CampV2.syncProgress(state.campV2,campMasteredCount(),isCampTester());
   if(state.journey.riverKit&&!state.journey.riverKitDelivered){
     const next=JSON.parse(JSON.stringify(state.campV2));
     for(const [type,count] of [['path',6],['deck',2],['lantern',1]])next.inventory[type]=Math.min(10000,(next.inventory[type]||0)+count);
@@ -33,7 +50,10 @@ function deliverCampGrants(){
   }
   // Each restored realm sends one keepsake to the camp backpack, once.
   {const delivered=state.journey.keepsakesDelivered||(state.journey.keepsakesDelivered=[]);const due=REALM_ORDER.filter(f=>state.realms[f]?.conquered&&!delivered.includes(f)&&CampV2.catalog['keepsake'+f]);
-    if(due.length){const next=JSON.parse(JSON.stringify(state.campV2));for(const f of due){next.inventory['keepsake'+f]=Math.min(10000,(next.inventory['keepsake'+f]||0)+1);delivered.push(f);}next.revision++;state.campV2=next;}}
+    if(due.length){let next=JSON.parse(JSON.stringify(state.campV2));for(const f of due){next.inventory['keepsake'+f]=Math.min(10000,(next.inventory['keepsake'+f]||0)+1);delivered.push(f);}next.revision++;
+    for(const f of due)next=CampV2.autoPlace(next,'keepsake'+f,Math.max(0,REALM_ORDER.indexOf(f))).save;state.campV2=next;}
+   // Once (0.40): keepsakes delivered before the trophy garden existed walk out of the backpack to the Story Stones.
+   if(!state.journey.keepsakeGarden){let next=state.campV2;for(const f of REALM_ORDER)if((next.inventory['keepsake'+f]||0)>0&&!next.objects.some(o=>o.type==='keepsake'+f))next=CampV2.autoPlace(next,'keepsake'+f,Math.max(0,REALM_ORDER.indexOf(f))).save;state.campV2=next;state.journey.keepsakeGarden=1;}}
   if(state.journey.zeroKit&&!state.journey.zeroKitDelivered){
     const next=JSON.parse(JSON.stringify(state.campV2));
     next.inventory.trailtent=(next.inventory.trailtent||0)+1;next.openingIntro=true;next.revision++;
@@ -188,10 +208,11 @@ function chooseEncounterSplit(a,b,showGroups=false){
 function campGoalView(type=state.journey.goal){
   let camp=state.campV2||(state.journey.openingEdition?CampV2.freshExpedition():CampV2.fresh());
   if(!CampV2.validSave(camp))return {recoveryRequired:true};
-  // Project the same delivery as entering camp, without claiming or spending it.
-  camp=CampV2.syncProgress(camp,campMasteredCount(),isCampTester());
-  const pending=state.journey.pendingGems||0;
-  if(pending)camp=CampV2.awardLearning(camp,pending);
+  // Project the same delivery as entering camp, without claiming or spending it. Gems come from the one wallet.
+  const round=state.journey.pendingGems||0,wallet=!state.campV2?Math.floor(Number(state.gems)||0)+(state.campWelcomeGift?0:CAMP_WELCOME_GEMS):state.walletUnified?state.gems:Math.max(Math.floor(Number(state.gems)||0),camp.gems+round);
+  camp=CampV2.syncProgress({...camp,gems:wallet},campMasteredCount(),isCampTester());
+  if(round)camp=CampV2.awardLearning(camp,0);
+  const pending=0;
   const inventory={...camp.inventory};
   if(state.journey.zeroKit&&!state.journey.zeroKitDelivered)inventory.trailtent=(inventory.trailtent||0)+1;
   if(state.journey.riverKit&&!state.journey.riverKitDelivered)for(const [id,count] of [['path',6],['deck',2],['lantern',1]])inventory[id]=(inventory[id]||0)+count;
@@ -243,7 +264,31 @@ function improveMapNavigation(){
   const summit=document.querySelector('.summit-node .realm-bubble');summit.setAttribute('role','button');summit.tabIndex=allConquered()?0:-1;summit.setAttribute('aria-disabled',String(!allConquered()));summit.setAttribute('aria-label','Mount Twelve summit');summit.onkeydown=e=>{if(allConquered()&&(e.key==='Enter'||e.key===' ')){e.preventDefault();startSummit();}};
   let controls=$('journey-map-controls');if(!controls){controls=document.createElement('div');controls.id='journey-map-controls';$('screen-map').append(controls);}
   const due=dueFactEntries(3),resume=state.journey.current;
-  controls.innerHTML=`<button onclick="centerExplorer()" aria-label="Find my explorer">⌖</button><button onclick="showRealmList()" aria-label="Choose a realm">Realms</button>${due.length?`<button onclick="startShortReview()">Revisit ${due.length} facts</button>`:''}${resume?'<button onclick="resumeLesson()">Resume lesson</button>':''}`;
+  controls.innerHTML=`${typeof useChartMap==='function'&&useChartMap()?'<button onclick="MapZoom.step(-1)" aria-label="Zoom out of the map">−</button><button onclick="MapZoom.step(1)" aria-label="Zoom in to the map">+</button><button onclick="toggleChartPencil()" aria-pressed="${!!state.settings.chartPencil}" aria-label="Pencil map, without colour">Pencil</button><button onclick="showMapKey()" aria-label="What the map symbols mean">Key</button>':''}<button onclick="centerExplorer()" aria-label="Find my explorer">⌖</button><button onclick="showRealmList()" aria-label="Choose a realm">Realms</button>${due.length?`<button onclick="startShortReview()">Revisit ${due.length} facts</button>`:''}${resume?'<button onclick="resumeLesson()">Resume lesson</button>':''}`;
+}
+/* Pencil: the whole chart as it looks before a realm is restored, lights and all. */
+function toggleChartPencil(){state.settings.chartPencil=!state.settings.chartPencil;saveState();
+  document.querySelector('#journey-map-controls [aria-label^="Pencil map"]')?.setAttribute('aria-pressed',String(state.settings.chartPencil));
+  document.querySelector('.chart-root')?.classList.toggle('pencil',state.settings.chartPencil);}
+/* The map key: each symbol is drawn in the same ink as the chart. */
+function showMapKey(){
+  const I='#3b2a1c',sym=(d,label)=>`<li><svg viewBox="0 0 44 30" aria-hidden="true">${d}</svg><span>${label}</span></li>`,
+    road=`<path d="M2 22 Q22 14 42 20" stroke="#a0784a" stroke-width="3" fill="none"/>`,water=`<path d="M0 12 Q22 20 44 10 V30 H0Z" fill="#a8cbd6"/>`;
+  const rows=[
+    sym(`${water}<path d="M10 17 Q22 8 34 17" stroke="${I}" stroke-width="3" fill="#cdbb98"/><path d="M13 17 v4 M31 17 v4" stroke="${I}" stroke-width="1.2"/>`,'Stone bridge'),
+    sym(`${water}<path d="M8 17h28" stroke="#a0784a" stroke-width="3" stroke-dasharray="3 2"/><circle cx="15" cy="18" r="1.4" fill="#8f877c"/><circle cx="27" cy="17" r="1.6" fill="#8f877c"/>`,'Ford, over stepping stones'),
+    sym(`${water}<path d="M6 13 L38 21" stroke="${I}" stroke-width=".6" stroke-dasharray="1.5 1.5"/><path d="M16 17 h12 l-2 3 h-8z" fill="#8b5a32" stroke="${I}" stroke-width=".6"/>`,'Ferry crossing'),
+    sym(`${road}<path d="M20 20 v-9 q2 -3 4 0 v9z" fill="#d8ceb8" stroke="${I}" stroke-width=".8"/><text x="22" y="17" font-size="5" text-anchor="middle" fill="${I}">3</text>`,'Milestone on the road'),
+    sym(`<path d="M12 24 V13 L20 7 L28 13 V24Z" fill="#e8dcc0" stroke="${I}" stroke-width=".8"/><path d="M11 13 L20 6 L29 13" fill="none" stroke="#8f3a26" stroke-width="2"/><path d="M30 10 h8 M34 10 v4" stroke="${I}" stroke-width=".8"/><rect x="31" y="14" width="6" height="5" fill="#e0b24a" stroke="${I}" stroke-width=".5"/>`,'Inn, with its sign'),
+    sym(`${[[8,22],[20,18],[31,23]].map(([x,y])=>`<path d="M${x} ${y} v-6 l5 -4 l5 4 v6z" fill="#e8dcc0" stroke="${I}" stroke-width=".7"/><path d="M${x-1} ${y-6} l6 -5 l6 5" fill="none" stroke="#8f3a26" stroke-width="1.4"/>`).join('')}`,'Village or town'),
+    sym(`${water}<path d="M12 22 V12 L19 7 L26 12 V22Z" fill="#e8dcc0" stroke="${I}" stroke-width=".8"/><circle cx="31" cy="17" r="6" fill="none" stroke="#6b4527" stroke-width="1.4"/><path d="M31 11 v12 M25 17 h12" stroke="#6b4527" stroke-width=".8"/>`,'Water mill'),
+    sym(`<path d="M6 26 Q22 2 38 26Z" fill="#b6aea4" stroke="${I}" stroke-width=".8"/><path d="M17 26 v-7 q5 -5 10 0 v7z" fill="#2a2018"/><path d="M15 26 l5 -3 M22 26 l6 -3" stroke="#8b5a32" stroke-width="1"/>`,'Mine'),
+    sym(`<ellipse cx="22" cy="19" rx="8" ry="4" fill="#a8cbd6" stroke="${I}" stroke-width=".6"/><path d="M22 18 q-2 -6 0 -9 q2 3 0 9" fill="#e8f4f8" stroke="#5f9fb2" stroke-width=".6"/>`,'Spring'),
+    sym(`<rect x="8" y="5" width="28" height="20" rx="2" fill="#e9dcb8" stroke="${I}" stroke-width=".7"/><path d="M12 11h20M12 15h16M12 19h18" stroke="rgba(59,42,28,.45)" stroke-width=".8"/>`,'Parchment: a realm still to explore'),
+    sym(`<path d="M22 4 l5 10 l11 1.5 l-8 7.5 l2 11 l-10 -5.5 l-10 5.5 l2 -11 l-8 -7.5 l11 -1.5z" transform="translate(0 -2) scale(1 .9)" fill="#e6b84a" stroke="#8a6212" stroke-width=".8"/>`,'Gold leaf: a realm mastered'),
+    sym(`<path d="M6 24 L14 10 L22 24Z" fill="#e8dcc0" stroke="${I}" stroke-width=".7"/><path d="M22 24 L29 12 L36 24Z" fill="#c0503a" stroke="${I}" stroke-width=".7"/><path d="M29 12 V5 h5 l-1 2 l1 2 h-5" fill="#e0b24a" stroke="${I}" stroke-width=".4"/>`,'Willowbrook, your camp'),
+  ];
+  openQuestCard(`<section class="journey-card"><h2>Reading the map</h2><p>This chart is drawn the way old maps were. Here is what the marks mean.</p><ul class="map-key">${rows.join('')}</ul><p><small>A league is forty chart steps; the bar at the foot of the map shows two. Pencil notes in the margins were left by an earlier traveller.</small></p><button class="btn gold" onclick="closeQuestCard()">Back to the map</button></section>`);
 }
 function startShortReview(){const due=dueFactEntries(3);if(!due.length){toast('Your review is up to date');return;}lastConfig={fn:startShortReview,args:[]};startQuiz({mode:'review',fams:unlockedFamilies(),queue:due.map(([k])=>{const [a,b]=k.split('*').map(Number);return makeQ(a,b);}),timed:false,title:'A visit with familiar facts'});}
 let parentOpenPanels=new Set();

@@ -156,7 +156,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[role="button"]:
   background:linear-gradient(90deg,rgba(57,26,12,.14),transparent 8%,transparent 92%,rgba(57,26,12,.14));
   box-shadow:inset 0 0 42px rgba(63,31,14,.22);
 }
-.map-world{position:relative;left:50%;width:clamp(720px,184vw,1044px);aspect-ratio:864/1821;transform:translateX(-50%);isolation:isolate}
+.map-world{--mw:clamp(720px,184vw,1044px);position:relative;left:50%;width:var(--mw);aspect-ratio:864/1821;transform:translateX(-50%);isolation:isolate}
 .map-art{position:absolute;z-index:0;inset:0;background:url('art/map/bg-adventure-map.webp') center/100% 100% no-repeat}
 .map-route{position:absolute;z-index:1;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;filter:drop-shadow(0 2px 0 rgba(255,244,205,.42))}
 .map-route-segment{fill:none;stroke:#6A482E;stroke-width:4;stroke-dasharray:2 10;stroke-linecap:round;vector-effect:non-scaling-stroke;opacity:.52}
@@ -214,7 +214,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[role="button"]:
 @media(max-width:520px){
   /* Keep every landmark on its map coordinate, but show a wider slice of the
      world and use compact pins so the edge realms remain tappable on phones. */
-  .map-world{width:clamp(480px,132vw,600px)}
+  .map-world{--mw:clamp(480px,132vw,600px)}
   .realm-node{width:100px}
   .realm-bubble{width:64px;height:64px;min-width:64px;border-width:3px;font-size:27px}
   .realm-node .meta{min-width:100px;max-width:100px;padding:4px 5px 5px}
@@ -1073,6 +1073,9 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
 <script src="chart-paint.js"></script>
 <script src="chart-realms.js"></script>
 <script src="chart-landmarks.js"></script>
+<script src="chart-lore.js"></script>
+<script src="chart-bake.js"></script>
+<script src="map-zoom.js"></script>
 <script src="map-chart.js"></script>
 <script src="device-check.js"></script>
 <script src="learning-journey.js"></script>
@@ -1475,7 +1478,7 @@ const RATING_LABEL = ["undiscovered","discovered","befriending","befriending","c
    Defaults below reproduce the game's original behaviour exactly, so an
    existing save that predates settings plays identically until something
    is changed on purpose. */
-const APP_VERSION = '0.34.3-beta.1';
+const APP_VERSION = '0.43.0-beta.1';
 const FAST_MS = 4000;          // default bonus window
 const WINDOW_CHOICES = [3000,4000,6000,8000];
 const ROUND_CHOICES  = [8,12,16];
@@ -1491,6 +1494,7 @@ const PREF_DEFAULTS = {
   clicks: true,     // keypad tap sounds
   ambience: false,  // optional, low-volume Base Camp soundscape
   chartMap: false,  // testing: the hand-drawn, code-painted adventure map
+  chartPencil: false, // the hand-drawn map in pencil only, as it looks before a realm is restored
 };
 const fastMs   = () => state.settings.window;
 const roundLen = () => state.settings.roundLen;
@@ -1903,12 +1907,15 @@ const sfx = {
   gem(){ beep(1200,.07,"triangle"); },
 };
 function prefersReducedMotion(){ return !!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
-function stopCampAmbience(){
+/* Camp sounds: a thunk and sparkle when something is built, a chime for a new fact, coins for Mara's orders. */
+function campSound(kind){if(!state.settings.sound)return;if(kind==='build'){tone(150,.09,'triangle',.16);setTimeout(()=>tone(1320,.06,'sine',.05),70);}else if(kind==='fact')sfx.win();else if(kind==='coin'){beep(1200,.07,'triangle');setTimeout(()=>beep(1500,.08,'triangle'),90);}}
+let campBirds=0;
+function stopCampAmbience(){clearInterval(campBirds);campBirds=0;
   try{ if(ambientGain&&audioCtx) ambientGain.gain.setTargetAtTime(.0001,audioCtx.currentTime,.08); if(ambientSource) ambientSource.stop(audioCtx.currentTime+.25); }catch(e){}
   ambientSource=null;ambientGain=null;
 }
 function syncCampAmbience(){
-  const inCamp=$('screen-camp')&&$('screen-camp').classList.contains('active');
+  const inCamp=['screen-camp','screen-camp-v2'].some(id=>$(id)&&$(id).classList.contains('active'));
   if(!state||!state.settings.ambience||state.settings.calm||prefersReducedMotion()||!inCamp||document.hidden){ stopCampAmbience();return; }
   if(ambientSource) return;
   try{
@@ -1918,6 +1925,8 @@ function syncCampAmbience(){
     const source=audioCtx.createBufferSource(),filter=audioCtx.createBiquadFilter(),gain=audioCtx.createGain();
     filter.type='lowpass';filter.frequency.value=780;gain.gain.value=.018;source.buffer=buffer;source.loop=true;
     source.connect(filter);filter.connect(gain);gain.connect(audioCtx.destination);source.start();ambientSource=source;ambientGain=gain;
+    // Now and then a bird calls from the woods.
+    campBirds=setInterval(()=>{if(!ambientSource||document.hidden)return;if(Math.random()<.55){const f=2200+Math.random()*900;tone(f,.07,'sine',.018);setTimeout(()=>tone(f*1.18,.09,'sine',.014),110);}},5200);
   }catch(e){ stopCampAmbience(); }
 }
 
@@ -1931,7 +1940,7 @@ function showScreen(id){
     state.journey.preferredCamp='v2';
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
     $('screen-camp-v2').classList.add('active');document.body.classList.add('camp-world-open');
-    $('nav').style.display='none';stopCampAmbience();enterCampV2();return;
+    $('nav').style.display='none';enterCampV2();syncCampAmbience();return;
   }
   if(id!=='screen-camp'){
     campUndo=null;
@@ -2134,7 +2143,7 @@ const MAP_POSITIONS=[
 /* Everything the map's surroundings reflect about the child's learning. */
 function mapLoreData(){
   const unlocked=unlockedFamilies(),profile=profileById();
-  return {night:!!state.campV2?.night,calm:!!(state.settings.calm||prefersReducedMotion()),explorer:profile?.name||'',
+  return {night:!!state.campV2?.night,calm:!!(state.settings.calm||prefersReducedMotion()),explorer:profile?.name||'',chart:useChartMap(),
     positions:MAP_POSITIONS,allRestored:allConquered(),summitDone:!!state.summitDone,
     realms:REALM_ORDER.map(f=>({family:f,name:REALMS[f].name,pet:REALMS[f].petName,color:REALMS[f].color,unlocked:unlocked.includes(f),restored:!!state.realms[f].conquered,stars:realmStars(f).stars,trail:factTrailProgress(f).count,strategyNote:LearningJourney.lesson(f).idea}))};
 }
@@ -2144,7 +2153,9 @@ function mapChartData(){
   const lore=mapLoreData();
     const stage=f=>ChartLandmarks.stageFor({trial:!!state.realms[f].trial,conquered:!!state.realms[f].conquered,stars:realmStars(f).stars});
   return {stages:Object.fromEntries(REALM_ORDER.map(f=>[f,stage(f)])),
-    all:!!state.summitDone,calm:lore.calm,sky:window.MapBackdrop?MapBackdrop.skyNow(lore):'day',profile:String(activeProfileId||'solo')};
+    all:!!state.summitDone,calm:lore.calm,pencil:!!state.settings.chartPencil,
+    // What the chart shows about learning: open realms, Fact Trail milestones, stars, the finished map.
+    lore:{realms:lore.realms.map(q=>({family:q.family,unlocked:q.unlocked,trail:q.trail,stars:q.stars})),explorer:lore.explorer,allRestored:lore.allRestored,summitDone:lore.summitDone},sky:window.MapBackdrop?MapBackdrop.skyNow(lore):'day',profile:String(activeProfileId||'solo')};
 }
 function mapRouteSvg(completedCount){
   const width=864,height=1821;
@@ -2168,9 +2179,11 @@ function renderMap(){
   const unlocked=unlockedFamilies();
   const completedCount=conquestCount();
   const chart=useChartMap();
-  trail.innerHTML=`<div class="map-world"><div class="map-art${chart?' map-chart':''}" aria-hidden="true"></div>${mapRouteSvg(completedCount)}</div>`;
+  trail.innerHTML=`<div class="map-world${chart?' charted':''}"><div class="map-art${chart?' map-chart':''}" aria-hidden="true"></div>${mapRouteSvg(completedCount)}</div>`;
+  if(window.MapZoom){MapZoom.setEnabled(chart);MapZoom.apply();}
   if(!chart&&window.MapChart)MapChart.release();
   const world=trail.querySelector('.map-world');
+  if(chart){const c=ChartWorld.CAMP,pin=document.createElement('button');pin.className='camp-pin';pin.type='button';pin.style.cssText=`left:${c.x/ChartWorld.W*100}%;top:${(c.y+4)/ChartWorld.H*100}%`;pin.setAttribute('aria-label','Willowbrook, your camp. Visit your camp');pin.innerHTML='<span class="pin"></span><b>Willowbrook</b><small>your camp</small>';pin.onclick=()=>visitCamp();world.append(pin);}
   // summit node at the final background landmark
   const summit=document.createElement('div');
   summit.className='summit-node';
@@ -2187,7 +2200,7 @@ function renderMap(){
     const progress=realmProgress(fam),stars=progress.stars;
     const node=document.createElement('div');
     const point=MAP_POSITIONS[i];
-    node.className=`realm-node ${isUnlocked?'':'locked'} ${isHere?'here':''} ${state.realms[fam].conquered?'conquered':''}`;
+    node.className=`realm-node ${isUnlocked?'':'locked'} ${isHere?'here':''} ${state.realms[fam].conquered?'conquered':''} ${chart&&stars===3?'gilded':''}`;
     node.style.cssText=`left:${point.x}%;top:${point.y}%`;
     node.innerHTML=`
       <div class="realm-bubble" style="background:${r.color}"><span class="realm-number">×${fam}</span>${isUnlocked?realmCharacter(fam):'🔒'}
@@ -3733,7 +3746,7 @@ function enterCampV2(){
   if(campV2Session)return;
   const host=$('screen-camp-v2');
   if(!window.CampV2){campRecoveryScreen('missing-module');return;}
-  if(!state.campV2)state.campV2=state.journey.openingEdition?CampV2.freshExpedition():CampV2.fresh();
+  if(!state.campV2)state.campV2=createCamp();
   deliverCampGrants();
   if(!CampV2.validSave(state.campV2)){campRecoveryScreen('invalid-save');return;}
   state.campV2=CampV2.syncProgress(state.campV2,campMasteredCount(),isCampTester());
@@ -3741,11 +3754,21 @@ function enterCampV2(){
   const owner=activeProfileId;
   try{
   campV2Session=CampV2.mount(host,{profileId:owner,currentProfileId:()=>activeProfileId,
-    getSave:()=>state.campV2,setSave:next=>{if(owner===activeProfileId){state.campV2=next;saveState();}},
+    getSave:()=>state.campV2,setSave:next=>{if(owner===activeProfileId){state.campV2=next;state.gems=next.gems;saveState();updateChips();}},
     guardians:REALM_ORDER.map(family=>({family,name:REALMS[family].petName,color:REALMS[family].color,defeated:!!state.realms[family].conquered})),
     companions:state.campMonsterFavorites.map(key=>{const [a,b]=key.split('*').map(Number);return {key,a,b,...monsterIdentity(a,b)};}),
+    // With no team chosen yet, guardians from restored realms wander over to visit instead.
+    visitors:REALM_ORDER.filter(f=>state.realms[f].conquered).slice(-2).map(f=>({art:`art/realm/pet-${f}.png`,name:REALMS[f].petName})),
+    today:Math.floor(Date.parse(dateKey())/864e5),
+    postcards:()=>{try{return JSON.parse(localStorage.getItem('tq-postcards:'+owner)||'[]');}catch{return [];}},
+    savePostcard:url=>{try{const list=JSON.parse(localStorage.getItem('tq-postcards:'+owner)||'[]');localStorage.setItem('tq-postcards:'+owner,JSON.stringify([url,...list].slice(0,3)));}catch{}},
+    onSound:campSound,onToggleSound:()=>{state.settings.ambience=!state.settings.ambience;saveState();syncCampAmbience();},soundOn:()=>!!state.settings.ambience,
     onCompanion:(a,b)=>{showScreen('screen-monsters');openMonsterCard(a,b);},
     tester:isCampTester(),reviewQuestions:campReviewQuestions,onReview:recordCampReview,
+    // One guardian from the grove makes a request each day, shaped by its own family.
+    request:(()=>{const g=REALM_ORDER.filter(f=>state.realms[f].conquered);if(!g.length)return null;const f=g[(Math.floor(Date.now()/864e5)+5)%g.length];return {family:f,day:dateKey(),name:REALMS[f].petName};})(),
+    // The camp shares the adventure map's season.
+    season:window.ChartPaint?ChartPaint.seasonFor(new Date()):'summer',
     avatar:profileAvatar(),ownerName:(profileById()&&profileById().name)||'',explorerIndex:profileById()?.avatar??0,reducedMotion:()=>state.settings.calm||prefersReducedMotion(),
     goalMarkup:campGoalMarkup,
     // Guardians whose Fact Trail is complete take turns visiting the Story Stones, one per day; their keepsakes turn gold.
@@ -4214,6 +4237,7 @@ document.addEventListener('keydown',e=>{
   applyCalm();
   checkDaily();
   if(window.MapBackdrop)MapBackdrop.attach($('screen-map'),mapLoreData);
+  if(window.MapZoom)MapZoom.attach($('screen-map'),$('map-trail'),{onEnd:()=>{if(useChartMap()&&window.MapChart)MapChart.refresh();}});
   renderMap();
   updateChips();
   showTitle();

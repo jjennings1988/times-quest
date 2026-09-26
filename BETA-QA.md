@@ -48,6 +48,66 @@ The painted map stays the default; switching off returns it instantly.
   gains a celebration at 3 stars (flags, floating or sky lanterns, aurora,
   rainbow). Check each one sits beside its realm and is not hidden by the realm
   button, its label or the climber, in portrait on a phone.
+- **Learning details (0.35):** realms not yet open are blank parchment marked
+  "Uncharted"; each open realm has 13 milestones along its road, inked one by one
+  as Fact Trail facts are checked; a three-star realm's name is gold leaf with a
+  gold star by its landmark; the cartouche at the bottom is pencil until the
+  summit is conquered, then signed with the child's name. The old fog, dot arcs
+  and laurels should not appear on the hand-drawn map.
+- **Pinch-to-zoom (0.35):** pinch the map with two fingers (iPhone, iPad,
+  Android): it should zoom around your fingers, pan in every direction when
+  zoomed, never zoom the whole page, and realm buttons stay the same size. Check
+  the − / + buttons, "find my explorer" while zoomed, and that one-finger
+  scrolling still feels normal. Slide to one side while zoomed, then zoom all the
+  way out: the map should glide back and end exactly centred (0.35.1). Note whether the chart sharpens a moment after a
+  big zoom.
+- **A lived-in land (0.36):** town, village and farm names read clearly and don't
+  collide with realm labels; every lane reaches a road; signposts sit at
+  crossroads; roads run off the map edges with "to the …" signs.
+- **Water and wild (0.37):** Sevenfold Falls reads as a waterfall, not a ladder;
+  islands, rapids and the weir are labelled; travellers, the boat and geese move
+  by day and rest in Calm mode and at night.
+- **The map as an object (0.38):** the border, league numbers and scale bar frame
+  the map without covering realm buttons; the pencil notes are readable; the tree
+  colours match the current season (September to November is autumn); Willowbrook
+  sits west of Ashford and tapping it opens the camp; the Key button (hand-drawn
+  map only) opens a readable key and closes back to the map.
+- **Pencil (0.38.1):** tap Pencil: the colour fades out to graphite everywhere,
+  the button turns dark, and at night the windows and lamps still glow. Reload:
+  it stays in pencil. Tap again for colour.
+- **One hand-drawn map (0.39):** in both colour and Pencil, the bridges,
+  lighthouse, docks, boats, Twin Towers and realm landmarks should look drawn
+  on the paper like the trees, not pasted over them. Smoke, flags, fish and
+  lights still move. The first map visit after progress may show crisp landmarks
+  for a moment before they settle into the paper; note if that swap is jarring
+  or slow on a phone. Scroll to the very top: open paper, the title and notes
+  sit below the map buttons, and Mount Twelve's peak is whole. Zoom in and out:
+  the top margin grows and shrinks with the map. Eight Ice Caves (once unlocked)
+  sits in the foot of its mountain.
+- **Village with a heart (0.43):** tap the signpost by the camp's name sign: "Where
+  to?" hops you to any place. Each building has a readable sign and a villager at the
+  door; their line changes day to day. Bake at the bakery (trays of buns) and share
+  logs at the watermill (the answer is the share, not the total). The library shows
+  the fact album and, after taking a postcard, the picture on its wall.
+- **A living camp (0.42):** companions (or visiting guardians) wander the clearing
+  and sit by the fire at night; placing something makes them hop over, with sparkles.
+  Name the camp in the Journal: the header and the welcome sign by the path change.
+  Take a postcard: check the picture is the camp (not blank) on iPhone and iPad, and
+  that Save or Share works. Turn on Camp sounds and listen for birds; building thunks.
+  On an older iPhone, watch for stutter with three companions and the ink pass.
+- **Build with math (0.41):** build a full rectangle of seed plots with the build
+  brush, tap Done: a counting card appears. A wrong answer shows running row totals
+  without the last; a right one makes the bed bloom with a fact signpost and +3 gems
+  (only the first time for that fact). Try a deck rectangle too. At Mara's store,
+  "Pack today's order" shows crates (two per learning adventure). The Journal shows
+  today's guardian request; building what it asks unlocks "Show … · +10 gems".
+- **Willowbrook, one world (0.40):** the gem count is the same on the map, in camp
+  and after buying something at camp. An existing climber opening camp sees "New
+  things for your camp!" with a kit for each family restored, and their keepsakes
+  standing around the Story Stones. Kits place free. The camp looks inked and painted
+  (not flat low-poly), in the current season; at night the lines turn blue-grey.
+  On a phone only the ⌂ button shows at the side; ↶ ↷ appear while building. Note
+  the frame rate on an older iPhone; Low power (Journal) should remove the ink pass.
 - **Night:** the chart darkens with the map; windows, lanterns, the lighthouse
   beam, beacons and the power station orb glow above it.
 - **Check:** realm buttons, route and "You are here" sit exactly where they did

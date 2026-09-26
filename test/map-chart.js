@@ -42,6 +42,7 @@ const fakeCanvas=(w,h)=>({width:w,height:h,getContext:()=>ctx});
 const steps=[];const it=CP.paint(ctx,world,{scale:1,makeCanvas:fakeCanvas});let r;do{r=it.next();if(!r.done)steps.push(r.value);}while(!r.done);
 check('painting passes through every stage',['paper','wash','fields','contours','hachures','water','roads','sprites','done'].every(s=>steps.includes(s)));
 check('the chart is full of drawn things',r.value.sprites>3000);
+check('no mountain or mesa spreads across a realm landmark',r.value.peaks.length>40&&r.value.peaks.every(p=>Object.values(CW.SITES).every(q=>!(p.x+p.w/2>q.x-q.r*1.2&&p.x-p.w/2<q.x+q.r*1.2&&p.y>q.y-q.r*1.2&&p.y-p.h<q.y+q.r*.6))));
 const src={data:new Uint8ClampedArray([20,120,200,255,250,250,250,255])},dst={data:new Uint8ClampedArray(8)};CP.pencilize(src,dst);
 check('pencil turns colour into warm graphite on paper',dst.data[0]<dst.data[4]&&dst.data[4]>225&&dst.data[3]===255);
 check('resolution buckets stay within phone memory',CP.scaleFor(500,3)===1.5&&CP.scaleFor(1044,2)===2&&CP.scaleFor(300,1)===1);
@@ -84,9 +85,79 @@ check('the storm clears when the refuge is celebrated',grp(7,0).includes('cl-bol
 check('night lights sit above the darkened map',CL.glowMarkup({2:3}).includes('cgLamp')&&/host\.after\(glow\)/.test(fs.readFileSync(path.join(__dirname,'..','public','map-chart.js'),'utf8')));
 check('the marsh mist thins as Zero Marsh is restored',/dataset\.marsh/.test(fs.readFileSync(path.join(__dirname,'..','public','map-chart.js'),'utf8'))&&/data-marsh="0"/.test(fs.readFileSync(path.join(__dirname,'..','public','map-chart.css'),'utf8')));
 
+// 0.35: learning shown in the chart's own hand.
+const LORE=require('../public/chart-lore'),Z=require('../public/map-zoom');
+const lore=(over={})=>({realms:CW.ORDER.map((f,i)=>({family:f,unlocked:i<3,trail:i===0?13:i===1?5:0,stars:i===0?3:1})),explorer:'Ava',allRestored:false,summitDone:false,...over});
+const L0=LORE.markup(lore());
+check('unexplored realms are blank parchment, marked uncharted',(L0.match(/Uncharted/g)||[]).length===10&&L0.includes('url(#clParch)'));
+check('every Fact Trail has thirteen milestones along its road',LORE.MILESTONES.length===13&&LORE.MILESTONES.every(m=>m.length===13));
+check('milestones stand on land beside the road, not in the river or lake',LORE.MILESTONES.flat().every(([x,y])=>world.waterAt(x,y)<0));
+check('checked facts are inked milestones; the rest wait in pencil',(L0.match(/fill="#d6cbb0"/g)||[]).length===18&&(L0.match(/stroke-dasharray=".8 .6"/g)||[]).length===21);
+check('three stars earn a gold-leaf compass star',(L0.match(/cl-gilt/g)||[]).length===1);
+check('the cartouche waits unsigned until the summit is conquered',L0.includes('cl-cartouche pending')&&!L0.includes('cl-cart-name'));
+const done=LORE.markup(lore({allRestored:true,summitDone:true,explorer:'Zoë <b>'}));
+check('a finished map is signed with the explorer\u2019s name, safely',done.includes('Zoë &lt;b&gt;')&&!done.includes('<b>')&&done.includes('cl-seal'));
+check('Mount Twelve wears gold-leaf rays once every realm is restored',LORE.markup(lore({allRestored:true})).includes('cl-summit')&&!L0.includes('cl-summit'));
+check('the painted map keeps its own details; the chart draws its own',/if\(data\.chart\)/.test(fs.readFileSync(path.join(__dirname,'..','public','map-backdrop.js'),'utf8'))&&html.includes("chart&&stars===3?'gilded':''"));
+check('zoom stays between 1\u00d7 and 2.6\u00d7',Z.clamp(.5)===1&&Z.clamp(9)===2.6&&Z.clamp(1.7)===1.7);
+const kf=Z.keepFocal({x:.5,y:.25},{left:-200,top:-100,width:1000,height:2000},{x:300,y:400});
+check('zooming keeps the point under the fingers in place',kf.dx===0&&kf.dy===0);
+check('zooming out glides the map back to the middle',Z.recentre(500,200,2,1.5)===350&&Z.recentre(500,200,2,1)===200&&Z.recentre(500,200,1.5,2)===500);
+check('back at normal size no sideways scroll is left behind',/trail\.scrollLeft=0/.test(fs.readFileSync(path.join(__dirname,'..','public','map-zoom.js'),'utf8')));
+check('zoom is offered only on the hand-drawn map, with buttons for mouse and keyboard',html.includes('MapZoom.setEnabled(chart)')&&/MapZoom\.step\(1\)/.test(fs.readFileSync(path.join(__dirname,'..','public','journey-ui.js'),'utf8')));
+check('every chart file is cached for offline play, including 0.35',['chart-lore.js','map-zoom.js'].every(f=>fs.readFileSync(path.join(__dirname,'..','public','sw.js'),'utf8').includes(`./${f}`)));
+// 0.36: a lived-in land.
+check('the land is settled: a town, villages, farms, inns, mills and workings',['town','village','farm','inn','mill','mine','quarry','orchard','fold','woodcamp','copse'].every(k=>CW.SETTLEMENTS.some(q=>q.kind===k)));
+check('every settlement stands on dry land, clear of the realm buttons and landmarks',CW.SETTLEMENTS.every(q=>world.waterAt(q.x,q.y)<-4&&CW.NODES.every(n=>Math.hypot(n.x-q.x,n.y-q.y)>70)&&Object.values(CW.SITES).every(t=>Math.hypot(t.x-q.x,t.y-q.y)>t.r+14)));
+check('every town, village, farm and working has a lane to the road',CW.SETTLEMENTS.filter(q=>!['fold','orchard','copse'].includes(q.kind)).every(q=>world.LANES.some(l=>l.id===q.id)||[...CW.routePaths().flat(),...CW.SPURS.flatMap(t=>CW.spline(t,3))].some(([x,y])=>Math.hypot(x-q.x,y-q.y)<16)));
+check('lanes stay dry, or cross a brook on a footbridge (never the river)',world.LANES.every(l=>CW.spline(l.path,3).every(([x,y])=>world.waterAt(x,y)<(l.footbridge?4.5:-1.5))));
+check('roads run off the edge of the map toward a wider world',CW.SPURS.some(t=>t[t.length-1][0]<=0)&&CW.EDGE_SIGNS.length>=4);
+const LM=CL.markup(null,{},{});
+check('the map is named: towns in capitals, water in italics, regions spread wide',['Ashford','Millbrook','Twelve Oaks','Mill Beck','THE MIDLANDS'].every(t=>LM.includes(t))&&/cl-lab town/.test(LM)&&/cl-lab water/.test(LM)&&/cl-lab region/.test(LM));
+check('signposts point the way at the crossroads',(LM.match(/cl-signpost/g)||[]).length>=4);
+check('every settlement lights its windows at night',(CL.glowMarkup({}).match(/<polygon/g)||[]).length>60);
+// 0.37: water and wild.
+check('Sounding Lake has islands of dry land',CW.ISLANDS.length>=2&&CW.ISLANDS.every(i=>world.waterAt(i.x,i.y)<0&&world.waterAt(i.x+i.rx+8,i.y)>0));
+check('springs rise where the streams begin',CW.SPRINGS.every(p=>world.waterAt(p.x,p.y)>-4));
+const W1=CL.markup(null,{},{}),W2=CL.markup(null,{},{calm:true});
+check('Sevenfold Falls cascades in seven drops',W1.includes('Sevenfold Falls')&&(W1.match(/class="cl-fall"/g)||[]).length===10);
+check('travellers and a boat move on the roads and lake, and rest in Calm mode',(W1.match(/<animateMotion/g)||[]).length>=5&&!W2.includes('<animateMotion'));
+check('herds graze in the pastures, clear of the water',CW.HERDS.every(h=>world.waterAt(h.x,h.y)<-20));
+// 0.38: the map as an object.
+check('seasons follow the calendar',CP.seasonFor(new Date(2026,0,5))==='winter'&&CP.seasonFor(new Date(2026,3,5))==='spring'&&CP.seasonFor(new Date(2026,6,5))==='summer'&&CP.seasonFor(new Date(2026,9,5))==='autumn');
+{const r=s=>{const out=[];for(const v of CP.paint(ctx,world,{scale:1,makeCanvas:fakeCanvas,season:s}))out.push(v);return out[out.length-1];};check('every season paints to the end',['spring','summer','autumn','winter'].every(s=>r(s)==='done'));}
+const mapChartJs=fs.readFileSync(path.join(__dirname,'..','public','map-chart.js'),'utf8'),workerJs=fs.readFileSync(path.join(__dirname,'..','public','chart-worker.js'),'utf8');
+check('each season has its own cached chart, painted on or off the main thread',/chart-cache\/v\$\{CP\.VERSION\}\/\$\{season\(\)\}/.test(mapChartJs)&&/season:season\(\)/.test(mapChartJs)&&/renderAll\(ctx,world,\{scale,season/.test(workerJs));
+check('the chart has a neatline border, a scale bar in leagues and pencilled notes',W1.includes('cl-border')&&W1.includes('cl-scale')&&W1.includes('leagues')&&(W1.match(/class="cl-note"/g)||[]).length>=4);
+check('Willowbrook stands on dry ground in its own clearing, clear of the realms',world.waterAt(CW.CAMP.x,CW.CAMP.y)<-10&&CW.SETTLEMENTS.some(q=>q.kind==='camp'&&q.x===CW.CAMP.x)&&CW.NODES.every(n=>Math.hypot(n.x-CW.CAMP.x,n.y-CW.CAMP.y)>70)&&W1.includes('cl-camp'));
+check('tapping Willowbrook on the chart opens the camp',/camp-pin[\s\S]{0,400}visitCamp\(\)/.test(html));
+check('the map key explains the symbols, from the chart only',/showMapKey\(\)/.test(fs.readFileSync(path.join(__dirname,'..','public','journey-ui.js'),'utf8'))&&/function showMapKey/.test(fs.readFileSync(path.join(__dirname,'..','public','journey-ui.js'),'utf8')));
+const jui=fs.readFileSync(path.join(__dirname,'..','public','journey-ui.js'),'utf8'),mcss=fs.readFileSync(path.join(__dirname,'..','public','map-chart.css'),'utf8');
+check('a Pencil switch shows the whole chart uncoloured, remembered per climber',/chartPencil:\s*false/.test(html)&&/pencil:!!state\.settings\.chartPencil/.test(html)&&/function toggleChartPencil/.test(jui)&&/aria-pressed/.test(jui)&&/classList\.toggle\('pencil'/.test(mapChartJs));
+check('in pencil the ink is hidden and the living layer is graphite, but the night lights stay warm',/\.chart-root\.pencil \.chart-ink\{opacity:0\}/.test(mcss)&&/\.chart-root\.pencil \.chart-live\{filter:grayscale\(1\)/.test(mcss)&&!/pencil[^{]*chart-glow/.test(mcss));
 check('paint version is a positive integer',Number.isInteger(CP.VERSION)&&CP.VERSION>0);
 const sw=fs.readFileSync(path.join(__dirname,'..','public','sw.js'),'utf8'),core=sw.match(/const CORE = \[([\s\S]*?)\];/)[1];
 check('every chart file is cached for offline play',['chart-world.js','chart-paint.js','chart-landmarks.js','chart-worker.js','map-chart.js','map-chart.css'].every(f=>core.includes(`./${f}`)));
 check('app updates keep the painted chart cache',/k !== 'tq-chart'/.test(sw));
 check('the hand-drawn map starts switched off, behind a Parents switch',/chartMap:\s*false/.test(html)&&html.includes("toggleSetting('chartMap')"));
+// 0.39: a complete hand-crafted map.
+const CB=require('../public/chart-bake');
+check('the sheet reaches above the land, and the page makes room for exactly that margin',CW.TOP>=300&&CP.sheet(2).h===Math.round((CW.H+CW.TOP)*2)&&mcss.split(`margin-top:calc(var(--mw) * ${CW.TOP} / ${CW.W})`).length===3&&/--mw/.test(fs.readFileSync(path.join(__dirname,'..','public','map-zoom.js'),'utf8')));
+{let size=null;CL.maskURL({0:3},(w,h)=>{size=[w,h];return{getContext:()=>new Proxy({},{get:(t,k)=>k==='createRadialGradient'?()=>({addColorStop(){}}):()=>{}}),toDataURL:()=>'data:'};});check('the ink mask covers the whole sheet, margin included',size&&size[1]===Math.ceil((CW.H+CW.TOP)/4));}
+const M0=CL.markup(null,{},{});
+check('the margin carries the border, the title and notes on the view from the summit',M0.includes(`y="${-CW.TOP+5}"`)&&M0.includes('The Twelve Realms')&&M0.includes('from the summit you can see every realm at once!'));
+check('moving things, lights and lettering stay live; everything else is baked into the paper',['cl-puff','cl-flame','cl-banner','cl-traveller','cl-fish','cl-win','cl-glow','cl-fall','fresh'].every(c=>CB.LIVE.includes(c))&&!CB.LIVE.includes('cl-bit')&&/text\{display:none!important\}/.test(CB.rasterCSS(''))&&/visibility:hidden/.test(CB.LIVE_CSS));
+{const svg=CB.svgFor('<g/>','.a{background:url("data:x,<svg a=\\"b\\">")}',{W:864,H:1821,top:CW.TOP,scale:1});check('the rasterised copy holds the stylesheet safely and spans the whole sheet',svg.includes('<![CDATA[')&&svg.includes(`viewBox="0 ${-CW.TOP} 864 ${1821+CW.TOP}"`));}
+{// The hand: only drawn pixels change; white becomes paper and black becomes sepia ink, never pure.
+  const w=64,h=64,mk=()=>({data:new Uint8ClampedArray(w*h*4)}),src=mk(),ink=mk(),pencil=mk();
+  for(let i=0;i<w*h;i++){ink.data.set([200,210,190,255],i*4);pencil.data.set([230,222,200,255],i*4);}
+  for(let y=16;y<48;y++)for(let x=16;x<48;x++){const v=x<32?255:0;src.data.set([v,v,v,255],(y*w+x)*4);}
+  for(const _ of CB.hand(src,ink,pencil,w,h,1));
+  const at=(d,x,y)=>[...d.data.slice((y*w+x)*4,(y*w+x)*4+3)];
+  check('the hand leaves blank paper alone',JSON.stringify(at(ink,2,2))==='[200,210,190]'&&JSON.stringify(at(pencil,60,60))==='[230,222,200]');
+  const white=at(ink,24,32),black=at(ink,40,32),pb=at(pencil,40,32);
+  check('white is laid in as paper and black as sepia ink',white.every(v=>v<250)&&black[0]>=40&&black[0]<120&&pb[0]<200);}
+const mapJs=fs.readFileSync(path.join(__dirname,'..','public','map-chart.js'),'utf8');
+check('the app bakes each set of landmarks once and keeps it offline',/bakedKeyFor/.test(mapJs)&&/class=\\"cl-world\\"|class="cl-world"/.test(mapJs)&&html.indexOf('chart-bake.js')>0&&html.indexOf('chart-bake.js')<html.indexOf('map-chart.js')&&core.includes('./chart-bake.js'));
+check('Eight Ice Caves open into the foot of their own ice mountain',/Eight Ice Caves open into the foot of their own ice mountain/.test(fs.readFileSync(path.join(__dirname,'..','public','chart-paint.js'),'utf8'))&&!/const cliff=/.test(fs.readFileSync(path.join(__dirname,'..','public','chart-realms.js'),'utf8')));
 console.log(`${checks} map chart checks passed (world built in ${built} ms)`);

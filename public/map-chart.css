@@ -1,11 +1,19 @@
 /* The hand-drawn chart (map-chart.js). Decorative only; the realm nodes and route sit on top. */
 .map-art.map-chart{background:#efe3c4 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120"><filter id="n"><feTurbulence baseFrequency=".8" numOctaves="2" seed="4"/><feColorMatrix values="0 0 0 0 .45 0 0 0 0 .35 0 0 0 0 .2 0 0 0 .08 0"/></filter><rect width="120" height="120" filter="url(%23n)"/></svg>')}
 .chart-root{position:absolute;inset:0;overflow:hidden}
+/* Room above the land for the margin: the sheet reaches up past the map's top edge (ChartWorld.TOP=400 of 864 units wide). */
+.map-world.charted{margin-top:calc(var(--mw) * 400 / 864)}
+.chart-area{position:absolute;left:0;right:0;bottom:0;pointer-events:none}
 .chart-root>canvas,.chart-root>svg{position:absolute;inset:0;width:100%;height:100%;display:block}
 .chart-root>canvas{opacity:0;transition:opacity .9s ease}
 .chart-root.ready>canvas{opacity:1}
 .chart-ink{-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
 .chart-live{overflow:visible;pointer-events:none}
+/* Pencil: no ink anywhere, and the living layer drawn in graphite like undiscovered land. The night glow is a separate layer and keeps its warm lights. */
+.chart-ink{transition:opacity .7s ease}
+.chart-root.pencil .chart-ink{opacity:0}
+.chart-root.pencil .chart-live{filter:grayscale(1) sepia(.18) contrast(.92)}
+#journey-map-controls button[aria-pressed="true"]{background:#3b2a1c;color:#f6ecd2}
 .chart-loading{position:fixed;z-index:12;left:50%;top:calc(76px + var(--safe-top,0px));transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:9px 16px;border-radius:999px;background:rgba(246,236,210,.96);border:1.5px solid #9c7a4c;color:#3b2a1c;font:700 13px var(--body,system-ui);box-shadow:0 6px 18px rgba(40,20,8,.3);pointer-events:none;transition:opacity .5s}
 .chart-loading svg{width:22px;height:22px;animation:chart-quill 1.4s ease-in-out infinite}
 .chart-loading.done{opacity:0}
@@ -18,6 +26,15 @@
 .cl-lab.region{font-size:14px;font-variant:small-caps;letter-spacing:3px;fill:#5a4128;opacity:.85}
 .cl-lab.edge{font-size:13px;font-style:italic;letter-spacing:4px;fill:#8a7254;stroke-width:0;opacity:.7}
 .cl-lab.n{font-size:10px;font-weight:700;stroke-width:2px}
+
+.cl-lab.town{font-size:11px;font-variant:small-caps;font-weight:700;letter-spacing:1.6px;fill:#2e2216}
+.cl-lab.village{font-size:8.5px;font-variant:small-caps;letter-spacing:1.1px;fill:#3b2a1c}
+.cl-lab.hamlet{font-size:6.6px;font-style:italic;fill:#4a3826;stroke-width:2.2px}
+.cl-lab.small{font-size:5.6px;font-style:italic;fill:#5a4128;stroke-width:1.8px}
+.cl-lab.water{font-size:7.4px;font-style:italic;letter-spacing:.8px;fill:#2c4e5c}
+.cl-lab.feature{font-size:8px;font-style:italic;letter-spacing:1.4px;fill:#5a4128}
+.cl-lab.beyond{font-size:7px;font-style:italic;letter-spacing:.6px;fill:#5a4128}
+.cl-board{font:italic 700 2.4px 'Iowan Old Style','Palatino Linotype',Georgia,serif;fill:#2b1c10}
 
 /* Water flows where a realm has been restored */
 .cl-flow{fill:none;stroke:#2c4e5c;stroke-width:.9;stroke-linecap:round;stroke-dasharray:3 15;opacity:.5;animation:cl-flow 6s linear infinite}
@@ -33,7 +50,7 @@
 .cl-glow{opacity:0;transition:opacity 1s}
 .cl-walker{animation:cl-walk 9s linear infinite}
 @keyframes cl-walk{0%{transform:translateX(-30px)}100%{transform:translateX(30px)}}
-.cl-banner{transform-box:fill-box;transform-origin:0 100%;animation:cl-flutter 2.4s ease-in-out infinite}
+.cl-banner,.cl-pennant{transform-box:fill-box;transform-origin:0 100%;animation:cl-flutter 2.4s ease-in-out infinite}
 @keyframes cl-flutter{50%{transform:skewY(4deg)}}
 
 /* Mill, boat, smoke, windows */
@@ -118,12 +135,62 @@
 @keyframes cl-lamp{50%{opacity:.65}}
 .chart-root.night .cl-sky{display:none}
 
+.cl-fall{stroke-dasharray:1 1.6;animation:cl-fall .6s linear infinite}
+@keyframes cl-fall{to{stroke-dashoffset:-2.6}}
+.cl-spray{transform-box:fill-box;transform-origin:center;animation:cl-orb 2.4s ease-in-out infinite}
+.cl-fish{opacity:0;animation:cl-fish 7s ease-in-out infinite}
+@keyframes cl-fish{0%,84%,100%{opacity:0;transform:translate(0,0)}88%{opacity:1;transform:translate(2px,-4px) rotate(-30deg)}92%{opacity:1;transform:translate(4px,-1px) rotate(40deg)}95%{opacity:0;transform:translate(5px,1px)}}
+.cl-splash{opacity:0;transform-box:fill-box;transform-origin:center;animation:cl-splash 7s ease-out infinite}
+@keyframes cl-splash{0%,93%{opacity:0;transform:scale(.3)}95%{opacity:.9}100%{opacity:0;transform:scale(1.6)}}
+.cl-geese{animation:cl-geese 48s linear infinite}
+@keyframes cl-geese{0%{transform:translate(-80px,900px)}100%{transform:translate(960px,560px)}}
+.chart-root.night .cl-geese,.chart-root.night .cl-traveller{display:none}
+
+.cl-title{font:400 31px 'Iowan Old Style','Palatino Linotype',Georgia,serif;letter-spacing:3px;font-variant:small-caps;fill:#3b2a1c}
+.cl-subtitle{font:italic 10.5px 'Iowan Old Style','Palatino Linotype',Georgia,serif;letter-spacing:1.2px;fill:#5a4430}
+.cl-grat{font:italic 5.4px 'Iowan Old Style','Palatino Linotype',Georgia,serif;fill:#3b2a1c}
+.cl-note{font:6.6px 'Segoe Print','Bradley Hand','Comic Sans MS',cursive;fill:rgba(66,58,50,.9);stroke:rgba(244,236,214,.7);stroke-width:1.6px;paint-order:stroke;stroke-linejoin:round}
+/* Willowbrook on the map: the explorer's own camp */
+.map-world.charted .camp-pin{position:absolute;z-index:3;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;padding:0;border:0;background:none;cursor:pointer;font:inherit}
+.map-world.charted .camp-pin .pin{width:48px;height:36px;border-radius:14px}
+.map-world.charted .camp-pin:focus-visible .pin{outline:3px solid #b8860b;outline-offset:2px}
+.map-world.charted .camp-pin b{padding:2px 8px;border-radius:9px;background:rgba(250,236,200,.95);border:1.5px solid rgba(101,62,30,.4);color:#3b271b;font:800 10.5px var(--display,Georgia);white-space:nowrap}
+.map-world.charted .camp-pin small{font:700 8px var(--body,system-ui);color:#795534;letter-spacing:.3px}
+/* The map key */
+.map-key{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px 14px;margin:10px 0 14px;padding:0;list-style:none}
+.map-key li{display:flex;align-items:center;gap:10px;font-size:14px;line-height:1.25}
+.map-key svg{flex:0 0 44px;width:44px;height:30px;border-radius:6px;background:#efe3c4;border:1px solid rgba(101,62,30,.25)}
+
 /* Night lights above the darkened map */
 .chart-glow{position:absolute;inset:0;width:100%;height:100%;z-index:1;pointer-events:none;opacity:0;transition:opacity 1.4s ease;mix-blend-mode:screen}
 .chart-glow.on{opacity:1}
 .chart-glow .cg-halo{animation:cl-lamp 3.4s ease-in-out infinite}
 .chart-glow.calm .cg-halo{animation:none}
 @media(prefers-reduced-motion:reduce){.chart-glow .cg-halo{animation:none}}
+
+/* Learning in the chart's hand (chart-lore.js) */
+.cl-uncharted{font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;font-style:italic;font-size:11px;letter-spacing:3px;fill:rgba(90,86,80,.75)}
+.cl-cart-title{font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;font-size:11px;font-variant:small-caps;letter-spacing:1.6px;fill:#3b2a1c}
+.cl-cart-by{font-family:'Iowan Old Style','Palatino Linotype',Palatino,Georgia,serif;font-style:italic;font-size:7px;fill:#5a4128}
+.cl-cart-name{font-family:'Snell Roundhand','Apple Chancery','Segoe Script','Brush Script MT','Iowan Old Style',Georgia,serif;font-style:italic;font-size:13px;fill:#2c2418}
+.cl-cart-title.pencil,.cl-cart-by.pencil{fill:rgba(90,86,80,.75)}
+.cl-seal{font:800 6px Georgia,serif;fill:#f6dcc8}
+.cl-gilt{transform-box:fill-box;transform-origin:center;animation:cl-gilt 4s ease-in-out infinite}
+@keyframes cl-gilt{50%{filter:brightness(1.18) drop-shadow(0 0 2px rgba(255,210,90,.7))}}
+.cl-summit{animation:cl-gilt 6s ease-in-out infinite}
+/* Three stars: the realm's name in gold leaf */
+.map-world.charted .realm-node.gilded .meta{background:linear-gradient(115deg,#fbe8b2,#f6d88a 35%,#fff4cf 50%,#f1cf78 65%,#fbe8b2);background-size:220% 100%;border-color:#b8860b;box-shadow:0 3px 0 rgba(122,85,24,.45),0 0 0 1px rgba(255,236,170,.6) inset;animation:gold-leaf 6s ease-in-out infinite}
+.map-world.charted .realm-node.gilded .meta .nm{background:linear-gradient(90deg,#6e4608,#b8860b 40%,#8a5a0e 60%,#6e4608);-webkit-background-clip:text;background-clip:text;color:transparent}
+@keyframes gold-leaf{50%{background-position:100% 0}}
+body.calm .map-world.charted .realm-node.gilded .meta{animation:none}
+/* Pinch-to-zoom */
+#map-trail.zoomable{touch-action:pan-x pan-y}
+#map-trail.zoomed{overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+#map-trail.zoomed::-webkit-scrollbar{display:none}
+#map-trail.zoomed .map-world{left:0;transform:none;margin:0 auto}
+#map-trail.zoomed .map-world.charted{margin-top:calc(var(--mw) * 400 / 864)}
+/* The frame's edge vignette is sized to the screen; once the map pans sideways it would slide across it. */
+#map-trail.zoomed::after{display:none}
 
 /* Stillness when asked */
 .chart-root.calm *{animation:none!important}

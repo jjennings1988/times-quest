@@ -30,6 +30,8 @@ public/
 ├── chart-realms.js        Hand-drawn map: the twelve other realm landmarks, stage by stage
 ├── chart-landmarks.js     Hand-drawn map: ink by realm stage, the twin crossing, night lights
 ├── chart-worker.js        Paints the hand-drawn map off the main thread
+├── chart-lore.js          Hand-drawn map: parchment, Fact Trail milestones, gold leaf, the signed cartouche
+├── map-zoom.js            Pinch-to-zoom for the hand-drawn map
 ├── map-chart.js / .css    Mounts, caches and inks the hand-drawn map (Parents switch)
 ├── opening.js             Illustrated title and Zero Marsh expedition
 ├── opening.css            Title and interactive guardian scenes
@@ -130,6 +132,190 @@ See [the opening slice and verification guide](OPENING-EXPEDITION.md),
 [the follow-up audit](FOLLOW-UP-EXPERIENCE-AUDIT.md), and
 [the prior learning upgrade checklist](LEARNING-UPGRADE-CHECKLIST.md).
 Tests now include test/opening.js for the complete first expedition.
+
+## Willowbrook, a village with a heart — 0.43 beta (testing)
+
+- **Every building says what it is:** lettered signs (Mara's Supply, Honeycrust Bakery,
+  Library, The Willow Inn, Tink's Workshop, Town Hall, Watermill) and something of
+  each trade outside: the bakery's brick oven and bread, the library's books, the
+  inn's hanging sign, lantern and barrels, the workshop's anvil and tools, logs at the
+  mill, flower boxes on the houses.
+- **People:** Mara, Bram the baker, Wren the librarian, Old Oak the innkeeper, Tink the
+  tinker and Millie the miller stand at their doors, each with a new line each day.
+  Tap a villager or a building to visit.
+- **Jobs that use the math:** Bram's baking order ("4 trays of 9", equal groups, 6
+  gems) and Millie's fair shares ("28 logs, 4 stacks: how many in each?", division,
+  5 wood), once per learning adventure each, alongside Mara's orders.
+- **The library** keeps the fact garden album (every array or deck fact you have
+  counted, out of 66) and pins your three newest postcards on the wall.
+- **The inn's notice board** shows the guardian's request, today's visitor and what
+  jobs are left; **the workshop** opens home upgrades.
+- **Quick travel:** a signpost at the edge of camp hops you anywhere in Willowbrook.
+
+## Willowbrook, a living camp — 0.42 beta (testing)
+
+- **Companions live there:** up to three creatures from the expedition team (or, until
+  a team is chosen, guardians from restored realms) walk the clearing as inked
+  sprites, visiting the fire, gardens, decks and keepsakes. At night, or in calm mode,
+  they gather round the campfire.
+- **The camp reacts:** building something makes nearby companions hop over to look,
+  with a burst of sparkles; butterflies visit counted gardens; lanterns glow at dusk.
+- **Your camp's name:** name it in the Journal (up to 24 letters, any language); the
+  name appears in the header and on a lettered welcome sign by the path.
+- **Postcards:** "Take a postcard of my camp" frames the current view on paper with
+  the name, date and season. Save the picture, or share it where the device supports
+  sharing files.
+- **Sound:** a soft thunk and sparkle when building, a chime for a new fact, coins
+  for Mara's orders (with the Sound setting). The woodland soundscape (Journal ›
+  Camp sounds, or Parents) now plays in Willowbrook, with an occasional bird.
+
+## Willowbrook, build with math — 0.41 beta (testing)
+
+- **Garden beds are arrays:** new Seed Plots (1 gem; every camp gets 12 plus 6 deck
+  boards once). Lay them out in a full rectangle and the camp asks "3 rows of 4: how
+  many seed plots did you build?" A miss shows the rows with running totals (4, 8, …)
+  and leaves the last one for the child. A right answer makes the bed bloom in the
+  season's colours with a signpost of the fact ("3 × 4 = 12"), and pays 3 gems the
+  first time the camp learns that fact. Answers count as camp reviews.
+- **Decks are areas:** the same for rectangles of deck boards ("2 rows of 2 deck
+  squares"). Decks now cost 2 gems and no wood.
+- **Mara's orders:** the supply store offers two orders per learning adventure, one
+  fact as equal groups ("4 crates of 3 apples"), drawn as crates; each pays 5 gems
+  and 2 wood.
+- **Guardian requests:** one resident guardian a day asks for something shaped by
+  its family: "a garden bed with 7 rows" (×7), one long row (×1), a resting deck
+  (×0). The Journal shows it and lets you deliver it for 10 gems.
+- Gardens and buildings keep to their own ground; the arrival card has a close button.
+
+## Willowbrook, one world — 0.40 beta (testing)
+
+- **One wallet:** the 💎 in the header is the only gem balance, and the camp spends it.
+  Daily quests, welcome-back gifts and realm stars are now spendable at camp. The
+  first time, a camp that kept its own balance merges by taking the larger of the two
+  (never the sum). A brand-new camp starts with a one-time 30-gem welcome gift.
+- **Progress shows up at camp:** every restored family sends its signature build as
+  a free, ready-to-place kit (cottage at 9, keep at 11, and so on), retroactively
+  for families already restored. Realm keepsakes walk to a trophy garden around the
+  Story Stones by themselves (ones already in a backpack move there once). A "New
+  things for your camp!" card announces what arrived.
+- **Prices:** stone eased (cottage 20, keep 34, walls 3), a finished round brings 4
+  stone once three realms are restored, and a river trip brings 6.
+- **A calmer screen:** turning the camera only appears while building, touch screens
+  pinch to zoom (no ± buttons), the sky switch moved to Journal settings, and the
+  walking hint shows only for the first few visits.
+- **Drawn like the map:** the 3D camp passes through an ink pass (camp-ink.js):
+  pen lines from depth and tone with uneven pressure, quieter, warmer colour, and
+  paper grain. The ground is painted paper instead of faceted tiles, and foliage and
+  ground follow the map's season (gold now; blossom, bare and snowy in turn). Low
+  power skips the ink pass.
+
+## One hand-drawn map — 0.39 beta (testing)
+
+- **Landmarks drawn in the same hand as the land:** bridges, the lighthouse, the
+  harbour and its boats, Twin Towers and every realm landmark are now baked into
+  the painted paper (chart-bake.js). They're rasterised once, then redrawn with
+  lines that wander slightly, pigment that catches the paper's grain, hatched
+  mid-tones, and colours held between sepia ink and the paper, so they match the
+  trees and rivers in both colour and Pencil. Smoke, flags, water, lights,
+  travellers and lettering stay live on top. Each set of landmarks is baked once
+  (a fraction of a second) and cached offline; a newly restored landmark stays
+  live for its reveal and is baked on the next visit.
+- **Eight Ice Caves:** now a cave mouth cut into the foot of its own ice
+  mountain, with the Long Glacier redrawn as a tapering tongue of ice (ogives,
+  crevasses, moraines) that curves down off the mountain to the river's source.
+- **Room above the summit:** the map continues past its top edge into open paper
+  (400 chart units), so you can scroll up past Mount Twelve. The land fades
+  softly into it, with a far range sketched in, clouds, the chart's title, and
+  pencilled notes about the view from the top.
+
+## Pencil map — 0.38.1 beta (testing)
+
+- A **Pencil** button beside the map's zoom buttons shows the whole hand-drawn
+  chart in graphite, the way undiscovered land looks, with no colour. The night
+  lights still glow warm, and the realm buttons and route keep their colour. The
+  choice is remembered for each climber; tap again for colour.
+
+## The map as an object — 0.38 beta (testing)
+
+- **Seasons:** the chart is painted in the season of the real calendar: blossom
+  and meadow flowers in spring, green in summer, gold and russet woods in autumn,
+  snow on the ground, trees and pines in winter, with the fen pools frozen. Each
+  season is cached separately, so the chart repaints once when the season turns.
+- **A made thing:** a neatline border with a graduated band and league numbers,
+  gilded corner marks, a scale bar in leagues, fold creases, worn corners, a tea
+  ring, and pencilled notes from an earlier traveller in four places.
+- **Willowbrook on the map:** the child's camp (tents, campfire, pennant, willows)
+  stands west of Ashford; tapping it opens the camp.
+- **Map key:** a Key button beside the zoom buttons explains the symbols (bridge,
+  ford, ferry, milestone, inn, village, mill, mine, spring, parchment, gold leaf,
+  camp).
+
+## Water and wild — 0.37 beta (testing)
+
+- **Water that behaves like water:** Sevenfold Falls tumbles down seven drops where
+  the Long River leaves the high country (a smaller fall at the glacier snout);
+  springs mark where Mill Beck, Fern Brook and the Dry Wash rise; Heron Isle and
+  Otter Rock stand in Sounding Lake, which carries depth soundings like a pilot's
+  chart; the upper river breaks over rapids at The Churn; and the Lower Weir spans
+  the river below Double River.
+- **Life:** sheep and cattle graze the Midlands pastures, deer stand at the wood's
+  edge, travellers and a pony cart walk the roads, a rowing boat crosses to Heron
+  Isle, fish leap in the lake, and geese pass over. Moving things rest in Calm mode
+  and at night.
+
+## A lived-in land — 0.36 beta (testing)
+
+The hand-drawn map now has ordinary life between the realms:
+- **Places:** the market town of Ashford (church, square and well), the villages
+  of Millbrook, Stonecross and Fernhollow, Greenhollow's stilt huts in the
+  jungle, four farms with barns, haystacks and hedged fields, three inns with
+  signboards (The Twelve Bells, The Crooked Gear, The Fen Lantern), two
+  watermills with wheels, Glimmer Mine, the Old Quarry, an orchard, sheep folds,
+  a woodcutters' camp and the ring of Twelve Oaks.
+- **Roads with meaning:** lanes join every place to the road (with plank
+  footbridges over Fern Brook), signposts point the way at four crossroads, and
+  roads leave the map toward the Coast Kingdoms, the Salt Road, the High Passes
+  and the Sunrise Road.
+- **Names everywhere, lettered like a real chart:** towns in bold small capitals,
+  villages in small capitals, hamlets and bridges in italics, water in blue
+  italics, regions spread wide (The Midlands, The High Country, The Lowlands),
+  with number-themed treats to find.
+- Every settlement's chimney smokes, and its windows light at night.
+
+## Mountains that rise out of the ground — 0.35.2 beta (testing)
+
+Every peak, hill and mesa is now drawn on its own sheet whose foot fades into
+the chart before it is laid down, with a soft shadow and fall-lines running out
+onto the plain, so they rise from the relief instead of standing on a ruled
+line. Peaks, hills and mesas keep their whole outline, not just their foot, off
+every realm landmark (Storm Peak's refuge was being crossed by a neighbour).
+"The Long River" and "Sunscorch Waste" are lettered on clear ground.
+
+## Zooming out recentres the map — 0.35.1 beta (testing)
+
+Zooming out now glides the map back to the middle: how far it sits off-centre
+shrinks in step with the zoom, so it is exactly centred by the time it is back to
+normal size (before, sliding right and zooming out left it stuck off-centre). A
+pinch that ends just above normal size settles at exactly 1×.
+
+## Learning in the chart's own hand, and pinch-to-zoom — 0.35 beta (testing)
+
+On the hand-drawn map, the old on-map details are redrawn in the chart's style
+(the painted map keeps its originals):
+- **Unexplored realms are blank parchment**, marked "Uncharted" with a
+  surveyor's faint marks. The map now goes blank → pencil → ink and colour.
+- **Fact Trails are milestones:** thirteen along the road out of each open realm,
+  a pencil outline until the fact is checked, then an inked stone with a gold cap.
+- **Three stars gild the realm:** its name label turns to shimmering gold leaf and
+  a gold-leaf compass star is inked beside its landmark.
+- **The summit:** gold-leaf rays around Mount Twelve once every realm is restored;
+  a flag and fireworks when it is conquered.
+- **A signed cartouche:** "A Chart of the Twelve Realms — surveyed by …" waits in
+  pencil and is inked, signed with the child's name and sealed when the summit
+  is conquered.
+- **Pinch-to-zoom** (up to 2.6×) on phones and tablets, ctrl/⌘ + scroll or trackpad
+  pinch on laptops, and − / + buttons. The map grows while realm buttons keep
+  their size; the chart redraws itself sharper after a large zoom.
 
 ## Landmarks set into the land, and a surveyor's topography — 0.34.3 beta (testing)
 
