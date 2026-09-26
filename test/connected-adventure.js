@@ -24,7 +24,7 @@ async function main(){
   for(const type of Object.keys(Camp.catalog)){const g=Goals.view(Camp.catalog,save,type);check(`${type}: exact missing resources`,g.resources.every(r=>r.missing===Math.max(0,r.need-r.have)));}
   let g=Goals.view(Camp.catalog,save,'tent');check('placed home is not described as backpack stock',!!g.placed&&!g.kit);
   g=Goals.view(Camp.catalog,{...save,inventory:{keep:1}},'keep');check('an earned kit bypasses costs and future blueprint lock',g.kit&&g.ready&&g.remaining===0&&g.resources.every(r=>r.need===0));
-  g=Goals.view(Camp.catalog,save,'keep');check('locked stone keep reports its missing challenges and stone',g.remaining===11&&g.resources.find(r=>r.key==='stone').missing===55&&!g.ready);
+  g=Goals.view(Camp.catalog,save,'keep');check('locked stone keep reports its missing challenges and stone',g.remaining===11&&g.resources.find(r=>r.key==='stone').missing===Camp.catalog.keep.stone&&!g.ready);
   g=Goals.view(Camp.catalog,{...save,gems:0,wood:20,mastered:1},'trailtent',{mastered:1,pendingGems:12});check('pending learning reward counted once',g.ready&&g.resources[0].have===12&&g.predecessor.type==='tent');
   check('planning never spends or changes save',JSON.stringify(save)===before);
   const source=fs.readFileSync('public/index.html','utf8').replace(/<script src="([^"]+\.js)"><\/script>/g,(_,name)=>`<script>${fs.readFileSync('public/'+name,'utf8')}</script>`);

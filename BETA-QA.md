@@ -84,6 +84,25 @@ The painted map stays the default; switching off returns it instantly.
   sit below the map buttons, and Mount Twelve's peak is whole. Zoom in and out:
   the top margin grows and shrinks with the map. Eight Ice Caves (once unlocked)
   sits in the foot of its mountain.
+- **A living camp (0.42):** companions (or visiting guardians) wander the clearing
+  and sit by the fire at night; placing something makes them hop over, with sparkles.
+  Name the camp in the Journal: the header and the welcome sign by the path change.
+  Take a postcard: check the picture is the camp (not blank) on iPhone and iPad, and
+  that Save or Share works. Turn on Camp sounds and listen for birds; building thunks.
+  On an older iPhone, watch for stutter with three companions and the ink pass.
+- **Build with math (0.41):** build a full rectangle of seed plots with the build
+  brush, tap Done: a counting card appears. A wrong answer shows running row totals
+  without the last; a right one makes the bed bloom with a fact signpost and +3 gems
+  (only the first time for that fact). Try a deck rectangle too. At Mara's store,
+  "Pack today's order" shows crates (two per learning adventure). The Journal shows
+  today's guardian request; building what it asks unlocks "Show … · +10 gems".
+- **Willowbrook, one world (0.40):** the gem count is the same on the map, in camp
+  and after buying something at camp. An existing climber opening camp sees "New
+  things for your camp!" with a kit for each family restored, and their keepsakes
+  standing around the Story Stones. Kits place free. The camp looks inked and painted
+  (not flat low-poly), in the current season; at night the lines turn blue-grey.
+  On a phone only the ⌂ button shows at the side; ↶ ↷ appear while building. Note
+  the frame rate on an older iPhone; Low power (Journal) should remove the ink pass.
 - **Night:** the chart darkens with the map; windows, lanterns, the lighthouse
   beam, beacons and the power station orb glow above it.
 - **Check:** realm buttons, route and "You are here" sit exactly where they did

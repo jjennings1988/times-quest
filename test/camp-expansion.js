@@ -29,7 +29,7 @@ test('connections handle every neighbour combination, mixed tiers, and removal',
   assert.equal(C.content.mask([center,{id:'p',type:'path',x:5,y:4}],center,C.catalog),0);
 });
 test('building costs are atomic, assembly survives reload and never charges twice',()=>{
-  let s=clear();const before=structuredClone(s);s=run(s,{kind:'place',type:'lodge',x:1,y:1});assert.equal(s.gems,before.gems-90);assert.equal(s.wood,before.wood-22);assert(s.construction);
+  let s=clear();const before=structuredClone(s);s=run(s,{kind:'place',type:'lodge',x:1,y:1});assert.equal(s.gems,before.gems-C.catalog.lodge.price);assert.equal(s.wood,before.wood-C.catalog.lodge.wood);assert(s.construction);
   assert(!C.command(s,{kind:'place',type:'tower',x:8,y:1}).ok);s=JSON.parse(JSON.stringify(s));const balance=s.gems;s=run(s,{kind:'finish-build'});assert.equal(s.gems,balance);assert(!C.command(s,{kind:'finish-build'}).ok);
 });
 test('free move and storage preserve owned high-tier items',()=>{let s=clear();s=run(s,{kind:'place',type:'stonewall',x:1,y:1});s.mastered=0;const gems=s.gems,id=s.objects[0].id;s=run(s,{kind:'move',id,x:2,y:1});s=run(s,{kind:'store',id});s=run(s,{kind:'place',type:'stonewall',x:3,y:1});assert.equal(s.gems,gems);});

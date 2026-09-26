@@ -133,6 +133,63 @@ See [the opening slice and verification guide](OPENING-EXPEDITION.md),
 [the prior learning upgrade checklist](LEARNING-UPGRADE-CHECKLIST.md).
 Tests now include test/opening.js for the complete first expedition.
 
+## Willowbrook, a living camp — 0.42 beta (testing)
+
+- **Companions live there:** up to three creatures from the expedition team (or, until
+  a team is chosen, guardians from restored realms) walk the clearing as inked
+  sprites, visiting the fire, gardens, decks and keepsakes. At night, or in calm mode,
+  they gather round the campfire.
+- **The camp reacts:** building something makes nearby companions hop over to look,
+  with a burst of sparkles; butterflies visit counted gardens; lanterns glow at dusk.
+- **Your camp's name:** name it in the Journal (up to 24 letters, any language); the
+  name appears in the header and on a lettered welcome sign by the path.
+- **Postcards:** "Take a postcard of my camp" frames the current view on paper with
+  the name, date and season. Save the picture, or share it where the device supports
+  sharing files.
+- **Sound:** a soft thunk and sparkle when building, a chime for a new fact, coins
+  for Mara's orders (with the Sound setting). The woodland soundscape (Journal ›
+  Camp sounds, or Parents) now plays in Willowbrook, with an occasional bird.
+
+## Willowbrook, build with math — 0.41 beta (testing)
+
+- **Garden beds are arrays:** new Seed Plots (1 gem; every camp gets 12 plus 6 deck
+  boards once). Lay them out in a full rectangle and the camp asks "3 rows of 4: how
+  many seed plots did you build?" A miss shows the rows with running totals (4, 8, …)
+  and leaves the last one for the child. A right answer makes the bed bloom in the
+  season's colours with a signpost of the fact ("3 × 4 = 12"), and pays 3 gems the
+  first time the camp learns that fact. Answers count as camp reviews.
+- **Decks are areas:** the same for rectangles of deck boards ("2 rows of 2 deck
+  squares"). Decks now cost 2 gems and no wood.
+- **Mara's orders:** the supply store offers two orders per learning adventure, one
+  fact as equal groups ("4 crates of 3 apples"), drawn as crates; each pays 5 gems
+  and 2 wood.
+- **Guardian requests:** one resident guardian a day asks for something shaped by
+  its family: "a garden bed with 7 rows" (×7), one long row (×1), a resting deck
+  (×0). The Journal shows it and lets you deliver it for 10 gems.
+- Gardens and buildings keep to their own ground; the arrival card has a close button.
+
+## Willowbrook, one world — 0.40 beta (testing)
+
+- **One wallet:** the 💎 in the header is the only gem balance, and the camp spends it.
+  Daily quests, welcome-back gifts and realm stars are now spendable at camp. The
+  first time, a camp that kept its own balance merges by taking the larger of the two
+  (never the sum). A brand-new camp starts with a one-time 30-gem welcome gift.
+- **Progress shows up at camp:** every restored family sends its signature build as
+  a free, ready-to-place kit (cottage at 9, keep at 11, and so on), retroactively
+  for families already restored. Realm keepsakes walk to a trophy garden around the
+  Story Stones by themselves (ones already in a backpack move there once). A "New
+  things for your camp!" card announces what arrived.
+- **Prices:** stone eased (cottage 20, keep 34, walls 3), a finished round brings 4
+  stone once three realms are restored, and a river trip brings 6.
+- **A calmer screen:** turning the camera only appears while building, touch screens
+  pinch to zoom (no ± buttons), the sky switch moved to Journal settings, and the
+  walking hint shows only for the first few visits.
+- **Drawn like the map:** the 3D camp passes through an ink pass (camp-ink.js):
+  pen lines from depth and tone with uneven pressure, quieter, warmer colour, and
+  paper grain. The ground is painted paper instead of faceted tiles, and foliage and
+  ground follow the map's season (gold now; blossom, bare and snowy in turn). Low
+  power skips the ink pass.
+
 ## One hand-drawn map — 0.39 beta (testing)
 
 - **Landmarks drawn in the same hand as the land:** bridges, the lighthouse, the

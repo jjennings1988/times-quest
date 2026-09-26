@@ -56,7 +56,7 @@ async function main(){
     const pending=ev('state.journey.pendingGems');ev('state.campV2=CampV2.fresh()');const campBefore=ev('state.campV2.gems');w.deliverCampGrants();
     check('unclaimed earnings arrive at first camp opening',ev('state.campV2.gems')===campBefore+pending&&ev('state.journey.pendingGems')===0);
     const delivered=ev('state.campV2.gems');w.deliverCampGrants();check('delivery is idempotent',ev('state.campV2.gems')===delivered);
-    check('Double River kit supplies usable camp objects',ev('state.campV2.inventory.path')===14&&ev('state.campV2.inventory.deck')===6&&ev('state.campV2.inventory.lantern')===2);
+    check('Double River kit supplies usable camp objects',ev('state.campV2.inventory.path')===14&&ev('state.campV2.inventory.deck')===12&&ev('state.campV2.inventory.plot')===12&&ev('state.campV2.inventory.lantern')===2);
     const stateCopy=JSON.stringify(ev('state'));ev(`state=JSON.parse(${JSON.stringify(stateCopy)});migrateState()`);w.deliverCampGrants();check('save/reload does not redeliver rewards',ev('state.campV2.gems')===delivered);
     fresh();ev('state.realms[0].trial=true');w.startBoss(0);
     check('guardian encounter has no hearts',ev('quiz.hearts')===0);
@@ -121,9 +121,9 @@ async function main(){
     check('a realm with a miss stays for its guardian lesson',!ev('state.realms[10].trial'));
     check('the check leads to the first opened guardian',$('results-body').querySelector('.result-next .btn.gold').getAttribute('onclick')==='startBoss(0)');
     fresh();ev("state.campV2=CampV2.fresh();state.realms[0].trial=true;state.realms[0].conquered=true;state.realms[1].conquered=true");w.deliverCampGrants();
-    check('each restored realm sends its keepsake to the camp backpack',ev("state.campV2.inventory.keepsake0")===1&&ev("state.campV2.inventory.keepsake1")===1&&!ev("state.campV2.inventory.keepsake10"));
-    w.deliverCampGrants();check('keepsakes are delivered once, even after placing or storing them',ev("state.campV2.inventory.keepsake0")===1);
-    check('an earned keepsake can be placed for free',ev("CampV2.command(state.campV2,{kind:'place',type:'keepsake0',x:1,y:8}).ok"));
+    check('each restored realm sends its keepsake home: placed by the Story Stones, or in the backpack if no spot is free',[0,1].every(f=>ev(`state.campV2.objects.filter(o=>o.type==='keepsake${f}').length+(state.campV2.inventory.keepsake${f}||0)`)===1)&&ev("state.campV2.objects.some(o=>o.type==='keepsake0')")&&!ev("state.campV2.inventory.keepsake10")&&!ev("state.campV2.objects.some(o=>o.type==='keepsake10')"));
+    w.deliverCampGrants();check('keepsakes are delivered once, even after placing or storing them',ev("state.campV2.objects.filter(o=>o.type==='keepsake0').length+(state.campV2.inventory.keepsake0||0)")===1);
+    check('an earned keepsake can be moved for free',ev("(()=>{const o=state.campV2.objects.find(o=>o.type==='keepsake0'),r=CampV2.command(state.campV2,{kind:'move',id:o.id,x:1,y:8});return r.ok&&r.save.gems===state.campV2.gems;})()"));
     check('no uncaught runtime errors across journeys',errors.length===0);
     console.log(`${checks} learning journey checks passed`);
   }finally{dom.window.close();}

@@ -23,9 +23,26 @@ function creditLearningRound(qz,extra=0,deferDelivery=false){
 }
 function checkpointRound(nextIndex=quiz?.idx){if(!quiz)return;state.journey.resume=JSON.parse(JSON.stringify({...quiz,idx:nextIndex,answer:'',locked:false}));}
 function resumeRound(){const saved=state.journey.resume;if(!LearningJourney.validResume(saved)){state.journey.resume=null;saveState();showScreen('screen-map');return;}lastConfig={fn:resumeRound,args:[]};startQuiz({resume:saved,mode:saved.mode,fams:saved.fams,queue:saved.queue});}
+/* One wallet: state.gems is the only gem balance. Every reward already lands there, and the camp spends it.
+   The first time, a camp that kept its own balance merges by taking the larger of the two, never the sum. */
+const CAMP_WELCOME_GEMS=30;
+function syncCampWallet(){
+  if(!state.campV2||!CampV2.validSave(state.campV2))return;
+  if(!state.walletUnified){state.gems=Math.max(Math.floor(Number(state.gems)||0),state.campV2.gems+(state.journey.pendingGems||0));state.walletUnified=1;}
+  if(state.campV2.gems!==state.gems)state.campV2={...state.campV2,gems:Math.max(0,Math.floor(Number(state.gems)||0))};
+}
+/* A new camp starts from the one wallet, with a small welcome gift so the first build is possible. */
+function createCamp(){
+  const camp=state.journey.openingEdition?CampV2.freshExpedition():CampV2.fresh();
+  if(!state.campWelcomeGift){state.gems=Math.floor(Number(state.gems)||0)+CAMP_WELCOME_GEMS;state.campWelcomeGift=1;}
+  state.walletUnified=1;camp.gems=state.gems;return camp;
+}
 function deliverCampGrants(){
   if(!state.campV2||!CampV2.validSave(state.campV2))return;
-  if(state.journey.pendingGems)state.campV2=CampV2.awardLearning(CampV2.syncProgress(state.campV2,campMasteredCount(),isCampTester()),state.journey.pendingGems);
+  syncCampWallet();
+  // Round gems are already in the wallet; a finished round still refreshes wood, stone and river trips.
+  if(state.journey.pendingGems)state.campV2=CampV2.awardLearning(CampV2.syncProgress(state.campV2,campMasteredCount(),isCampTester()),0);
+  else state.campV2=CampV2.syncProgress(state.campV2,campMasteredCount(),isCampTester());
   if(state.journey.riverKit&&!state.journey.riverKitDelivered){
     const next=JSON.parse(JSON.stringify(state.campV2));
     for(const [type,count] of [['path',6],['deck',2],['lantern',1]])next.inventory[type]=Math.min(10000,(next.inventory[type]||0)+count);
@@ -33,7 +50,10 @@ function deliverCampGrants(){
   }
   // Each restored realm sends one keepsake to the camp backpack, once.
   {const delivered=state.journey.keepsakesDelivered||(state.journey.keepsakesDelivered=[]);const due=REALM_ORDER.filter(f=>state.realms[f]?.conquered&&!delivered.includes(f)&&CampV2.catalog['keepsake'+f]);
-    if(due.length){const next=JSON.parse(JSON.stringify(state.campV2));for(const f of due){next.inventory['keepsake'+f]=Math.min(10000,(next.inventory['keepsake'+f]||0)+1);delivered.push(f);}next.revision++;state.campV2=next;}}
+    if(due.length){let next=JSON.parse(JSON.stringify(state.campV2));for(const f of due){next.inventory['keepsake'+f]=Math.min(10000,(next.inventory['keepsake'+f]||0)+1);delivered.push(f);}next.revision++;
+    for(const f of due)next=CampV2.autoPlace(next,'keepsake'+f,Math.max(0,REALM_ORDER.indexOf(f))).save;state.campV2=next;}
+   // Once (0.40): keepsakes delivered before the trophy garden existed walk out of the backpack to the Story Stones.
+   if(!state.journey.keepsakeGarden){let next=state.campV2;for(const f of REALM_ORDER)if((next.inventory['keepsake'+f]||0)>0&&!next.objects.some(o=>o.type==='keepsake'+f))next=CampV2.autoPlace(next,'keepsake'+f,Math.max(0,REALM_ORDER.indexOf(f))).save;state.campV2=next;state.journey.keepsakeGarden=1;}}
   if(state.journey.zeroKit&&!state.journey.zeroKitDelivered){
     const next=JSON.parse(JSON.stringify(state.campV2));
     next.inventory.trailtent=(next.inventory.trailtent||0)+1;next.openingIntro=true;next.revision++;
@@ -188,10 +208,11 @@ function chooseEncounterSplit(a,b,showGroups=false){
 function campGoalView(type=state.journey.goal){
   let camp=state.campV2||(state.journey.openingEdition?CampV2.freshExpedition():CampV2.fresh());
   if(!CampV2.validSave(camp))return {recoveryRequired:true};
-  // Project the same delivery as entering camp, without claiming or spending it.
-  camp=CampV2.syncProgress(camp,campMasteredCount(),isCampTester());
-  const pending=state.journey.pendingGems||0;
-  if(pending)camp=CampV2.awardLearning(camp,pending);
+  // Project the same delivery as entering camp, without claiming or spending it. Gems come from the one wallet.
+  const round=state.journey.pendingGems||0,wallet=!state.campV2?Math.floor(Number(state.gems)||0)+(state.campWelcomeGift?0:CAMP_WELCOME_GEMS):state.walletUnified?state.gems:Math.max(Math.floor(Number(state.gems)||0),camp.gems+round);
+  camp=CampV2.syncProgress({...camp,gems:wallet},campMasteredCount(),isCampTester());
+  if(round)camp=CampV2.awardLearning(camp,0);
+  const pending=0;
   const inventory={...camp.inventory};
   if(state.journey.zeroKit&&!state.journey.zeroKitDelivered)inventory.trailtent=(inventory.trailtent||0)+1;
   if(state.journey.riverKit&&!state.journey.riverKitDelivered)for(const [id,count] of [['path',6],['deck',2],['lantern',1]])inventory[id]=(inventory[id]||0)+count;

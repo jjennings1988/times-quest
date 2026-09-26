@@ -1478,7 +1478,7 @@ const RATING_LABEL = ["undiscovered","discovered","befriending","befriending","c
    Defaults below reproduce the game's original behaviour exactly, so an
    existing save that predates settings plays identically until something
    is changed on purpose. */
-const APP_VERSION = '0.39.0-beta.1';
+const APP_VERSION = '0.42.0-beta.1';
 const FAST_MS = 4000;          // default bonus window
 const WINDOW_CHOICES = [3000,4000,6000,8000];
 const ROUND_CHOICES  = [8,12,16];
@@ -1907,12 +1907,15 @@ const sfx = {
   gem(){ beep(1200,.07,"triangle"); },
 };
 function prefersReducedMotion(){ return !!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
-function stopCampAmbience(){
+/* Camp sounds: a thunk and sparkle when something is built, a chime for a new fact, coins for Mara's orders. */
+function campSound(kind){if(!state.settings.sound)return;if(kind==='build'){tone(150,.09,'triangle',.16);setTimeout(()=>tone(1320,.06,'sine',.05),70);}else if(kind==='fact')sfx.win();else if(kind==='coin'){beep(1200,.07,'triangle');setTimeout(()=>beep(1500,.08,'triangle'),90);}}
+let campBirds=0;
+function stopCampAmbience(){clearInterval(campBirds);campBirds=0;
   try{ if(ambientGain&&audioCtx) ambientGain.gain.setTargetAtTime(.0001,audioCtx.currentTime,.08); if(ambientSource) ambientSource.stop(audioCtx.currentTime+.25); }catch(e){}
   ambientSource=null;ambientGain=null;
 }
 function syncCampAmbience(){
-  const inCamp=$('screen-camp')&&$('screen-camp').classList.contains('active');
+  const inCamp=['screen-camp','screen-camp-v2'].some(id=>$(id)&&$(id).classList.contains('active'));
   if(!state||!state.settings.ambience||state.settings.calm||prefersReducedMotion()||!inCamp||document.hidden){ stopCampAmbience();return; }
   if(ambientSource) return;
   try{
@@ -1922,6 +1925,8 @@ function syncCampAmbience(){
     const source=audioCtx.createBufferSource(),filter=audioCtx.createBiquadFilter(),gain=audioCtx.createGain();
     filter.type='lowpass';filter.frequency.value=780;gain.gain.value=.018;source.buffer=buffer;source.loop=true;
     source.connect(filter);filter.connect(gain);gain.connect(audioCtx.destination);source.start();ambientSource=source;ambientGain=gain;
+    // Now and then a bird calls from the woods.
+    campBirds=setInterval(()=>{if(!ambientSource||document.hidden)return;if(Math.random()<.55){const f=2200+Math.random()*900;tone(f,.07,'sine',.018);setTimeout(()=>tone(f*1.18,.09,'sine',.014),110);}},5200);
   }catch(e){ stopCampAmbience(); }
 }
 
@@ -1935,7 +1940,7 @@ function showScreen(id){
     state.journey.preferredCamp='v2';
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
     $('screen-camp-v2').classList.add('active');document.body.classList.add('camp-world-open');
-    $('nav').style.display='none';stopCampAmbience();enterCampV2();return;
+    $('nav').style.display='none';enterCampV2();syncCampAmbience();return;
   }
   if(id!=='screen-camp'){
     campUndo=null;
@@ -3741,7 +3746,7 @@ function enterCampV2(){
   if(campV2Session)return;
   const host=$('screen-camp-v2');
   if(!window.CampV2){campRecoveryScreen('missing-module');return;}
-  if(!state.campV2)state.campV2=state.journey.openingEdition?CampV2.freshExpedition():CampV2.fresh();
+  if(!state.campV2)state.campV2=createCamp();
   deliverCampGrants();
   if(!CampV2.validSave(state.campV2)){campRecoveryScreen('invalid-save');return;}
   state.campV2=CampV2.syncProgress(state.campV2,campMasteredCount(),isCampTester());
@@ -3749,11 +3754,18 @@ function enterCampV2(){
   const owner=activeProfileId;
   try{
   campV2Session=CampV2.mount(host,{profileId:owner,currentProfileId:()=>activeProfileId,
-    getSave:()=>state.campV2,setSave:next=>{if(owner===activeProfileId){state.campV2=next;saveState();}},
+    getSave:()=>state.campV2,setSave:next=>{if(owner===activeProfileId){state.campV2=next;state.gems=next.gems;saveState();updateChips();}},
     guardians:REALM_ORDER.map(family=>({family,name:REALMS[family].petName,color:REALMS[family].color,defeated:!!state.realms[family].conquered})),
     companions:state.campMonsterFavorites.map(key=>{const [a,b]=key.split('*').map(Number);return {key,a,b,...monsterIdentity(a,b)};}),
+    // With no team chosen yet, guardians from restored realms wander over to visit instead.
+    visitors:REALM_ORDER.filter(f=>state.realms[f].conquered).slice(-2).map(f=>({art:`art/realm/pet-${f}.png`,name:REALMS[f].petName})),
+    onSound:campSound,onToggleSound:()=>{state.settings.ambience=!state.settings.ambience;saveState();syncCampAmbience();},soundOn:()=>!!state.settings.ambience,
     onCompanion:(a,b)=>{showScreen('screen-monsters');openMonsterCard(a,b);},
     tester:isCampTester(),reviewQuestions:campReviewQuestions,onReview:recordCampReview,
+    // One guardian from the grove makes a request each day, shaped by its own family.
+    request:(()=>{const g=REALM_ORDER.filter(f=>state.realms[f].conquered);if(!g.length)return null;const f=g[(Math.floor(Date.now()/864e5)+5)%g.length];return {family:f,day:dateKey(),name:REALMS[f].petName};})(),
+    // The camp shares the adventure map's season.
+    season:window.ChartPaint?ChartPaint.seasonFor(new Date()):'summer',
     avatar:profileAvatar(),ownerName:(profileById()&&profileById().name)||'',explorerIndex:profileById()?.avatar??0,reducedMotion:()=>state.settings.calm||prefersReducedMotion(),
     goalMarkup:campGoalMarkup,
     // Guardians whose Fact Trail is complete take turns visiting the Story Stones, one per day; their keepsakes turn gold.
