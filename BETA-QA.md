@@ -84,6 +84,11 @@ The painted map stays the default; switching off returns it instantly.
   sit below the map buttons, and Mount Twelve's peak is whole. Zoom in and out:
   the top margin grows and shrinks with the map. Eight Ice Caves (once unlocked)
   sits in the foot of its mountain.
+- **Village with a heart (0.43):** tap the signpost by the camp's name sign: "Where
+  to?" hops you to any place. Each building has a readable sign and a villager at the
+  door; their line changes day to day. Bake at the bakery (trays of buns) and share
+  logs at the watermill (the answer is the share, not the total). The library shows
+  the fact album and, after taking a postcard, the picture on its wall.
 - **A living camp (0.42):** companions (or visiting guardians) wander the clearing
   and sit by the fire at night; placing something makes them hop over, with sparkles.
   Name the camp in the Journal: the header and the welcome sign by the path change.

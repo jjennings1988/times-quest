@@ -133,6 +133,25 @@ See [the opening slice and verification guide](OPENING-EXPEDITION.md),
 [the prior learning upgrade checklist](LEARNING-UPGRADE-CHECKLIST.md).
 Tests now include test/opening.js for the complete first expedition.
 
+## Willowbrook, a village with a heart — 0.43 beta (testing)
+
+- **Every building says what it is:** lettered signs (Mara's Supply, Honeycrust Bakery,
+  Library, The Willow Inn, Tink's Workshop, Town Hall, Watermill) and something of
+  each trade outside: the bakery's brick oven and bread, the library's books, the
+  inn's hanging sign, lantern and barrels, the workshop's anvil and tools, logs at the
+  mill, flower boxes on the houses.
+- **People:** Mara, Bram the baker, Wren the librarian, Old Oak the innkeeper, Tink the
+  tinker and Millie the miller stand at their doors, each with a new line each day.
+  Tap a villager or a building to visit.
+- **Jobs that use the math:** Bram's baking order ("4 trays of 9", equal groups, 6
+  gems) and Millie's fair shares ("28 logs, 4 stacks: how many in each?", division,
+  5 wood), once per learning adventure each, alongside Mara's orders.
+- **The library** keeps the fact garden album (every array or deck fact you have
+  counted, out of 66) and pins your three newest postcards on the wall.
+- **The inn's notice board** shows the guardian's request, today's visitor and what
+  jobs are left; **the workshop** opens home upgrades.
+- **Quick travel:** a signpost at the edge of camp hops you anywhere in Willowbrook.
+
 ## Willowbrook, a living camp — 0.42 beta (testing)
 
 - **Companions live there:** up to three creatures from the expedition team (or, until
