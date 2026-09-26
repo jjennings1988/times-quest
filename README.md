@@ -133,6 +133,13 @@ See [the opening slice and verification guide](OPENING-EXPEDITION.md),
 [the prior learning upgrade checklist](LEARNING-UPGRADE-CHECKLIST.md).
 Tests now include test/opening.js for the complete first expedition.
 
+## Pencil map — 0.38.1 beta (testing)
+
+- A **Pencil** button beside the map's zoom buttons shows the whole hand-drawn
+  chart in graphite, the way undiscovered land looks, with no colour. The night
+  lights still glow warm, and the realm buttons and route keep their colour. The
+  choice is remembered for each climber; tap again for colour.
+
 ## The map as an object — 0.38 beta (testing)
 
 - **Seasons:** the chart is painted in the season of the real calendar: blossom

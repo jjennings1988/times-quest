@@ -72,6 +72,9 @@ The painted map stays the default; switching off returns it instantly.
   colours match the current season (September to November is autumn); Willowbrook
   sits west of Ashford and tapping it opens the camp; the Key button (hand-drawn
   map only) opens a readable key and closes back to the map.
+- **Pencil (0.38.1):** tap Pencil: the colour fades out to graphite everywhere,
+  the button turns dark, and at night the windows and lamps still glow. Reload:
+  it stays in pencil. Tap again for colour.
 - **Night:** the chart darkens with the map; windows, lanterns, the lighthouse
   beam, beacons and the power station orb glow above it.
 - **Check:** realm buttons, route and "You are here" sit exactly where they did

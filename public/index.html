@@ -1477,7 +1477,7 @@ const RATING_LABEL = ["undiscovered","discovered","befriending","befriending","c
    Defaults below reproduce the game's original behaviour exactly, so an
    existing save that predates settings plays identically until something
    is changed on purpose. */
-const APP_VERSION = '0.38.0-beta.1';
+const APP_VERSION = '0.38.1-beta.1';
 const FAST_MS = 4000;          // default bonus window
 const WINDOW_CHOICES = [3000,4000,6000,8000];
 const ROUND_CHOICES  = [8,12,16];
@@ -1493,6 +1493,7 @@ const PREF_DEFAULTS = {
   clicks: true,     // keypad tap sounds
   ambience: false,  // optional, low-volume Base Camp soundscape
   chartMap: false,  // testing: the hand-drawn, code-painted adventure map
+  chartPencil: false, // the hand-drawn map in pencil only, as it looks before a realm is restored
 };
 const fastMs   = () => state.settings.window;
 const roundLen = () => state.settings.roundLen;
@@ -2146,7 +2147,7 @@ function mapChartData(){
   const lore=mapLoreData();
     const stage=f=>ChartLandmarks.stageFor({trial:!!state.realms[f].trial,conquered:!!state.realms[f].conquered,stars:realmStars(f).stars});
   return {stages:Object.fromEntries(REALM_ORDER.map(f=>[f,stage(f)])),
-    all:!!state.summitDone,calm:lore.calm,
+    all:!!state.summitDone,calm:lore.calm,pencil:!!state.settings.chartPencil,
     // What the chart shows about learning: open realms, Fact Trail milestones, stars, the finished map.
     lore:{realms:lore.realms.map(q=>({family:q.family,unlocked:q.unlocked,trail:q.trail,stars:q.stars})),explorer:lore.explorer,allRestored:lore.allRestored,summitDone:lore.summitDone},sky:window.MapBackdrop?MapBackdrop.skyNow(lore):'day',profile:String(activeProfileId||'solo')};
 }

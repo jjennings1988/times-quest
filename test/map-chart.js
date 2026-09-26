@@ -132,6 +132,9 @@ check('the chart has a neatline border, a scale bar in leagues and pencilled not
 check('Willowbrook stands on dry ground in its own clearing, clear of the realms',world.waterAt(CW.CAMP.x,CW.CAMP.y)<-10&&CW.SETTLEMENTS.some(q=>q.kind==='camp'&&q.x===CW.CAMP.x)&&CW.NODES.every(n=>Math.hypot(n.x-CW.CAMP.x,n.y-CW.CAMP.y)>70)&&W1.includes('cl-camp'));
 check('tapping Willowbrook on the chart opens the camp',/camp-pin[\s\S]{0,400}visitCamp\(\)/.test(html));
 check('the map key explains the symbols, from the chart only',/showMapKey\(\)/.test(fs.readFileSync(path.join(__dirname,'..','public','journey-ui.js'),'utf8'))&&/function showMapKey/.test(fs.readFileSync(path.join(__dirname,'..','public','journey-ui.js'),'utf8')));
+const jui=fs.readFileSync(path.join(__dirname,'..','public','journey-ui.js'),'utf8'),mcss=fs.readFileSync(path.join(__dirname,'..','public','map-chart.css'),'utf8');
+check('a Pencil switch shows the whole chart uncoloured, remembered per climber',/chartPencil:\s*false/.test(html)&&/pencil:!!state\.settings\.chartPencil/.test(html)&&/function toggleChartPencil/.test(jui)&&/aria-pressed/.test(jui)&&/classList\.toggle\('pencil'/.test(mapChartJs));
+check('in pencil the ink is hidden and the living layer is graphite, but the night lights stay warm',/\.chart-root\.pencil \.chart-ink\{opacity:0\}/.test(mcss)&&/\.chart-root\.pencil \.chart-live\{filter:grayscale\(1\)/.test(mcss)&&!/pencil[^{]*chart-glow/.test(mcss));
 check('paint version is a positive integer',Number.isInteger(CP.VERSION)&&CP.VERSION>0);
 const sw=fs.readFileSync(path.join(__dirname,'..','public','sw.js'),'utf8'),core=sw.match(/const CORE = \[([\s\S]*?)\];/)[1];
 check('every chart file is cached for offline play',['chart-world.js','chart-paint.js','chart-landmarks.js','chart-worker.js','map-chart.js','map-chart.css'].every(f=>core.includes(`./${f}`)));

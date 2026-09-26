@@ -6,6 +6,11 @@
 .chart-root.ready>canvas{opacity:1}
 .chart-ink{-webkit-mask-size:100% 100%;mask-size:100% 100%;-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat}
 .chart-live{overflow:visible;pointer-events:none}
+/* Pencil: no ink anywhere, and the living layer drawn in graphite like undiscovered land. The night glow is a separate layer and keeps its warm lights. */
+.chart-ink{transition:opacity .7s ease}
+.chart-root.pencil .chart-ink{opacity:0}
+.chart-root.pencil .chart-live{filter:grayscale(1) sepia(.18) contrast(.92)}
+#journey-map-controls button[aria-pressed="true"]{background:#3b2a1c;color:#f6ecd2}
 .chart-loading{position:fixed;z-index:12;left:50%;top:calc(76px + var(--safe-top,0px));transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:9px 16px;border-radius:999px;background:rgba(246,236,210,.96);border:1.5px solid #9c7a4c;color:#3b2a1c;font:700 13px var(--body,system-ui);box-shadow:0 6px 18px rgba(40,20,8,.3);pointer-events:none;transition:opacity .5s}
 .chart-loading svg{width:22px;height:22px;animation:chart-quill 1.4s ease-in-out infinite}
 .chart-loading.done{opacity:0}

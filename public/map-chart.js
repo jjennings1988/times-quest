@@ -77,7 +77,7 @@
     // The night glow sits beside the chart, above the map's night darkening.
     if(!glow){glow=document.createElementNS('http://www.w3.org/2000/svg','svg');glow.setAttribute('class','chart-glow');glow.setAttribute('viewBox','0 0 864 1821');glow.setAttribute('preserveAspectRatio','none');glow.setAttribute('aria-hidden','true');}
     if(glow.previousSibling!==host)host.after(glow);glow.classList.toggle('on',data.sky!=='day');glow.classList.toggle('calm',!!data.calm);
-    r.classList.toggle('night',data.sky!=='day');r.classList.toggle('calm',!!data.calm);r.dataset.marsh=String((data.stages||{})[0]|0);
+    r.classList.toggle('night',data.sky!=='day');r.classList.toggle('calm',!!data.calm);r.dataset.marsh=String((data.stages||{})[0]|0);r.classList.toggle('pencil',!!data.pencil);
     const stages=data.stages||{},all=!!data.all,key=JSON.stringify([stages,all,data.profile,data.lore,!!data.calm]);
     if(key!==layerKey){
       layerKey=key;const seen=readSeen(data.profile),fresh={};let grow=null;

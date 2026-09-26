@@ -243,8 +243,12 @@ function improveMapNavigation(){
   const summit=document.querySelector('.summit-node .realm-bubble');summit.setAttribute('role','button');summit.tabIndex=allConquered()?0:-1;summit.setAttribute('aria-disabled',String(!allConquered()));summit.setAttribute('aria-label','Mount Twelve summit');summit.onkeydown=e=>{if(allConquered()&&(e.key==='Enter'||e.key===' ')){e.preventDefault();startSummit();}};
   let controls=$('journey-map-controls');if(!controls){controls=document.createElement('div');controls.id='journey-map-controls';$('screen-map').append(controls);}
   const due=dueFactEntries(3),resume=state.journey.current;
-  controls.innerHTML=`${typeof useChartMap==='function'&&useChartMap()?'<button onclick="MapZoom.step(-1)" aria-label="Zoom out of the map">−</button><button onclick="MapZoom.step(1)" aria-label="Zoom in to the map">+</button><button onclick="showMapKey()" aria-label="What the map symbols mean">Key</button>':''}<button onclick="centerExplorer()" aria-label="Find my explorer">⌖</button><button onclick="showRealmList()" aria-label="Choose a realm">Realms</button>${due.length?`<button onclick="startShortReview()">Revisit ${due.length} facts</button>`:''}${resume?'<button onclick="resumeLesson()">Resume lesson</button>':''}`;
+  controls.innerHTML=`${typeof useChartMap==='function'&&useChartMap()?'<button onclick="MapZoom.step(-1)" aria-label="Zoom out of the map">−</button><button onclick="MapZoom.step(1)" aria-label="Zoom in to the map">+</button><button onclick="toggleChartPencil()" aria-pressed="${!!state.settings.chartPencil}" aria-label="Pencil map, without colour">Pencil</button><button onclick="showMapKey()" aria-label="What the map symbols mean">Key</button>':''}<button onclick="centerExplorer()" aria-label="Find my explorer">⌖</button><button onclick="showRealmList()" aria-label="Choose a realm">Realms</button>${due.length?`<button onclick="startShortReview()">Revisit ${due.length} facts</button>`:''}${resume?'<button onclick="resumeLesson()">Resume lesson</button>':''}`;
 }
+/* Pencil: the whole chart as it looks before a realm is restored, lights and all. */
+function toggleChartPencil(){state.settings.chartPencil=!state.settings.chartPencil;saveState();
+  document.querySelector('#journey-map-controls [aria-label^="Pencil map"]')?.setAttribute('aria-pressed',String(state.settings.chartPencil));
+  document.querySelector('.chart-root')?.classList.toggle('pencil',state.settings.chartPencil);}
 /* The map key: each symbol is drawn in the same ink as the chart. */
 function showMapKey(){
   const I='#3b2a1c',sym=(d,label)=>`<li><svg viewBox="0 0 44 30" aria-hidden="true">${d}</svg><span>${label}</span></li>`,
