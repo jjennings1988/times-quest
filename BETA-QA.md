@@ -84,6 +84,11 @@ The painted map stays the default; switching off returns it instantly.
   sit below the map buttons, and Mount Twelve's peak is whole. Zoom in and out:
   the top margin grows and shrinks with the map. Eight Ice Caves (once unlocked)
   sits in the foot of its mountain.
+- **3D friends and Willow Fields (0.48):** with a realm restored, place the Creature
+  Cottage: that realm's guardian appears beside it in 3D with a name sign, and its
+  home in the Sanctuary Grove is empty. No flat creature pictures anywhere in camp.
+  Choose a seed plot to place away from the fields: "🌾 Plant in Willow Fields" hops to
+  the hedged field across the grove road with the plot ready to place; placing it elsewhere still works.
 - **Come back tomorrow (0.47):** the first camp visit of a day opens "Today at camp".
   Count a new garden bed (it blooms), come back the next day: it shows pumpkins and the
   card offers the harvest. Plant the given apple tree: pick apples by walking to it; a

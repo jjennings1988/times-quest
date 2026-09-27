@@ -4,7 +4,7 @@ import * as THREE from './vendor/three/three.module.min.js';
 import {createWorldDetails} from './camp-world-details.js';
 import {createInk} from './camp-ink.js';
 
-export function createScene(canvas, {catalog, footprint, sources, world, avatar, guardians=[], placementReason, lowPower=false, onContextLost, onContextRestored, ownerName='', visitor=null, goldRealms=[], season='summer', patterns=null, companions=[], today=null}) {
+export function createScene(canvas, {catalog, footprint, sources, world, avatar, guardians=[], placementReason, lowPower=false, onContextLost, onContextRestored, ownerName='', visitor=null, goldRealms=[], season='summer', patterns=null, friends=[], today=null}) {
   const renderer = new THREE.WebGLRenderer({canvas, antialias:!lowPower, alpha:false, powerPreference:'low-power'});
   try{
   renderer.outputColorSpace=THREE.SRGBColorSpace;
@@ -86,7 +86,7 @@ export function createScene(canvas, {catalog, footprint, sources, world, avatar,
   }
   const scenery=new THREE.Group();
 
-  for(let i=0;i<145;i++){const x=minX+random(i,61)*(maxX-minX),z=minZ+random(i,78)*(maxZ-minZ);if((x>-1&&x<13&&z>-1&&z<11)||Math.abs(x-world.river(z))<2.8)continue;const y=world.groundHeight(x,z),r=.16+random(i,91)*.45;piece(scenery,rockG,i%3?'#839185':'#a6ae98',x,y+r*.25,z,r,r*.65,r*.8);}
+  for(let i=0;i<145;i++){const x=minX+random(i,61)*(maxX-minX),z=minZ+random(i,78)*(maxZ-minZ);if((x>-1&&x<13&&z>-1&&z<11)||Math.abs(x-world.river(z))<2.8||content.zones.some(q=>q.id==='fields'&&content.inZone(q,Math.floor(x),Math.floor(z))))continue;const y=world.groundHeight(x,z),r=.16+random(i,91)*.45;piece(scenery,rockG,i%3?'#839185':'#a6ae98',x,y+r*.25,z,r,r*.65,r*.8);}
   for(let i=0;i<220;i++){const x=-9+random(i,35)*34,z=-9+random(i,14)*31;if(world.water(x,z)||(x>0&&x<12&&z>0&&z<10)||Math.abs(z-4)<1)continue;const y=world.groundHeight(x,z);piece(scenery,coneG,season==='autumn'?(i%3?'#a58f4f':'#c7ad6a'):season==='winter'?(i%3?'#b9bba9':'#dfe3da'):(i%3?'#7e9b56':'#aac07b'),x,y+.14,z,.10,.3,.1);if(i%4===0){piece(scenery,rockG,i%8?'#f7e5aa':'#d4b0c1',x,y+.31,z,.10,.08,.10);}}
   instance(scenery);
   // The stream is geometry, including animated surface glints. No texture downloads.
@@ -355,9 +355,13 @@ export function createScene(canvas, {catalog, footprint, sources, world, avatar,
   let critterHomes=[];
   const flutter=new THREE.Group(),critterGroup=new THREE.Group(),sparkles=[],critterTextures=[];scene.add(flutter,critterGroup);
   function butterfly(color){const g=new THREE.Group(),wing=geo('wing',()=>new THREE.PlaneGeometry(.26,.2)),m=mat(color);for(const side of[-1,1]){const w=new THREE.Mesh(wing,m);w.position.x=side*.13;w.rotation.x=-Math.PI/2;const pivot=new THREE.Group();pivot.add(w);pivot.userData.side=side;g.add(pivot);}return g;}
-  // Companions from the expedition team walk the clearing: to the fire, the garden, the keepsakes, and back.
-  const loader=new THREE.TextureLoader();
-  const critters=(companions||[]).slice(0,3).map((c,i)=>{const tex=loader.load(c.art);tex.colorSpace=THREE.SRGBColorSpace;critterTextures.push(tex);const m=new THREE.SpriteMaterial({map:tex,alphaTest:.45});extraMaterials.add(m);const sp=new THREE.Sprite(m);sp.center.set(.5,.04);sp.scale.set(1.3,1.3,1);critterGroup.add(sp);const shade=groundShade(critterGroup,0,0,.7,.45);return {sp,shade,x:3+i*2,z:8,tx:3+i*2,tz:8,restUntil:0,hop:-1e9,name:c.name};});
+  // Guardians who have moved into a Creature Cottage walk the clearing in 3D: to the fire, the garden, the keepsakes, and home.
+  const critters=[];let critterKey='';
+  function moveIn(homes){const key=homes.map(o=>o.id).join(',');if(key===critterKey)return;critterKey=key;
+    while(critters.length){const c=critters.pop();critterGroup.remove(c.sp,c.shade);}
+    const living=homes.slice(0,Math.min(5,friends.length)).map((o,i)=>friends[i]);
+    living.forEach((f,i)=>{const pad=content.guardianPads.find(p=>p.family===f.family),g=guardians.find(g=>g.family===f.family);if(!pad||!g)return;const model=worldDetails.creature(pad.kind,g.color);model.scale.setScalar(.72);critterGroup.add(model);const shade=groundShade(critterGroup,0,0,.7,.45);const h=homes[i];critters.push({sp:model,shade,x:h.x+.5,z:h.y+1.3,tx:h.x+.5,tz:h.y+1.3,restUntil:0,hop:-1e9,name:f.name,family:f.family});});
+    worldDetails.setAway(new Set(critters.map(c=>c.family)));}
   const SPOTS=['fire','bench','plot','deck','feeder','tent','trailtent','canvas','cabin','well','lantern','lodge','stonehome'];
   function interesting(save){const pts=[];for(const o of save.objects){if(SPOTS.includes(o.type)||o.type.startsWith('keepsake')){const f=footprint(o.type,o.r);pts.push([o.x+f.w/2+(Math.random()-.5)*1.4,o.y+f.h+.5+Math.random()*.6]);}}return pts.length?pts:[[6,7]];}
   // Building something makes the companions nearby hop over to look, with a burst of sparkles.
@@ -373,7 +377,7 @@ export function createScene(canvas, {catalog, footprint, sources, world, avatar,
         if(d<.08){if(!c.restUntil)c.restUntil=time+1800+Math.random()*4200;else if(time>c.restUntil){const pts=interesting(save),p=home&&Math.random()<.35?[home.x+.5+(Math.random()-.5),home.y+1.4]:pts[(Math.random()*pts.length)|0];c.tx=p[0];c.tz=p[1];c.restUntil=0;}}
         else{const step=Math.min(d,dt*.0012);c.x+=dx/d*step;c.z+=dz/d*step;moving=true;}}
       const age=time-c.hop,jump=age>=0&&age<700?Math.sin(age/700*Math.PI)*.45:0,bob=moving&&!calm?Math.abs(Math.sin(time*.012+i))*.08:0,y=world.walkHeight(c.x,c.z);
-      c.sp.position.set(c.x,y+bob+jump,c.z);c.shade.position.set(c.x,y+.02,c.z);});
+      c.sp.position.set(c.x,y+bob+jump,c.z);if(moving)c.sp.rotation.y=Math.atan2(c.tx-c.x,c.tz-c.z);c.shade.position.set(c.x,y+.02,c.z);});
     flutter.children.forEach(b=>{const u=b.userData,t=calm?u.ph:time*.0011+u.ph;b.position.set(u.cx+Math.cos(t)*u.r,world.groundHeight(u.cx,u.cz)+.85+Math.sin(time*.003+u.ph)*.14,u.cz+Math.sin(t)*u.r);b.rotation.y=-t;b.children.forEach(w=>w.rotation.z=calm?0:w.userData.side*Math.sin(time*.03+u.ph)*.9);});
     for(let i=sparkles.length-1;i>=0;i--){const k=sparkles[i],age=time-k.at;if(age>900||calm){scene.remove(k.m);sparkles.splice(i,1);continue;}k.m.position.x+=k.vx*dt;k.m.position.y+=k.vy*dt;k.m.position.z+=k.vz*dt;k.vy-=.000009*dt;k.m.scale.setScalar(.06*(1-age/900)+.01);}
   }
@@ -387,7 +391,7 @@ export function createScene(canvas, {catalog, footprint, sources, world, avatar,
     objects.add(board(save.campName||'Willowbrook Camp',12.4,7.2,{w:384,font:40,scale:1.35,height:1.55}));
     const ripe=new Set();if(today!==null)for(const p of counted)if(p.type==='plot'&&today-((save.beds||{})[p.key]??-1)>=1)for(let dx=0;dx<p.cols;dx++)for(let dy=0;dy<p.rows;dy++)ripe.add((p.x+dx)+','+(p.y+dy));
     const readyNow=o=>today!==null&&catalog[o.type]?.daily&&((save.collected||{})[o.id]??-1)<today;
-    critterHomes=save.objects.filter(o=>o.type==='critterhome').sort((a,b)=>a.id.localeCompare(b.id,undefined,{numeric:true}));critterHomes.forEach((o,i)=>{if(companions[i])objects.add(board(companions[i].name,o.x+.5,o.y+.9,{w:256,font:44,scale:.85,height:1.3}));});
+    critterHomes=save.objects.filter(o=>o.type==='critterhome').sort((a,b)=>a.id.localeCompare(b.id,undefined,{numeric:true}));moveIn(critterHomes);critterHomes.forEach((o,i)=>{if(i<5&&friends[i])objects.add(board(friends[i].name,o.x+.5,o.y+.9,{w:256,font:44,scale:.85,height:1.3}));});
     for(const o of save.objects){let g=model(o.type==='plot'&&ripe.has(o.x+','+o.y)?'plot-ripe':o.type==='plot'&&bloom.has(o.x+','+o.y)?'plot-bloom':readyNow(o)?o.type+'-ready':o.type,content.mask(save.objects,o,catalog),o.color||0);const live=g.userData.gate||g.userData.flame||save.construction?.objectId===o.id;
       if(live){if(!g.userData.gate&&!g.userData.flame)g=instance(g,false);g=locate(g,o);addNameLabel(g,o);objects.add(g);objectMap.set(o.id,g);if(g.userData.flame)flames.push(g.userData.flame);if(g.userData.gate)gates.push(g);}
       else {g=locate(g,o);addNameLabel(g,o);if(g.userData.chimney){g.updateMatrixWorld(true);chimneys.push(g.localToWorld(new THREE.Vector3(...g.userData.chimney)));}staticPieces.add(g);const size=footprint(o.type,o.r),bounds=new THREE.Box3().setFromObject(g),height=Math.max(.22,bounds.max.y-world.groundHeight(o.x,o.y));const pick=new THREE.Mesh(boxG,pickMaterial);pick.position.set(o.x+size.w/2,world.groundHeight(o.x,o.y)+height/2,o.y+size.h/2);pick.scale.set(size.w,height,size.h);pick.userData.id=o.id;objects.add(pick);}

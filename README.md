@@ -133,6 +133,20 @@ See [the opening slice and verification guide](OPENING-EXPEDITION.md),
 [the prior learning upgrade checklist](LEARNING-UPGRADE-CHECKLIST.md).
 Tests now include test/opening.js for the complete first expedition.
 
+## Willowbrook, 3D friends and Willow Fields — 0.48 beta (testing)
+
+- **Guardians move in:** the flat creature pictures are gone from the camp. A Creature
+  Cottage becomes the home of a guardian from a restored realm (newest first, up to 5),
+  who walks the clearing as the same inked 3D model as in the Sanctuary Grove. While
+  they live at camp, their grove home stands empty. Fact creatures stay in the Field
+  Guide and the Journal team list.
+- **Willow Fields:** the big meadow across the grove road from the market (14 × 12),
+  hedged, with furrows either side of a mown path, a field gate onto the grove road, a
+  scarecrow and a tool shed, and open from the start. The strip by the fountain stays meadow. Garden
+  beds, apple trees and beehives can still go anywhere; when placing one outside the
+  fields, "🌾 Plant in Willow Fields: more room" hops there with it.
+- Tests: test/camp-fields.js.
+
 ## Willowbrook, come back tomorrow — 0.47 beta (testing)
 
 Gentle reasons to return, with nothing lost for staying away: nothing withers or decays.

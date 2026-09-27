@@ -39,7 +39,7 @@ const DAY=20720;
 {const v2=read('camp-v2.js'),scene=read('camp-v2-scene.js');
   check('the first visit each day opens "Today at camp", with harvest, visitor, request, jobs and an idea',/s\.todaySeen!==today&&validSave\(s\)\)panel='today'/.test(v2)&&/Today at camp/.test(v2)&&/data-action="harvest-all"/.test(v2)&&/💡/.test(v2));
   check('a ripe bed can be harvested from its card; trees and hives by walking to them',/data-action="harvest-bed"/.test(v2)&&/act\(\{kind:'harvest',key:o\.id,day:today\}\)/.test(v2));
-  check('a cottage names the friend who lives there',/function cottageLine/.test(v2)&&/companions\[i\]\.name/.test(scene));
+  check('a cottage names the friend who lives there',/function cottageLine/.test(v2)&&/friends\[i\]\.name/.test(scene));
   check('ripe beds, apples and bees show in the scene',/type==='plot-ripe'/.test(scene)&&/fruittree-ready/.test(scene)&&/beehive-ready/.test(scene));
   check('companions rest at their own cottage at night and visit it often',/if\(home&&\(calm\|\|night\)\)/.test(scene)&&/home&&Math\.random\(\)<\.35/.test(scene));}
 

@@ -75,14 +75,16 @@
     {id:'townEast',name:'East Village Plot',x:36,y:10,w:10,h:8,need:5},
     {id:'westReach',name:'Westwood Reach',x:-32,y:-3,w:16,h:16,need:6},
     {id:'cedarRise',name:'Cedar Rise',x:-24,y:-15,w:24,h:12,need:4},
-    {id:'fernHollow',name:'Fern Hollow',x:-14,y:13,w:14,h:8,need:8}
+    {id:'fernHollow',name:'Fern Hollow',x:-14,y:13,w:14,h:8,need:8},
+    // Willow Fields (0.48): the open meadow across the grove road, roomy enough for big garden beds, orchards and hives.
+    {id:'fields',name:'Willow Fields',x:44,y:-10,w:14,h:12,need:0}
   ];
   const town=[{id:'store',type:'store',x:24,y:0,w:4,h:3},{id:'bakery',type:'townhouse',x:30,y:0,w:3,h:3},{id:'hall',type:'townhall',x:30,y:6,w:4,h:3,face:'n'},
     {id:'library',type:'townhouse',x:24,y:-7,w:3,h:3},{id:'workshop',type:'lodge',x:33,y:-7,w:3,h:3},
     {id:'inn',type:'townhall',x:20,y:6,w:4,h:3,face:'n'},{id:'mill',type:'lodge',x:20,y:12,w:3,h:3,face:'e'},
     {id:'rosehouse',type:'townhouse',x:39,y:22,w:3,h:3,face:'n',yaw:-4},{id:'bluehouse',type:'townhouse',x:45,y:22,w:3,h:3,face:'n',yaw:3},{id:'gardenhouse',type:'townhouse',x:51,y:22,w:3,h:3,face:'w',yaw:-2}];
   const locations=[{id:'store',name:'Willowbrook Supply Store',x:26,y:4},{id:'fish',name:'Fishing Dock',x:14,y:8},
-    {id:'sanctuary',name:'Guardian Grove',x:71,y:3},{id:'bakery',name:'Honeycrust Bakery',x:31,y:4},{id:'library',name:'Willow Library',x:25,y:-3},{id:'inn',name:'The Willow Inn',x:22,y:5},{id:'workshop',name:'Tink’s Workshop',x:34,y:-3},{id:'market',name:'Market Green',x:40,y:6},{id:'gardens',name:'Rosewater Gardens',x:49,y:19},{id:'mill',name:'Willow Watermill',x:23,y:13}];
+    {id:'sanctuary',name:'Guardian Grove',x:71,y:3},{id:'bakery',name:'Honeycrust Bakery',x:31,y:4},{id:'fields',name:'Willow Fields',x:49,y:3},{id:'library',name:'Willow Library',x:25,y:-3},{id:'inn',name:'The Willow Inn',x:22,y:5},{id:'workshop',name:'Tink’s Workshop',x:34,y:-3},{id:'market',name:'Market Green',x:40,y:6},{id:'gardens',name:'Rosewater Gardens',x:49,y:19},{id:'mill',name:'Willow Watermill',x:23,y:13}];
   // The people of Willowbrook: where they work, how they look, and something new to say each day.
   const villagers=[
     {id:'mara',name:'Mara',role:'storekeeper',place:'store',x:26.6,y:3.4,coat:'#7fa59a',skin:'#c28d67',hat:'#b35e40',lines:['Fish from the river are worth their weight in stone, you know.','A fishing rod opens a whole river of trips.','Orders today! Crates never pack themselves.','Your camp is the talk of the market.']},

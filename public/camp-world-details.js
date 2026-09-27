@@ -88,7 +88,19 @@ export function createWorldDetails(api) {
   // The Meeting Oak ends the view up the cut lane, with a ring bench beneath it.
   {const x=29.6,z=-6.6,t=tree(landscape,x,at(x,z),z,1.55,true);for(let i=0;i<14;i++){const a=i/14*Math.PI*2;box(landscape,'#8b6a44',x+Math.cos(a)*1.25,at(x,z)+.28,z+Math.sin(a)*1.25,.5,.08,.22).rotation.y=-a;}}
   // Where the wood opens into meadow: wildflowers and the odd fallen log.
-  world.forest.filter(t=>t.edge).forEach((t,i)=>{if(i%5===0){const l=piece(landscape,cylinderG,'#7a5a3c',t.x,at(t.x,t.z)+.12,t.z,.12,.9,.12);l.rotation.z=Math.PI/2;l.rotation.y=i;}else if(i%2===0)for(let k=0;k<3;k++)flower(landscape,t.x+Math.sin(i+k*2)*.4,at(t.x,t.z),t.z+Math.cos(i+k*2)*.4,['#e9d99c','#dba2ab','#b8a4d8'][k]);});
+  world.forest.filter(t=>t.edge&&!content.zones.some(q=>q.need===0&&content.inZone(q,Math.floor(t.x),Math.floor(t.z)))).forEach((t,i)=>{if(i%5===0){const l=piece(landscape,cylinderG,'#7a5a3c',t.x,at(t.x,t.z)+.12,t.z,.12,.9,.12);l.rotation.z=Math.PI/2;l.rotation.y=i;}else if(i%2===0)for(let k=0;k<3;k++)flower(landscape,t.x+Math.sin(i+k*2)*.4,at(t.x,t.z),t.z+Math.cos(i+k*2)*.4,['#e9d99c','#dba2ab','#b8a4d8'][k]);});
+  // Willow Fields: furrowed earth, a hedge with a field gate, a scarecrow and a little tool shed.
+  {const f=content.zones.find(z=>z.id==='fields');if(f){
+    const cx=f.x+f.w/2,gateX=cx,south=f.y+f.h+.35,ribbon=(pts,w,y0,color)=>{const g=new THREE.BufferGeometry(),pos=[],idx=[];pts.forEach(([x,zz],i)=>{const dx=pts[Math.min(i+1,pts.length-1)][0]-pts[Math.max(i-1,0)][0],dz=pts[Math.min(i+1,pts.length-1)][1]-pts[Math.max(i-1,0)][1],l=Math.hypot(dx,dz)||1,nx=-dz/l*w,nz=dx/l*w;pos.push(x-nx,at(x-nx,zz-nz)+y0,zz-nz,x+nx,at(x+nx,zz+nz)+y0,zz+nz);if(i){const k=(i-1)*2;idx.push(k,k+1,k+2,k+1,k+3,k+2);}});g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setIndex(idx);g.computeVertexNormals();roadGeometry.push(g);const m=new THREE.Mesh(g,mat(color));m.receiveShadow=true;scene.add(m);};
+    // Furrows on either side of a mown path down the middle: garden beds one side, orchard and hives the other.
+    for(let r=0;r<f.h*2;r++){const z=f.y+.25+r*.5;for(const [x0,x1] of [[f.x+.2,cx-.75],[cx+.75,f.x+f.w-.2]]){const pts=[];for(let x=x0;x<=x1+.01;x+=.5)pts.push([x,z]);ribbon(pts,.08,.045,'#8a7152');}}
+    {const pts=[];for(let z=f.y+.1;z<=5;z+=.5)pts.push([gateX,z]);ribbon(pts,.42,.035,'#9fae6c');}
+    hedge(f.x-.35,f.y-.35,f.x+f.w+.35,f.y-.35);hedge(f.x-.35,south,gateX-1.1,south);hedge(gateX+1.1,south,f.x+f.w+.35,south);hedge(f.x-.35,f.y-.35,f.x-.35,south);hedge(f.x+f.w+.35,f.y-.35,f.x+f.w+.35,south);
+    // The hedge's south side opens onto the grove road through a field gate, swung open.
+    for(const x of [gateX-1,gateX+1])box(landscape,'#7a5a3c',x,at(x,south)+.5,south,.12,1,.12);for(const y of [.35,.7])box(landscape,'#b59a66',gateX-.95,at(gateX-1,south+.9)+y,south+.9,.06,.07,1.8);
+    {const x=f.x+f.w-3,z=f.y+2.5,y=at(x,z);box(landscape,'#7a5a3c',x,y+.8,z,.08,1.6,.08);box(landscape,'#7a5a3c',x,y+1.25,z,.9,.07,.07);box(landscape,'#8a6a9a',x,y+1.1,z,.36,.46,.2);piece(landscape,sphereG,'#e8d8a8',x,y+1.48,z,.17,.17,.17);piece(landscape,coneG,'#c9a44e',x,y+1.68,z,.26,.18,.26);}
+    {const x=f.x-1.6,z=f.y+2,y=at(x,z);box(landscape,'#8b6a44',x,y+.5,z,.9,1,1.1);const roof=piece(landscape,coneG,'#7a8f5a',x,y+1.3,z,.8,.6,.9);roof.rotation.y=Math.PI/4;box(landscape,'#5b3f28',x+.46,y+.4,z,.02,.6,.34);box(landscape,'#9aa0a6',x+.2,y+.45,z+.7,.04,.9,.04);}
+  }}
   // Fountain courtyard, flowering borders and two pergolas give the town a destination.
   const gx=51,gz=17,gy=at(gx,gz);
   piece(landscape,cylinderG,'#c9c5ad',gx,gy+.12,gz,2.3,.22,2.3);
@@ -99,7 +111,7 @@ export function createWorldDetails(api) {
   piece(landscape,cylinderG,'#72b9b7',gx,gy+1.37,gz,.63,.03,.63);
   piece(landscape,roundG,'#a7d8ca',gx,gy+1.56,gz,.13,.29,.13);
   const fountain=new THREE.Group();for(let i=0;i<12;i++){const a=i*Math.PI/6;piece(fountain,roundG,'#a6d6ca',Math.sin(a)*.85,.65+(i%3)*.16,Math.cos(a)*.85,.035,.19,.035);}fountain.position.set(gx,gy,gz);scene.add(fountain);
-  for(let i=0;i<90;i++){const a=i*.618*Math.PI*2,r=3.3+(i%5)*.21,x=gx+Math.sin(a)*r,z=gz+Math.cos(a)*r;flower(landscape,x,at(x,z),z,i%3?'#dba2ab':'#e9d99c');}
+  for(let i=0;i<90;i++){const a=i*.618*Math.PI*2,r=3.3+(i%5)*.21,x=gx+Math.sin(a)*r,z=gz+Math.cos(a)*r;if(content.roadAt(Math.floor(x),Math.floor(z))||content.town.some(b=>x>=b.x-.3&&x<b.x+b.w+.3&&z>=b.y-.3&&z<b.y+b.h+.3))continue;flower(landscape,x,at(x,z),z,i%3?'#dba2ab':'#e9d99c');}
   arch(landscape,48,20,2.5);
   for(const [x,z] of [[44.3,7.2],[36.3,7.8],[49,10],[55,20],[54,10],[20.6,19.5]]){const t=tree(landscape,x,at(x,z),z,.78,true);for(let i=0;i<5;i++)piece(t,roundG,'#d79989',Math.sin(i*2.4)*.65,2.55,Math.cos(i*2.4)*.6,.26,.23,.26);}
   // Chimneys, a roof clock and a turning mill wheel are recognizable landmarks.
@@ -172,7 +184,7 @@ export function createWorldDetails(api) {
   }
   // A guardian whose Fact Trail is complete visits the Story Stones for the day.
   {const pad=content.guardianPads.find(p=>p.family===visitor),g=guardians.find(g=>g.family===visitor);if(pad&&g){const x=-5,z=2.3,y=at(x,z);const compact=instance(creature(pad.kind,g.color),false);compact.position.set(x,y+.16,z);scene.add(compact);residents.push({root:compact,x,z,y:y+.16,kind:pad.kind,family:pad.family,angle:.6});}}
-  return {picks,update(time,calm,sky='day'){goods.visible=sky==='morning'||sky==='day';pennantFlags.children.forEach(f=>{f.rotation.x=calm?0:Math.sin(time*.0035+f.userData.phase)*.28;f.rotation.z=calm?0:Math.sin(time*.0021+f.userData.phase)*.06;});wheel.rotation.z=calm?0:time*.00025;fountain.rotation.y=calm?0:time*.00015;residents.forEach((a,i)=>{const t=calm?0:time*.0006+i;
+  return {picks,creature,setAway(families){residents.forEach(r=>{r.root.visible=!families.has(r.family);});},update(time,calm,sky='day'){goods.visible=sky==='morning'||sky==='day';pennantFlags.children.forEach(f=>{f.rotation.x=calm?0:Math.sin(time*.0035+f.userData.phase)*.28;f.rotation.z=calm?0:Math.sin(time*.0021+f.userData.phase)*.06;});wheel.rotation.z=calm?0:time*.00025;fountain.rotation.y=calm?0:time*.00015;residents.forEach((a,i)=>{const t=calm?0:time*.0006+i;
       if(a.visit){const u=calm?0:(time*.000018+i*.37)%1,k=u<.6?0:u<.7?(u-.6)/.1:u<.9?1:1-(u-.9)/.1,e=k*k*(3-2*k),x=a.hx+(a.visit[0]-a.hx)*e,z=a.hz+(a.visit[1]-a.hz)*e;a.root.position.x=x;a.root.position.z=z;a.y=at(x,z)+.16;}
       a.root.position.y=a.y+(calm?0:Math.sin(t)*(a.kind==='ghost'?.13:.025));a.root.rotation.y=a.angle+(calm?0:Math.sin(t*.6)*.16);});},dispose(){roadGeometry.forEach(g=>g.dispose());textures.forEach(t=>t.dispose());numberMaterials.forEach(m=>m.dispose());picks.traverse(m=>{if(m.isMesh&&m.material.visible===false)m.material.dispose();});}};
 }

@@ -19,7 +19,7 @@ const v2=read('camp-v2.js'),scene=read('camp-v2-scene.js'),html=read('index.html
   check('the header and the welcome sign carry the name',/s\.campName\|\|'Willowbrook Camp'/.test(v2)&&/title\.textContent=s\.campName/.test(v2)&&/board\(save\.campName\|\|'Willowbrook Camp'/.test(scene));}
 
 // Companions and the living clearing.
-check('the expedition team (or, until one is chosen, visiting guardians) walks the clearing as inked sprites',/companions:\(\(options\.companions\|\|\[\]\)\.length\?options\.companions:options\.visitors/.test(v2)&&/visitors:REALM_ORDER\.filter/.test(html)&&/new THREE\.Sprite\(m\)/.test(scene)&&/alphaTest:\.45/.test(scene));
+check('guardians who move into cottages walk the clearing as inked 3D models (no flat sprites)',/friends:options\.friends/.test(v2)&&/friends:REALM_ORDER\.filter/.test(html)&&/worldDetails\.creature\(pad\.kind,g\.color\)/.test(scene)&&!/TextureLoader/.test(scene));
 check('companions wander to the things the child built, and gather at the fire at night or in calm mode',/function interesting\(save\)/.test(scene)&&/calm\|\|\(night&&fire\)/.test(scene));
 check('building something makes nearby companions hop over, with sparkles',/function celebrate\(x,z\)/.test(scene)&&/scene\?\.celebrate\?\.\(/.test(v2)&&/sparkles\.push/.test(scene));
 check('butterflies visit counted gardens, and lanterns glow with the evening',/function butterfly\(/.test(scene)&&/piece\(g,boxG,windowGlass\(\),\.27,\.84/.test(scene));
