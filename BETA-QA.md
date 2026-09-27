@@ -84,6 +84,15 @@ The painted map stays the default; switching off returns it instantly.
   sit below the map buttons, and Mount Twelve's peak is whole. Zoom in and out:
   the top margin grows and shrinks with the map. Eight Ice Caves (once unlocked)
   sits in the foot of its mountain.
+- **Getting around and worn in (0.49/0.50):** hop to the Guardian Grove from the
+  signpost: you land on the grove road, walk through the arch, and the guardians come
+  out to meet you. With a visitor today, the note says they are walking over; watch
+  them come along the high street and over the bridge. Hop to the Fishing Dock: the
+  beach, the bank path and the footbridge to the watermill are there, and you can walk
+  across it. Walk the same off-road route on a few different days: a worn trail appears.
+  With camp sounds on, move between river, village, grove and fields and listen for the
+  change. On a test profile only, a plot placed where no land is open should now open
+  the camp with a "went back into your backpack" note, not the recovery screen.
 - **3D friends and Willow Fields (0.48):** with a realm restored, place the Creature
   Cottage: that realm's guardian appears beside it in 3D with a name sign, and its
   home in the Sanctuary Grove is empty. No flat creature pictures anywhere in camp.

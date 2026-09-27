@@ -37,7 +37,7 @@
   }
   function readiness(family,{count=6,previous=[],seed}={}){
     const amounts=pickAmounts(count,{avoid:previous,seed}),flip=reverseIndex(family,amounts);
-    return amounts.map((b,i)=>item(family,b,{reversed:i===flip,prompt:'A calm starting check. Help is available.'}));
+    return amounts.map((b,i)=>item(family,b,{reversed:i===flip,prompt:'Take your time. Tap “Show me” if you would like help.'}));
   }
   function zero(count=3,{previous=[],seed}={}){
     const scenes=[

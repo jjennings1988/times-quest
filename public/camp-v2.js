@@ -16,14 +16,16 @@
   const worldInside=(x,y)=>Number.isInteger(x)&&Number.isInteger(y)&&x>=content.bounds.minX&&y>=content.bounds.minY&&x<=content.bounds.maxX&&y<=content.bounds.maxY;
   const river=x=>17+Math.sin(x*.21)*1.4;
   const bridge=z=>z>=3&&z<6;
-  const water=(x,z)=>Math.abs(x-river(z))<1.65&&!bridge(z);
+  // A second, narrower footbridge crosses downstream between the fishing landing and the mill (0.49).
+  const footbridge=z=>z>=17&&z<18;
+  const water=(x,z)=>Math.abs(x-river(z))<1.65&&!bridge(z)&&!footbridge(z);
   function groundHeight(x,z){
     const distance=Math.abs(x-river(z));
     if(distance<2.5)return -.72+Math.min(1,distance/2.5)*.8;
     const outside=Math.max(0,-x,x-12,-z,z-10);
     return .08+Math.min(1,outside/4)*(.15+Math.sin(x*.38)*Math.cos(z*.32)*.2)+Math.max(0,-z-5)*.17;
   }
-  const walkHeight=(x,z)=>bridge(z)&&Math.abs(x-river(z))<3?.16:groundHeight(x,z);
+  const walkHeight=(x,z)=>(bridge(z)||footbridge(z))&&Math.abs(x-river(z))<3?.16:groundHeight(x,z);
   const discoveries=[
     {id:'bridge',name:'Willow Bridge',x:20,y:4,text:'A stream finds its way through the woods. So can you.'},
     {id:'stones',name:'Story Stones',x:-5,y:2,text:'Thirteen stones, thirteen realms. There is room for your story here.'},
@@ -43,7 +45,7 @@
   const treePresent=(save,t)=>!t.roadside&&!t.edge&&!openGround(Math.floor(t.x),Math.floor(t.z))&&!(save.cleared||[]).includes(treeKey(t));
   const fixedBlocked=(x,z)=>content.groveFence(x,z)||content.town.some(o=>x>=o.x&&x<o.x+o.w&&z>=o.y&&z<o.y+o.h);
   const worldBlocked=(x,z)=>!worldInside(x,z)||water(x+.5,z+.5)||(!openGround(x,z)&&forest.some(t=>!t.roadside&&!t.edge&&Math.floor(t.x)===x&&Math.floor(t.z)===z))||fixedBlocked(x,z);
-  const world={river,bridge,water,groundHeight,walkHeight,discoveries,forest,inside:worldInside,blocked:worldBlocked,content,treeKey,treePresent};
+  const world={river,bridge,footbridge,water,groundHeight,walkHeight,discoveries,forest,inside:worldInside,blocked:worldBlocked,content,treeKey,treePresent};
   // One-fact village jobs: Mara's orders, Bram's baking and Millie's fair shares.
   const SINGLE=['order','bake','mill'],near=(e,id,r=2.5)=>{const p=content.locations.find(l=>l.id===id);return p&&Math.hypot(e.x-p.x,e.y-p.y)<=r;};
   const overlaps=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
@@ -77,6 +79,8 @@
     if(s.orders!==undefined&&(!Number.isInteger(s.orders)||s.orders<0||s.orders>2))return false;
     const dayMap=v=>v===undefined||(v&&typeof v==='object'&&!Array.isArray(v)&&Object.keys(v).length<=200&&Object.values(v).every(d=>Number.isInteger(d)&&d>=0&&d<1e6));
     if(!dayMap(s.beds)||!dayMap(s.collected))return false;
+    // Desire lines: how many days the child has walked each grass cell (0.50).
+    if(s.worn!==undefined&&(!s.worn||typeof s.worn!=='object'||Array.isArray(s.worn)||Object.keys(s.worn).length>400||!Object.entries(s.worn).every(([k,n])=>/^-?\d{1,3},-?\d{1,3}$/.test(k)&&Number.isInteger(n)&&n>=1&&n<=30)))return false;
     if(s.todaySeen!==undefined&&(!Number.isInteger(s.todaySeen)||s.todaySeen<0))return false;
     for(const k of ['bakes','mills'])if(s[k]!==undefined&&(!Number.isInteger(s[k])||s[k]<0||s[k]>1))return false;
     if(s.kitsGranted!==undefined&&(!Array.isArray(s.kitsGranted)||s.kitsGranted.some(n=>!Number.isInteger(n)||n<1||n>13)))return false;
@@ -88,6 +92,15 @@
   }
   // A camp name: up to 24 letters, digits, spaces and simple punctuation.
   const validName=n=>typeof n==='string'&&n.trim().length>0&&n.length<=24&&/^[\p{L}\p{N} '’.!&-]+$/u.test(n);
+  // When the village is redrawn in an update, a camp with something standing outside open land still opens:
+  // those things go back into the backpack (and a wandering explorer comes home). Anything else damaged stays in recovery.
+  function rehome(save){
+    if(!save||typeof save!=='object'||validSave(save)||!Array.isArray(save.objects)||!save.inventory||typeof save.inventory!=='object')return null;
+    const s=clone(save),returned=[];if(!s.explorer||!worldInside(s.explorer.x,s.explorer.y))s.explorer={x:6,y:7};
+    if(!s.camera||!['x','y','zoom'].every(k=>Number.isFinite(s.camera[k]))||s.camera.zoom<.55||s.camera.zoom>1.8||(s.camera.angle!==undefined&&!Number.isFinite(s.camera.angle)))s.camera={x:0,y:0,zoom:1,angle:0};
+    for(let guard=0;guard<260;guard++){const o=s.objects.find(o=>o&&catalog[o.type]&&placementReason(s,o.type,o.x,o.y,o.r||0,o.id,false));if(!o)break;s.objects=s.objects.filter(p=>p!==o);s.inventory[o.type]=(s.inventory[o.type]||0)+1;returned.push(o.type);if(s.construction?.objectId===o.id)s.construction=null;}
+    if(!validSave(s))return null;return {save:{...s,revision:s.revision+1},returned};
+  }
   function migrateSave(save){
     if(!validSave(save))return null;
     if(save.v===3)return save;
@@ -266,7 +279,7 @@
     let pattern=null,requestTold=false;const skippedPatterns=new Set();const today=Number.isInteger(options.today)?options.today:null;
     let disposed=false,mode='explore',panel=s.openingIntro?'welcome':null,selected=null,preview=null,undo=null,undoStack=[],pendingActivity=null;
     if(!s.openingIntro&&today!==null&&s.todaySeen!==today&&validSave(s))panel='today';
-    let explorer={...(s.explorer||{x:6,y:7})},pet={x:explorer.x+.6,y:explorer.y+.5},walking=[],onArrive=null,activity='',activityUntil=0,seated=null;
+    let trip=[];const wornThisVisit=new Set();let explorer={...(s.explorer||{x:6,y:7})},pet={x:explorer.x+.6,y:explorer.y+.5},walking=[],onArrive=null,activity='',activityUntil=0,seated=null;
     let camera={x:0,y:0,zoom:1,...s.camera},width=0,height=0,raf=0,last=0,dirty=true,pointers=new Map(),gesture=null;
     const abort=new AbortController(),signal=abort.signal;let scene=null,petTrail=[],heading=0,building=null,category='all',selectedGuardian=null;const guardians=options.guardians||[];const metrics={frames:0,total:0,worst:0};
     const esc=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -283,7 +296,7 @@
     function recoveryBanner(){const el=host.querySelector('.cv2-recovery-banner');el.innerHTML=recovery?'<span>'+ (recovery.code==='loading-timeout'?'The woodland took too long to open.':recovery.code==='context-lost'?'The graphics view paused.':'3D is unavailable right now.')+'</span><button data-action="help">Fix camp</button>':'';}
     function fail(code,error){if(disposed)return;clearTimeout(loadTimer);cancelAnimationFrame(raf);raf=0;paused=true;walking=[];onArrive=null;building=null;pointers.clear();gesture=null;recovery={code,detail:String(error?.message||error||code).slice(0,300),time:new Date().toISOString(),quality:s.quality,objects:s.objects.length};options.onDiagnostic?.(recovery);if(code!=='context-lost'){const old=scene;scene=null;try{old?.dispose();}catch{}}host.classList.add('cv2-no-webgl');canvas.setAttribute('aria-label','Camp graphics paused. Use Camp help to restart, or use Backpack controls.');panel='bag';recoveryBanner();ui();tell('Your saved camp is safe. Open Fix camp to restart the graphics.');}
     function commit(next){if(disposed||options.currentProfileId()!==profileId)return false;s=next;setSave(next);dirty=true;return true;}
-    function persistView(){if(disposed)return;commit({...s,camera:{...camera},explorer:{x:Math.round(explorer.x),y:Math.round(explorer.y)}});}
+    function persistView(){if(disposed)return;if(!['x','y','zoom'].every(k=>Number.isFinite(camera[k])))camera={...s.camera};commit({...s,camera:{...camera},explorer:{x:Math.round(explorer.x),y:Math.round(explorer.y)}});}
     function act(cmd){explorer={x:Math.round(explorer.x),y:Math.round(explorer.y)};persistView();const before=clone(s),r=command(s,{...cmd,revision:s.revision},{tester:options.tester});if(!r.ok){tell(r.message);return false;}if(!commit(r.save))return false;if(cmd.kind==='finish-build'){if(undoStack.length)undoStack[undoStack.length-1].revision=s.revision;}else if(['place','move','upgrade','store','paint'].includes(cmd.kind)){undoStack.push({before,revision:s.revision});undoStack=undoStack.slice(-12);}else undoStack=[];undo=undoStack[undoStack.length-1]||null;preview=null;selected=null;walking=[];onArrive=null;seated=null;building=null;activity='';if(r.reviewEvent)options.onReview?.(r.reviewEvent);
       if(['place','upgrade'].includes(cmd.kind)){const f=footprint(s.objects.find(o=>o.x===cmd.x&&o.y===cmd.y)?.type||cmd.type||'path',cmd.r||0);scene?.celebrate?.(cmd.x+f.w/2,cmd.y+f.h/2);options.onSound?.('build');}
       else if((cmd.kind==='solve-pattern'&&r.reviewEvent?.correct)||cmd.kind==='claim-request')options.onSound?.('fact');
@@ -417,8 +430,12 @@
     function offerActivity(kind,target){pendingActivity={kind,target};selected=null;panel=null;ui();}
     /* Any tap during a walk arrives straight away. */
     function skipWalk(){if(!walking.length)return;const last=walking[walking.length-1];explorer={x:Math.round(last.x),y:Math.round(last.y)};pet={x:explorer.x+.35,y:explorer.y+.3};walking=[];petTrail=[];scene?.focus(explorer.x+.5,explorer.y+.5,camera);tell(activity||'');arrive();ui();dirty=true;}
-    function travel(target,done,text,instant=false){const path=route(s,explorer,target);if(path===null){tell('No clear walking route. Move an object or add an opening.');return;}mode='explore';seated=null;petTrail=[];walking=path;onArrive=done||null;activity=text||'Exploring with your buddy';tell(activity+(path.length>10&&!instant&&!calm()?' · tap anywhere to arrive now':''));activityUntil=0;panel=null;selected=null;pendingActivity=null;if(calm()||instant){explorer={...target};pet={x:target.x+.35,y:target.y+.3};walking=[];scene?.focus(target.x+.5,target.y+.5,camera);arrive();}else if(!path.length)arrive();ui();dirty=true;}
-    function arrive(){const done=onArrive;onArrive=null;if(done)done();for(const d of discoveries)if(Math.hypot(explorer.x-d.x,explorer.y-d.y)<2&&!(s.discoveries||[]).includes(d.id)){commit({...s,discoveries:[...(s.discoveries||[]),d.id],revision:s.revision+1});activity=d.text;tell(`Discovered ${d.name}. ${d.text}`);}persistView();activityUntil=performance.now()+7000;ui();}
+    function travel(target,done,text,instant=false){const path=route(s,explorer,target);if(path===null){tell('No clear walking route. Move an object or add an opening.');return;}mode='explore';seated=null;petTrail=[];walking=path;onArrive=done||null;activity=text||'Exploring with your buddy';tell(activity+(path.length>10&&!instant&&!calm()?' · tap anywhere to arrive now':''));activityUntil=0;panel=null;selected=null;pendingActivity=null;trip=path.slice();if(calm()||instant){const short=!calm()&&path.length>6,land=short?path[path.length-5]:target;explorer={...land};pet={x:land.x+.35,y:land.y+.3};walking=short?path.slice(-4):[];if(!short)trip=[];else trip=path.slice(-4);scene?.focus(target.x+.5,target.y+.5,camera);if(!walking.length)arrive();}else if(!path.length)arrive();ui();dirty=true;}
+    // A hop lands a few steps short of the destination, so you always walk up to it and see it arrive.
+    // Grass wears into a trail where the child walks: each cell counts once a visit, and shows after a few days.
+    function wear(cells){if(!cells.length||options.currentProfileId()!==profileId)return;const worn={...(s.worn||{})};let changed=false;for(const p of cells){const k=p.x+','+p.y;if(content.roadAt(p.x,p.y)||wornThisVisit.has(k)||!worldInside(p.x,p.y))continue;wornThisVisit.add(k);worn[k]=Math.min(30,(worn[k]||0)+1);changed=true;}if(!changed)return;const keys=Object.keys(worn);if(keys.length>400)keys.sort((a,b)=>worn[a]-worn[b]).slice(0,keys.length-400).forEach(k=>delete worn[k]);commit({...s,worn});}
+    function placeOf(x,y){if(content.inZone(content.grove,x,y))return 'grove';const f=content.zones.find(z=>z.id==='fields');if(f&&x>=f.x-2&&x<f.x+f.w+2&&y>=f.y-2&&y<f.y+f.h+2)return 'fields';if(Math.abs(x+.5-river(y+.5))<5)return 'river';if(x>=20&&x<50&&y>=-9&&y<24)return 'village';return 'camp';}
+    function arrive(){const done=onArrive;onArrive=null;wear(trip);trip=[];options.onPlace?.(placeOf(Math.round(explorer.x),Math.round(explorer.y)));if(done)done();for(const d of discoveries)if(Math.hypot(explorer.x-d.x,explorer.y-d.y)<2&&!(s.discoveries||[]).includes(d.id)){commit({...s,discoveries:[...(s.discoveries||[]),d.id],revision:s.revision+1});activity=d.text;tell(`Discovered ${d.name}. ${d.text}`);}persistView();activityUntil=performance.now()+7000;ui();}
     const HOMES=['tent','trailtent','canvas','cabin','lodge','stonehome','keep'];
     const SWATCHES=[['#52877e','Forest green'],['#ac715e','Clay red'],['#8e84a5','Heather purple'],['#bd9858','Honey gold'],['#53788b','Lake blue']];let movingIn=null;
     /* A finished home gets a small moving-in moment: the explorer and buddy walk in and settle. */
@@ -489,7 +506,7 @@ const targets=catalog[o.type].layer==='surface'?[{x:o.x,y:o.y}]:entrances(o);con
         if(a==='confirm'){placePreview();return;}ui();host.querySelector(`[data-action="${a}"]`)?.focus();}
     }
     host.addEventListener('click',e=>{try{dispatch(e);}catch(error){fail('interaction',error);}},{signal});
-    function visitLocation(id,instant=false){const place=content.locations.find(p=>p.id===id);if(!place)return;travel({x:place.x,y:place.y},()=>{scene?.focus(place.x+.5,place.y+.5,camera,true);if(id==='store'){panel='store';ui();}else if(id==='fish'){if(s.mastered>=3&&!s.challenge){panel='river';ui();}else startWoodland('fish');}else{panel=id==='sanctuary'?'sanctuary':'place-info';selectedGuardian=id;ui();}},(instant?'Hopping to ':'Walking to ')+place.name,instant);}
+    function visitLocation(id,instant=false){const place=content.locations.find(p=>p.id===id);if(!place)return;travel({x:place.x,y:place.y},()=>{scene?.focus(place.x+.5,place.y+.5,camera,true);if(id==='store'){panel='store';ui();}else if(id==='fish'){if(s.mastered>=3&&!s.challenge){panel='river';ui();}else startWoodland('fish');}else{if(id==='sanctuary')scene?.greet?.();panel=id==='sanctuary'?'sanctuary':'place-info';selectedGuardian=id;ui();}},(instant?'Hopping to ':'Walking to ')+place.name,instant);}
     function visitGuardian(family){const g=guardians.find(g=>g.family===family),pad=content.guardianPads.find(p=>p.family===family);if(!g?.defeated||!pad){tell('Win this realm battle to welcome its guardian.');return;}travel({x:pad.x,y:pad.y+1},()=>{selectedGuardian=family;panel='guardian';if(width<600)camera.zoom=Math.max(1.6,camera.zoom);scene?.focus(pad.x+.5,pad.y+.5,camera,true);ui();},'Visiting '+g.name);}
     function startWoodland(kind,target){if(kind==='land'&&s.land.includes(target)){const z=content.zones.find(z=>z.id===target),spots=[];for(let x=z.x;x<z.x+z.w;x++)for(let y=z.y;y<z.y+z.h;y++)spots.push({x,y});const point=spots.sort((a,b)=>Math.hypot(a.x-z.x-z.w/2,a.y-z.y-z.h/2)-Math.hypot(b.x-z.x-z.w/2,b.y-z.y-z.h/2)).find(p=>route(s,explorer,p)!==null);if(point)travel(point,()=>{mode='build';scene?.focus(z.x+z.w/2,z.y+z.h/2,camera,true);ui();},'Exploring '+z.name);else tell('Leave a route into this parcel.');return;}if(s.challenge){ui();return;}const begin=()=>{act({kind:'start-activity',activity:kind,target,questions:options.reviewQuestions?.()||[]});host.querySelector('#camp-review-answer')?.focus();};if(['fish','stone','order','bake','mill'].includes(kind)){begin();return;}const z=content.zones.find(z=>z.id===target),t=forest.find(t=>treeKey(t)===target);const point=kind==='land'?z:t?{x:Math.floor(t.x),y:Math.floor(t.z)}:null;if(!point)return;const spots=[];for(let dx=-2;dx<=2;dx++)for(let dy=-2;dy<=2;dy++)if(Math.hypot(dx,dy)<=2)spots.push({x:point.x+dx,y:point.y+dy});const near=spots.sort((a,b)=>Math.hypot(a.x-explorer.x,a.y-explorer.y)-Math.hypot(b.x-explorer.x,b.y-explorer.y)).find(p=>route(s,explorer,p)!==null);if(near)travel(near,begin,kind==='land'?'Opening '+z.name:'Walking to a forest tree');else tell('Leave a route to this part of the woods.');}
     function resumeBuild(){if(!s.construction||building||walking.length||s.challenge)return;const o=s.objects.find(o=>o.id===s.construction.objectId);if(!o)return;const near=entrances(o).find(p=>route(s,explorer,p)!==null);if(!near){tell('Leave a route to your building, or choose Finish now.');return;}if(calm()){finishAndMoveIn();return;}travel(near,()=>{building={id:o.id,started:performance.now()};heading=Math.atan2(o.x-explorer.x,o.y-explorer.y);activity='Building '+catalog[o.type].name;ui();},'Carrying supplies to '+catalog[o.type].name);}
@@ -544,12 +561,13 @@ const targets=catalog[o.type].layer==='surface'?[{x:o.x,y:o.y}]:entrances(o);con
       if(recovery){scene?.dispose();scene=null;return;}
       clearTimeout(loadTimer);paused=false;resize();ui();if(!paused&&!raf)raf=requestAnimationFrame(frame);
       if(navigator.serviceWorker)navigator.serviceWorker.ready.then(reg=>{if(!disposed)reg.active?.postMessage({type:'CACHE_CAMP_3D'});}).catch(()=>{});
-      if(!recovery)tell(options.visitorName?options.visitorName+' came to visit the Story Stones today!':'Welcome to Willowbrook. Your clearing is part of a bigger world.');
+      options.onPlace?.(placeOf(Math.round(explorer.x),Math.round(explorer.y)));
+      if(!recovery)tell(options.notice||(options.visitorName?options.visitorName+(calm()?' came to visit the Story Stones today!':' is walking over from the Guardian Grove to visit the Story Stones!'):'Welcome to Willowbrook. Your clearing is part of a bigger world.'));
     }).catch(error=>fail('world-load',error));
     resize();ui();raf=requestAnimationFrame(frame);
     return {openGoal(type){if(disposed||!root.CampGoals?.valid(catalog,type))return;const g=root.CampGoals.view(catalog,s,type);if(g.placed){selected=g.placed.id;panel=null;frameObject(g.placed);ui();}else if(g.ready&&!s.construction){choose(type,g.predecessor?.id||null,!!g.predecessor);}else{panel=g.remaining||s.construction?'journal':'goal-supplies';preview=null;selected=null;ui();tell(s.construction?'Finish your current construction first.':g.remaining?'Complete '+g.remaining+' more Realm Challenges for this blueprint.':'Gather fallen wood, earn gems in learning adventures, or visit the supply store for stone.');}},dispose(){if(disposed)return;persistView();disposed=true;clearTimeout(loadTimer);abort.abort();cancelAnimationFrame(raf);try{scene?.dispose();}catch{};scene=null;host.classList.remove('cv2-three','cv2-no-webgl');host.innerHTML='';}};
     }catch(error){disposed=true;clearTimeout(loadTimer);abort.abort();cancelAnimationFrame(raf);try{scene?.dispose();}catch{}throw error;}
   }
-  root.CampV2={reframeCamera,content,buildable,unlockReason,syncProgress,grantKits,autoPlace,patterns,mathable,request,requestMet,ready,bedYield,world,catalog,COLS,ROWS,sources,fresh,freshExpedition,validSave,migrateSave,footprint,placementReason,route,command,awardLearning,mount};
+  root.CampV2={rehome,reframeCamera,content,buildable,unlockReason,syncProgress,grantKits,autoPlace,patterns,mathable,request,requestMet,ready,bedYield,world,catalog,COLS,ROWS,sources,fresh,freshExpedition,validSave,migrateSave,footprint,placementReason,route,command,awardLearning,mount};
   if(typeof module!=='undefined'&&module.exports)module.exports=root.CampV2;
 })(typeof window!=='undefined'?window:globalThis);

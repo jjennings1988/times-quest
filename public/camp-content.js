@@ -118,6 +118,10 @@
     // The sanctuary path loops past each guardian's home in the order the realms were travelled, with a spur to the heart tree.
     {id:'sanctuary',kind:'path',w:1.6,pts:[[71.6,2.8],[72,.4],...Array.from({length:15},(_,i)=>{const a=.42+i*(Math.PI*2-.84)/14;return [72+Math.sin(a)*5.2,-7+Math.cos(a)*5.6];}),[71.2,.3]]},
     {id:'heart',kind:'path',w:1.6,pts:[[72,-.6],[72,-2.6],[72,-4.4]]},
+    // 0.49: a footpath from Maple Hollow to Willow Bridge, a bank path past the fishing landing, and the mill lane down to a second footbridge.
+    {id:'hollow',kind:'path',w:1.6,pts:[[12.2,4.6],[13.8,4.55],[15.5,4.5]]},
+    {id:'bank',kind:'path',w:1.6,pts:[[13.5,4.9],[13.3,6.6],[13.7,8.4],[13.8,10.2],[13.6,12.2],[13.6,14.2],[13.9,16],[14.4,17.5]]},
+    {id:'ford',kind:'path',w:1.6,pts:[[23.6,13.8],[23.4,15.2],[22.4,16.6],[20.6,17.4],[18.6,17.5]]},
     {id:'rose',kind:'lane',w:2,pts:[[37.4,5],[36.4,8.4],[34.5,10.5],[34.25,13.5],[34.8,16.5],[36.5,19],[39.5,20.25],[43.5,20.45],[47.3,20.1]]}];
   const blockedCell=(x,y)=>zones.some(z=>x>=z.x&&x<z.x+z.w&&y>=z.y&&y<z.y+z.h)||town.some(z=>x>=z.x&&x<z.x+z.w&&y>=z.y&&y<z.y+z.h);
   const roadLines=[];
@@ -130,6 +134,8 @@
     if(best)lay({id:'door-'+b.id,kind:'path',w:1.6,pts:[[e.x+.5,e.y+.5],[(e.x+best.c.x)/2+.5,(e.y+best.c.y)/2+.5],[best.c.x+.5,best.c.y+.5]]});}
   // How far a point is from the edge of any road (negative inside).
   function roadNear(x,y){let d=1e9;for(const r of roadLines)for(let i=0;i<r.pts.length;i+=2){const e=Math.hypot(x-r.pts[i][0],y-r.pts[i][1])-r.w/2;if(e<d)d=e;}return d;}
+  // The two bridge decks join the paths on either bank (walked like a road, drawn as a bridge).
+  for(const [y,x0,x1] of [[4,15,20],[17,14,18]])for(let x=x0;x<=x1;x++)if(!roadMap.has(roadKey(x,y)))roadMap.set(roadKey(x,y),{x,y,kind:'bridge'});
   const roads=[...roadMap.values()];
   const roadAt=(x,y)=>roadMap.get(roadKey(x,y));
   const civic=(x,y)=>(x>=20&&x<=56&&y>=-11&&y<=9)||(x>=18&&x<=24&&y>=9&&y<=16)||(x>=20&&x<=57&&y>=18&&y<=27)||(x>=47&&x<=57&&y>=9&&y<=18)||(x>=34&&x<=35&&y>=9&&y<=24)||(x>=grove.x&&x<grove.x+grove.w&&y>=grove.y&&y<grove.y+grove.h)||!!roadAt(x,y);

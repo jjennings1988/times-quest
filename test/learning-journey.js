@@ -31,7 +31,7 @@ async function main(){
     w.renderMap();check('every map realm has a keyboard action',w.document.querySelectorAll('.realm-node [role="button"][tabindex="0"]').length===13);
     fresh();w.beginLesson(2);check('new child can start with meaningful doubles',ev('unlockedFamilies().includes(2)'));
     check('guided model appears before testing',!!$('journey-body').querySelector('.strategy-workshop')&&ev('quiz')===null);
-    w.strategyAction('act');w.strategyAction('reason',0);check('adding single items prompts correction',ev('quiz')===null&&!ev('state.journey.current.strategy.explained')&&$('strategy-feedback').textContent.includes('full groups'));
+    w.strategyAction('act');w.strategyAction('reason',0);check('adding single items prompts correction',ev('quiz')===null&&!ev('state.journey.current.strategy.explained')&&$('strategy-feedback').textContent.includes('whole groups, or single items'));
     const finishDoubles=()=>{w.strategyAction('act');w.strategyAction('reason',1);w.strategyAction('next',7);w.strategyAction('plan',0);w.strategyAction('predict',14);w.strategyAction('act');w.strategyAction('total',14);w.strategyAction('next');w.strategyAction('each',9);w.strategyAction('act');w.strategyAction('total',18);w.startGuardianTry();};
     finishDoubles();check('four independent questions follow the model',ev('quiz.queue.length')===4&&!ev('quiz.timed'));
     check('independent questions never repeat an amount the lesson displayed',ev('quiz.queue').every(q=>![4,7,9].includes(q.b)));

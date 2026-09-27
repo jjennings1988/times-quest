@@ -133,6 +133,44 @@ See [the opening slice and verification guide](OPENING-EXPEDITION.md),
 [the prior learning upgrade checklist](LEARNING-UPGRADE-CHECKLIST.md).
 Tests now include test/opening.js for the complete first expedition.
 
+## Clearer lessons — 0.51 beta (testing)
+
+A wording pass over every realm lesson, the ×0 and ×9 lessons, the realm tips and hints,
+and the guardian introductions. The math and the lesson steps are unchanged.
+- Plain words for children: "trick" and "number sentence" instead of "strategy" and
+  "equation", "Now pick your own number" instead of "Your amount. Your model."
+- Plan questions ask about the objects on screen ("Six racks is five racks and how many
+  more?") instead of abstract group counts ("Split six groups into five groups and…").
+- ×10 is rewritten around bundles: "take one cell from every row to make a bundle of ten";
+  "the digits move one place left" is replaced by "ten groups of 7 is seven tens, 70".
+- ×11 no longer uses "10n + n"; ×12 says "ten groups plus two more groups", not "plus double".
+- Every "big idea" at the end of a lesson now has one worked example with 4 in each group
+  (4 is always shown during the lesson, so the checks never ask it).
+- Help after a wrong answer points to the next step without giving the answer away.
+
+## Willowbrook, getting around and worn in — 0.49 / 0.50 beta (testing)
+
+- **Camps survive a redrawn village:** if an update moves a building area, anything left
+  standing outside open land goes back into the backpack with a short note, instead of
+  the camp going to the recovery screen. A lost explorer or a broken camera view is
+  reset the same way. The camp as it was is kept in `campRehomed`. Anything else damaged
+  still goes to recovery.
+- **Arrivals (0.49):** a signpost hop lands a few steps short and you walk up to the
+  place (not in calm mode). At the Guardian Grove, the guardians who live there come out
+  to the arch to meet you, then go home.
+- **The day's visitor** walks from the grove along the grove road, the high street and
+  over Willow Bridge to the Story Stones.
+- **The river:** a footpath from Maple Hollow to Willow Bridge, a bank path past the
+  fishing landing, a pebble beach and bench by the landing, and a second footbridge
+  downstream that joins the mill lane.
+- **Worn in (0.50):** grass wears into a trail where the child walks. Each grass cell
+  counts once a visit (never on roads), shows after 3 visits and deepens up to 11+.
+  Stored as `worn` (at most 400 cells).
+- **Sound follows place:** the river rushes and plips, the village chatters, the grove is
+  hushed with more birdsong, and bees hum over Willow Fields (not in winter). Calm mode
+  still silences the soundscape.
+- Tests: test/camp-getting-around.js.
+
 ## Willowbrook, 3D friends and Willow Fields — 0.48 beta (testing)
 
 - **Guardians move in:** the flat creature pictures are gone from the camp. A Creature

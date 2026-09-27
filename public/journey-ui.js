@@ -176,7 +176,7 @@ function encounterQuestions(fam,count){
   return Array.from({length:count},(_,i)=>{
     const b=values[i%values.length],kind=['build','split','missing'][i%3];
     if(kind==='missing'&&fam>0)return {a:fam,b,text:`${fam} × ? = ${fam*b}`,ans:b,encounter:kind,prompt:`Share ${fam*b} ${unit} into ${fam} equal groups. How many in each?`};
-    return {a:fam,b,text:`${fam} × ${b}`,ans:fam*b,encounter:kind==='missing'?'build':kind,prompt:kind==='split'?'Choose how to split the groups. Then combine their totals.':`Make ${fam} equal group${fam===1?'':'s'} with ${b} ${unit} in each.`};
+    return {a:fam,b,text:`${fam} × ${b}`,ans:fam*b,encounter:kind==='missing'?'build':kind,prompt:kind==='split'?'Split the groups into two easier parts. Find each part, then add them.':`Make ${fam} equal group${fam===1?'':'s'} with ${b} ${unit} in each.`};
   });
 }
 function renderEncounter(q){

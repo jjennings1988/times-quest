@@ -446,7 +446,8 @@ export function createScene(canvas, {catalog, footprint, sources, world, avatar,
   function cast(px,py){ndc.set(px/width*2-1,1-py/height*2);raycaster.setFromCamera(ndc,camera);}
   function cell(px,py){cast(px,py);const hit=raycaster.intersectObject(terrain,true)[0];return hit?{x:Math.floor(hit.point.x),y:Math.floor(hit.point.z)}:{x:-99,y:-99};}
   function pick(px,py){cast(px,py);const hits=raycaster.intersectObjects([objects,wood,markers,villagers,treesToPick,townPick,landMarkers,worldDetails.picks],true);for(const hit of hits){let o=hit.object;while(o&&o!==scene){if(o.userData.guardian!==undefined||o.userData.id||o.userData.source!==undefined||o.userData.discovery||o.userData.tree||o.userData.location||o.userData.land)return o.userData;o=o.parent;}}return null;}
-  function focus(x,z,view,placement=false){updateCamera(view);const p=project(x,z);view.x+=width*.5-p.x;view.y+=height*(placement?.36:.5)-p.y;}
+  // A canvas with no size yet (a hidden or backgrounded page) cannot place the camera: leave it where it is.
+  function focus(x,z,view,placement=false){if(!(width>0&&height>0))return;updateCamera(view);const p=project(x,z),dx=width*.5-p.x,dy=height*(placement?.36:.5)-p.y;if(!Number.isFinite(dx)||!Number.isFinite(dy))return;view.x+=dx;view.y+=dy;}
   function follow(pos,view){updateCamera(view);const p=project(pos.x+.5,pos.y+.5);if(p.x<65||p.x>width-85||p.y<210||p.y>height-180)focus(pos.x+.5,pos.y+.5,view);}
   function resize(w,h,q){width=w;height=h;quality=q;ppu=Math.min(height/19,width/18);renderer.setPixelRatio(Math.min(devicePixelRatio||1,q==='low'?1:1.5));renderer.setSize(w,h,false);canvas.style.width=w+'px';canvas.style.height=h+'px';renderer.shadowMap.enabled=q!=='low';renderer.shadowMap.needsUpdate=true;}
   function thumbnail(type){
@@ -460,8 +461,13 @@ export function createScene(canvas, {catalog, footprint, sources, world, avatar,
     let url='';try{renderer.setRenderTarget(target);renderer.render(previewScene,thumbCamera);const pixels=new Uint8Array(112*112*4);renderer.readRenderTargetPixels(target,0,0,112,112,pixels);const out=document.createElement('canvas');out.width=out.height=112;const c=out.getContext('2d'),data=c.createImageData(112,112);for(let y=0;y<112;y++)data.data.set(pixels.subarray((111-y)*448,(112-y)*448),y*448);c.putImageData(data,0,0);url=out.toDataURL();}finally{renderer.setRenderTarget(oldTarget);renderer.shadowMap.enabled=shadows;target.dispose();}
     thumbnails.set(type,url);return url;
   }
+  // Desire lines (0.50): grass wears into a trail where the child walks often, faint at first, a real path after many days.
+  const wornGroup=new THREE.Group();scene.add(wornGroup);const wornG=new THREE.CircleGeometry(.6,10);wornG.rotateX(-Math.PI/2);extraGeometries.add(wornG);
+  const wornMats=[1,2,3,4,5].map(l=>{const m=new THREE.MeshLambertMaterial({color:'#c9b384',transparent:true,opacity:[.22,.38,.54,.7,.84][l-1],depthWrite:false});extraMaterials.add(m);return m;});let wornKey='';
+  function syncWorn(worn){const key=JSON.stringify(worn||{});if(key===wornKey)return;wornKey=key;while(wornGroup.children.length)wornGroup.remove(wornGroup.children[0]);
+    for(const [k,n] of Object.entries(worn||{})){if(n<3)continue;const [x,y]=k.split(',').map(Number),m=new THREE.Mesh(wornG,wornMats[Math.min(4,Math.floor((n-3)/2))]);m.position.set(x+.5,world.walkHeight(x+.5,y+.5)+.075,y+.5);m.rotation.y=(x*7+y*13)%6;m.scale.set(1,1,.82);m.renderOrder=1;m.receiveShadow=true;wornGroup.add(m);}}
   let lastRender=null,warmed=false;
-  function render(state,time){if(disposed||renderer.getContext().isContextLost())return;lastRender=[state,time];const {save,explorer,pet,heading,walking,seated,preview,selected,mode,calm,activity,building}=state;sync(save);
+  function render(state,time){if(disposed||renderer.getContext().isContextLost())return;lastRender=[state,time];const {save,explorer,pet,heading,walking,seated,preview,selected,mode,calm,activity,building}=state;sync(save);syncWorn(save.worn);
     // Compile every material once while the camp opens, so hopping to the village never stalls on a blank frame.
     if(!warmed){warmed=true;try{renderer.compile(scene,camera);}catch{}}updateCamera(state.camera);worldDetails.update(time,calm,skyNow(save));
     const sky=skyNow(save);if(wasNight!==sky){wasNight=sky;const k=SKIES[sky];scene.background.set(k.bg);scene.fog.color.copy(scene.background);ambient.intensity=k.ai;ambient.color.set(k.amb);sun.intensity=k.si;sun.color.set(k.sun);windowGlass().emissiveIntensity=k.glow;renderer.shadowMap.needsUpdate=true;}
@@ -499,6 +505,6 @@ export function createScene(canvas, {catalog, footprint, sources, world, avatar,
   function restored(){renderer.shadowMap.needsUpdate=true;onContextRestored?.();}
   canvas.addEventListener('webglcontextlost',lost);canvas.addEventListener('webglcontextrestored',restored);
   function dispose(){if(disposed)return;disposed=true;canvas.removeEventListener('webglcontextlost',lost);canvas.removeEventListener('webglcontextrestored',restored);geometries.forEach(g=>g.dispose());extraGeometries.forEach(g=>g.dispose());materials.forEach(m=>m.dispose());extraMaterials.forEach(m=>m.dispose());worldDetails.dispose();shadeTexture.dispose();pavingTexture.dispose();groundTexture.dispose();ink.dispose();signTextures.forEach(t=>t.dispose());critterTextures.forEach(t=>t.dispose());scene.traverse(m=>m.isInstancedMesh&&m.dispose());scene.clear();renderer.dispose();renderer.forceContextLoss();}
-  return {resize,render,project,cell,pick,focus,follow,thumbnail,celebrate,snapshot,stats:()=>({...renderer.info.render,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}),dispose};
+  return {greet:()=>worldDetails.greet(),resize,render,project,cell,pick,focus,follow,thumbnail,celebrate,snapshot,stats:()=>({...renderer.info.render,geometries:renderer.info.memory.geometries,textures:renderer.info.memory.textures}),dispose};
   }catch(error){renderer.dispose();renderer.forceContextLoss();throw error;}
 }
