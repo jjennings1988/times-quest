@@ -33,7 +33,7 @@ async function main(){
         build();w.strategyAction('reason',ev('FamilyLessons.plans['+f+'].correct'));w.strategyAction('next',7);w.strategyAction('plan',ev('FamilyLessons.planFor['+f+'].correct'));w.strategyAction('predict',ev('FamilyLessons.plans['+f+'].prediction(7)'));build();w.strategyAction('total',f*7);w.strategyAction('next');
       }
       const saved=JSON.stringify(ev('state'));ev(`state=JSON.parse(${JSON.stringify(saved)});migrateState()`);w.resumeLesson();
-      check(`chapter ${f} reload keeps completed manipulation and opens the child's own amount`,$('journey-body').textContent.includes('Your amount. Your model.')&&(f===9?!!$('nine-each'):!!$('strategy-each')));
+      check(`chapter ${f} reload keeps completed manipulation and opens the child's own amount`,$('journey-body').textContent.includes('Now pick your own number')&&(f===9?!!$('nine-each'):!!$('strategy-each')));
       w.startGuardianTry();check(`chapter ${f} exploration needs the child's own build before the check`,ev('quiz')===null);
       if(f===9){w.nineAction('each',5);w.nineAction('rack',2);w.nineAction('total',45);}
       else{w.strategyAction('each',5);const build=()=>{if(f===5){for(let i=0;i<5;i++)w.strategyAction('boat',i);}else while(!ev('FamilyLessons.complete(state.journey.current.strategy)'))w.strategyAction('act',1);};build();w.strategyAction('total',f*5);}

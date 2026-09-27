@@ -400,15 +400,14 @@
       if(st>=4)s+=flag(38,-28,'#c0503a',9)+flag(-38,10,'#2f8f8a',9,.6)+[...Array(12)].map((_,i)=>CI(-22+i*4,15+(i%2)*1.6,1,['#e7708a','#f2c24e','#b894e0'][i%3],INK,.15)).join('')+bunting(-38,10,38,-28,4,['#c0503a','#f2c24e','#2f8f8a']);
       return s;},
 
-    // Eight Ice Caves: a faceted ice cliff, icicles, a glowing passage; crystals doubling and doubling.
+    // Eight Ice Caves: a cave mouth in the foot of its ice mountain, icicles, a glowing passage; crystals doubling and doubling.
     8(st,R){let s='';
-      const cliff=[[-42,16],[-36,-16],[-22,-30],[-4,-38],[16,-34],[32,-22],[40,-6],[44,16]];
-      s+=P('M'+cliff.map(p=>p.join(' ')).join('L')+'Z','#e3eff4','#2c4e5c',.7);
-      const facets=[['#d2e6ee',[-42,16],[-36,-16],[-20,4]],['#c3dce8',[-36,-16],[-22,-30],[-14,-6],[-20,4]],['#eaf4f8',[-22,-30],[-4,-38],[-2,-14],[-14,-6]],['#d8eaf1',[-4,-38],[16,-34],[12,-12],[-2,-14]],['#b8d2e0',[16,-34],[32,-22],[26,2],[12,-12]],['#a9c8d8',[32,-22],[40,-6],[44,16],[26,2]]];
-      s+=facets.map(([c,...pts])=>P('M'+pts.map(p=>p.join(' ')).join('L')+'Z',c,'rgba(44,78,92,.45)',.3)).join('');
-      s+=P('M-38 -14 Q-20 -36 -4 -40 Q16 -36 34 -20','none','#fff',1.6)+P('M-38 -14 Q-20 -36 -4 -40 Q16 -36 34 -20','none','#b8d2e0',.4,' transform="translate(0 1.2)"');
-      s+=P('M-15 16 V2 Q0 -18 15 2 V16Z','#2a3e4a','#1d2a33',.7)+wash(0,18,54,6,'#ffffff',R,.9)+P('M-48 19 Q-34 13 -18 17 Q-8 19 0 17 Q10 15 18 17 Q34 13 48 19 Q30 22 0 21 Q-30 22 -48 19Z','#fbfdff','#9cc0d0',.35);
-      const icicles=[...Array(9)].map((_,k)=>{const t=k/8,x=-14+28*t,y=2-Math.sin(t*Math.PI)*17;return P(`M${f1(x-.8)} ${f1(y)} l.8 ${f1(2+R()*2.4)} l.8 ${f1(-2-R()*2.4)}`,'#eaf6fa','#5f7f90',.25);}).join('');
+      // The mouth: a dark arch in the foot of the ice mountain, framed by a lip of old blue ice and drifted snow.
+      const rim='M-25 17 Q-25 -3 -14 -13 Q0 -25 14 -13 Q25 -3 25 17 L16 17 Q16 3 9 -4 Q0 -13 -9 -4 Q-16 3 -16 17Z',mouth='M-16 17 Q-16 3 -9 -4 Q0 -13 9 -4 Q16 3 16 17Z';
+      s+=P(rim,'#cfe2ec','#2c4e5c',.6)+P('M-24 12 Q-24 -3 -14 -12 Q0 -23 13 -13','none','#fbfdff',1.1,' transform="translate(.6 1.2)"');
+      s+=P('M-21 6 l6 -1.4 M-17 -6 l4 3 M-6 -17 l1.4 4.4 M8 -16 l-1.6 4.6 M17 -7 l-4.4 2.4 M21 5 l-5.6 -.8','none','rgba(44,78,92,.5)',.35);
+      s+=P(mouth,'#243640','#1d2a33',.6)+P('M-44 20 Q-30 12 -18 17 Q-8 20 0 18 Q10 16 18 17 Q30 12 44 20 Q24 23 0 22 Q-24 23 -44 20Z','#fbfdff','#9cc0d0',.35);
+      const icicles=[...Array(9)].map((_,k)=>{const t=k/8,x=-13+26*t,y=12-Math.sin(t*Math.PI)*19;return P(`M${f1(x-.8)} ${f1(y)} l.8 ${f1(2+R()*2.4)} l.8 ${f1(-2-R()*2.4)}`,'#eaf6fa','#5f7f90',.25);}).join('');
       const snow=[[-40,16,12],[36,16,10],[-6,17,8]].map(([x,y,w])=>P(`M${x-w} ${y} Q${x} ${y-5} ${x+w} ${y}Z`,'#fbfdff','#9cc0d0',.35)).join('');
       if(st===0)return s+[[-8,12,6],[4,10,7],[10,14,5],[-2,6,5]].map(([x,y,r])=>CI(x,y,r,'#dce8ee','#5f7f90',.5)+P(`M${x-r*.5} ${y-r*.3} l${r*.6} ${r*.2}`,'none','#fff',.4)).join('')+snow;
       const crystal=(x,y,h,col)=>{const w=h*.28;return P(`M${f1(x)} ${f1(y)} L${f1(x-w)} ${f1(y-h*.6)} L${f1(x)} ${f1(y-h)} L${f1(x+w)} ${f1(y-h*.6)}Z`,col,'#2c4e5c',.35)+P(`M${f1(x)} ${f1(y)} L${f1(x)} ${f1(y-h)} L${f1(x+w)} ${f1(y-h*.6)}Z`,'rgba(255,255,255,.35)','none',0)+P(`M${f1(x-w*.5)} ${f1(y-h*.55)} l${f1(w*.3)} ${f1(-h*.25)}`,'none','#fff',.3);};
@@ -416,7 +415,7 @@
       s+=bit(.3,[[8,14,5],[12,12,4]].map(([x,y,r])=>CI(x,y,r,'#dce8ee','#5f7f90',.5)).join('')+P('M-24 14 l6 -8 M-22 12 l2 3','none','#6b4527',.8));
       if(st<3)return s+bit(.6,P('M18 18 h14 l2 -2','none','#6b4527',1)+RC(19,13,11,3,'#dce8ee','#5f7f90',.45)+P('M22 13 v3 M26 13 v3','none','#5f7f90',.35)+P('M32 16 l6 -3','none','#6b4527',.5))+lamp(-18,16,7)+snow+icicles;
       light(0,4,16);
-      s+=bit(.9,P('M-15 16 V2 Q0 -18 15 2 V16Z','url(#clIce)','none',0,' class="cl-orbglow"')+[[-6,10,3],[4,6,2.4],[0,12,2]].map(([x,y,h])=>crystal(x,y,h,'#e6f7ff')).join(''))+icicles;
+      s+=bit(.9,P(mouth,'url(#clIce)','none',0,' class="cl-orbglow"')+[[-6,10,3],[4,6,2.4],[0,12,2]].map(([x,y,h])=>crystal(x,y,h,'#e6f7ff')).join(''))+icicles;
       // Eight clusters: one, then two, then four, then eight crystals growing around the mouth.
       const cr=[[-24,14,9,1],[22,14,9,2],[-32,8,7,3],[-18,6,6,4],[28,8,7,3],[34,12,6,2],[-8,17,5,2],[8,17,5,3]];
       s+=cr.map(([x,y,h,n],i)=>bit(1.2+i*.1,cluster(x,y,h,n,i%2?'#b8b0f0':'#a8d8f0'))).join('');

@@ -2,17 +2,17 @@
 (function(root){
   'use strict';
   const ideas={
-    0:['Empty groups','A group with nothing in it adds zero. Zero groups also make zero.'],
+    0:['Empty groups','Groups with nothing in them make zero. No groups at all also make zero.'],
     1:['One whole group','One group keeps the amount the same.'],
     2:['Double River Bridge','Two equal groups make a double.'],
     3:['The third vine','Make a double, then add one more equal group.'],
-    4:['Double, then double','Double a group to make two. Double that total to make four.'],
-    5:['Harbor supply boats','Five equal groups are half of ten equal groups.'],
+    4:['Double, then double','Double to make two groups, then double again to make four.'],
+    5:['Harbor supply boats','Five groups are half of ten groups.'],
     6:['The spare power cell','Start with five equal groups, then add one more.'],
     7:['The storm shield','Split seven equal groups into five groups and two groups.'],
     8:['Three icy doubles','Double once for two, again for four, and once more for eight.'],
     9:['One group less','Make ten equal groups, then remove one group.'],
-    10:['Bundles of ten','Ten equal groups make ten times as many. The digits move one place to the left.'],
+    10:['Bundles of ten','Ten groups of a number make that many tens: 10 × 4 is four tens, 40.'],
     11:['The extra tower','Make ten equal groups, then add one more.'],
     12:['A dozen supplies','Make ten equal groups, then add two more.']
   };
@@ -21,8 +21,8 @@
     if(a===0||b===0)return `${a} groups of ${b} have ${a*b} altogether. Anything multiplied by zero is zero.`;
     if(a===1)return `One group of ${b} is ${b}.`;
     if(a===2)return `Double ${b}: ${b} + ${b} = ${2*b}.`;
-    if(a===5)return `Ten groups of ${b} make ${10*b}. Half as many groups make ${5*b}.`;
-    if(a===10)return `Ten groups of ${b} make ${10*b}. For whole numbers, the digits move one place to the left.`;
+    if(a===5)return `Ten groups of ${b} make ${10*b}. Five groups is half of that: ${5*b}.`;
+    if(a===10)return `Ten groups of ${b} make ${b} tens: ${10*b}.`;
     const p=parts(a);return p?`${p[0]} groups of ${b} make ${p[0]*b}. ${p[1]<0?'Remove':'Add'} ${Math.abs(p[1])} more group${Math.abs(p[1])===1?'':'s'}: ${p[0]*b} ${p[1]<0?'−':'+'} ${Math.abs(p[1])*b} = ${a*b}.`:`${a} equal groups of ${b} make ${a*b}.`;
   }
   function lesson(fam){return {family:fam,title:ideas[fam][0],idea:ideas[fam][1],each:4,groups:fam,explanation:explanation(fam,4),parts:parts(fam)};}

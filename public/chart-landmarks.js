@@ -16,11 +16,11 @@
 
   /* A soft, ragged ink mask at quarter resolution. `grow` animates one realm's spread. */
   function maskURL(stages,makeCanvas,{all=false,grow=null}={}){
-    const q=4,w=Math.ceil(CW.W/q),h=Math.ceil(CW.H/q),c=makeCanvas(w,h),ctx=c.getContext('2d');
+    const q=4,w=Math.ceil(CW.W/q),h=Math.ceil((CW.H+CW.TOP)/q),c=makeCanvas(w,h),ctx=c.getContext('2d');
     if(all){ctx.fillStyle='#000';ctx.fillRect(0,0,w,h);return c.toDataURL();}
     const n=CW.noise(211);
     for(const k of inkCircles(stages)){let r=k.r;if(grow&&grow.family===k.family)r=grow.from+(k.r-grow.from)*grow.t;if(r<=1)continue;
-      const cx=k.x/q,cy=k.y/q,rr=r/q,g=ctx.createRadialGradient(cx,cy,0,cx,cy,rr*1.12);g.addColorStop(0,'#000');g.addColorStop(.7,'#000');g.addColorStop(1,'rgba(0,0,0,0)');
+      const cx=k.x/q,cy=(k.y+CW.TOP)/q,rr=r/q,g=ctx.createRadialGradient(cx,cy,0,cx,cy,rr*1.12);g.addColorStop(0,'#000');g.addColorStop(.7,'#000');g.addColorStop(1,'rgba(0,0,0,0)');
       ctx.fillStyle=g;ctx.beginPath();for(let i=0;i<=48;i++){const a=i/48*TAU,m=1+(n(Math.cos(a)*1.6+k.family*3,Math.sin(a)*1.6)-.5)*.42;const px=cx+Math.cos(a)*rr*1.12*m,py=cy+Math.sin(a)*rr*1.12*m;i?ctx.lineTo(px,py):ctx.moveTo(px,py);}ctx.fill();}
     return c.toDataURL();
   }
@@ -64,6 +64,96 @@
   }
   function boat(b){return`<g class="cl-boat" style="--x:${b.x}px;--y:${b.y}px"><path d="M-7 0 Q0 3.4 7 0 L5.4 -1.8 H-5.4Z" fill="#8b5a32" stroke="#3b2a1c" stroke-width=".5"/><path d="M-4.4 -1.6 Q0 -.4 4.4 -1.6" fill="none" stroke="#e0b24a" stroke-width=".4"/><circle cx="1" cy="-3.6" r="1.3" fill="#f2cfa8" stroke="#3b2a1c" stroke-width=".35"/><path d="M-.4 -2.4 h2.8 v1 h-2.8z" fill="#c0503a"/><path d="M-2 -2 L-8 3" stroke="#6b4527" stroke-width=".6"/><path d="M-9 2.4 q2 -1 4 0 M6 1.8 q2 -1 4 0" stroke="#fffaf0" stroke-width=".5" fill="none"/></g>`;}
 
+  /* ---------- a lived-in land: names, signposts and the roads beyond (0.36) ---------- */
+  // Names for the land itself. Mostly traditional, with a few number-themed treats to find.
+  const FEATURES=[
+    {x:250,y:840,t:'Mill Beck',c:'water',r:10},{x:706,y:676,t:'Parrot Brook',c:'water',r:-2},{x:545,y:1614,t:'Fern Brook',c:'water',r:3},
+    {x:330,y:326,t:'The Dry Wash',c:'water',r:17},{x:130,y:700,t:'The Tally Hills',c:'feature',r:-8},{x:470,y:204,t:'Frostgate Pass',c:'feature',r:-14},
+    {x:712,y:300,t:'The Long Glacier',c:'feature',r:-33},{x:178,y:292,t:'The Dozen Dunes',c:'feature',r:-5},{x:440,y:1560,t:'Fen Bridge',c:'small',r:0},
+    {x:514,y:1476,t:'Old Stone Bridge',c:'small',r:-18},{x:458,y:944,t:'Canopy Bridge',c:'small',r:0},
+    {x:660,y:1030,t:'THE MIDLANDS',c:'region',r:-4},{x:694,y:584,t:'THE HIGH COUNTRY',c:'region',r:-3},{x:140,y:1540,t:'THE LOWLANDS',c:'region',r:-6}];
+  // Signposts where roads meet: each board points toward a destination.
+  const SIGNPOSTS=[{x:256,y:1066,boards:[['Coast Kingdoms',-1],['Harbor',1],['Twin Towers',1]]},{x:168,y:522,boards:[['Salt Road',-1],['Stonecross',1]]},
+    {x:648,y:1262,boards:[['Sunrise Road',1],['Double River',-1]]},{x:378,y:1470,boards:[['Ten City',-1],['One Woods',1]]}];
+  function places(){let s='';
+    const lab=(x,y,t,c,r=0)=>`<text class="cl-lab ${c}" x="${f1(x)}" y="${f1(y)}" text-anchor="middle"${r?` transform="rotate(${r} ${f1(x)} ${f1(y)})"`:''}>${t.replace(/&/g,'&amp;').replace(/</g,'&lt;')}</text>`;
+    for(const q of CW.SETTLEMENTS){if(!q.name)continue;const R=CW.SETTLE_R[q.kind],c=q.kind==='town'?'town':q.kind==='village'||q.kind==='stilts'?'village':'hamlet';s+=lab(q.x,q.y+(q.labelDy!=null?q.labelDy:R*.62+(c==='town'?10:c==='village'?8:6)),q.name,c);}
+    for(const f of FEATURES)s+=lab(f.x,f.y,f.t,f.c,f.r);
+    for(const sp of SIGNPOSTS){s+=`<g class="cl-signpost" transform="translate(${sp.x} ${sp.y})"><ellipse cx="1" cy=".4" rx="2.4" ry=".7" fill="rgba(58,46,26,.25)"/><path d="M0 0 V-14" stroke="#5b3f28" stroke-width=".9"/>`;
+      sp.boards.forEach(([t,d],i)=>{const y=-13+i*3.4,w=t.length*1.55+3;s+=`<path d="M0 ${y} h${f1(d*w)} l${f1(d*1.6)} 1.3 l${f1(-d*1.6)} 1.3 h${f1(-d*w)}z" fill="#c9a36a" stroke="#3b2a1c" stroke-width=".3"/><text x="${f1(d*(w/2+.4))}" y="${f1(y+1.95)}" text-anchor="middle" class="cl-board">${t}</text>`;});
+      s+='</g>';}
+    for(const e of CW.EDGE_SIGNS)s+=`<text class="cl-lab beyond" x="${e.x}" y="${e.y}" text-anchor="${e.dir<0?'start':'end'}">${e.dir<0?'← ':''}${e.t||e.text}${e.dir>0?' →':''}</text>`;
+    // Chimney smoke from the settlements: one hearth each.
+    let smoke='';CW.SETTLEMENTS.forEach((q,i)=>{const h=CW.buildingsFor(q).find(b=>b.type==='house');if(!h)return;const ch=CP.houseFeatures(h,Math.round(h.x)).chimneys[0];if(ch)smoke+=[0,1,2].map(k=>`<circle cx="${f1(ch[0])}" cy="${f1(ch[1])}" r="1.2" class="cl-puff" style="animation-delay:${-(k*1.8+i*.7).toFixed(1)}s"/>`).join('');});
+    return s+`<g class="cl-smoke">${smoke}</g>`;}
+
+  /* ---------- water and wild (0.37) ---------- */
+  const nearestOn=(pts,tx,ty)=>{let bi=0,bd=1e9;pts.forEach(([x,y],i)=>{const d=Math.hypot(x-tx,y-ty);if(d<bd){bd=d;bi=i;}});return bi;};
+  /* A cascade of `steps` drops down a river: curved lips spilling a pale sheet of water,
+     foam at each foot, and a rocky gorge wall on either bank. Animated falling. */
+  function falls(river,tx,ty,steps,w,name){const pts=river.path,i=nearestOn(pts,tx,ty),[x,y]=pts[i],[x2,y2]=pts[Math.min(pts.length-1,i+3)],ang=Math.atan2(y2-y,x2-x)*180/Math.PI-90,R=CW.rng(Math.round(tx*3+ty));
+    const L=steps*5.6+3;let s=`<g class="cl-falls" transform="translate(${f1(x)} ${f1(y)}) rotate(${f1(ang)})">`;
+    // The banks break into boulders and short cliff hatching, like the chart's other slopes.
+    for(const d of[-1,1]){for(let k=0;k<steps+1;k++){const yy=k*5.6+(R()-.5)*2,bx=d*(w/2+1.4+R()*2.2),r=1.2+R()*1.4;s+=`<path d="M${f1(bx-r)} ${f1(yy+r*.5)} l${f1(r*.4)} ${f1(-r)} l${f1(r*1.1)} ${f1(-r*.3)} l${f1(r*.5)} ${f1(r*1.3)}z" fill="${d<0?'#b6aea4':'#9a9288'}" stroke="#3b2a1c" stroke-width=".3"/>`;}
+      s+=`<path d="${[...Array(steps*2)].map((_,k)=>`M${f1(d*(w/2+.6))} ${f1(k*2.8+.6)} l${f1(d*2)} 1.4`).join(' ')}" stroke="rgba(40,30,24,.4)" stroke-width=".3"/>`;}
+    for(let k=0;k<steps;k++){const yy=k*5.6,sx=(k%2?1:-1)*.5,a=-w/2+.5+sx,b=w/2-.5+sx;
+      s+=`<path d="M${f1(a)} ${f1(yy)} Q${f1(sx)} ${f1(yy+2.2)} ${f1(b)} ${f1(yy)} L${f1(b+.2)} ${f1(yy+4.2)} Q${f1(sx)} ${f1(yy+6)} ${f1(a-.2)} ${f1(yy+4.2)}Z" fill="url(#clFallG)"/>`;
+      s+=`<path class="cl-fall" d="${[...Array(Math.max(3,Math.round(w/2.2)))].map((_,j,arr)=>{const t=(j+.5)/arr.length,px=a+(b-a)*t;return`M${f1(px)} ${f1(yy+1.2+Math.sin(t*Math.PI)*1)} q.3 1.8 0 3.4`;}).join(' ')}" stroke="#8fbccb" stroke-width=".45" fill="none"/>`;
+      s+=`<path d="M${f1(a-.4)} ${f1(yy)} Q${f1(sx)} ${f1(yy+2.2)} ${f1(b+.4)} ${f1(yy)}" fill="none" stroke="#5f5a54" stroke-width=".8" stroke-linecap="round"/>`;
+      s+=[...Array(4)].map(()=>`<circle cx="${f1(a+(b-a)*R())}" cy="${f1(yy+4.6+R()*.8)}" r="${f1(.8+R()*.7)}" fill="#fffaf0" opacity=".92"/>`).join('');}
+    s+=[0,1,2].map(k=>`<circle class="cl-spray" cx="${f1((k-1)*w*.3)}" cy="${f1(L+1)}" r="${f1(w*.3)}" fill="rgba(255,255,255,.55)" style="animation-delay:${-k*.9}s"/>`).join('')+'</g>';
+    if(name)s+=`<text class="cl-lab water" x="${f1(x+w+8)}" y="${f1(y+steps*3)}" text-anchor="start">${name}</text>`;
+    return s;}
+  function wild(calm){let s='';
+    s+=falls(CW.RIVERS[0],500,822,7,12,'Sevenfold Falls')+falls(CW.RIVERS[0],624,346,3,7,'');
+    for(const sp of CW.SPRINGS)s+=`<g transform="translate(${sp.x} ${sp.y})"><circle r="2.6" fill="#8ec3c6" stroke="#2c4e5c" stroke-width=".45"/><circle r="1.2" fill="none" stroke="#fffaf0" stroke-width=".4"/><circle r="4.2" fill="none" stroke="#2c4e5c" stroke-width=".25" stroke-dasharray=".8 .8"/></g>`+(sp.name?`<text class="cl-lab small" x="${sp.x}" y="${sp.y+8}" text-anchor="middle">${sp.name}</text>`:'');
+    s+=`<defs><linearGradient id="clFallG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2fafc"/><stop offset="1" stop-color="#a8d0dc"/></linearGradient></defs>`;
+    // Heron Isle: two trees and its heron; Otter Rock stays bare stone.
+    {const h=CW.ISLANDS[0];s+=[[-4,-1,3.4],[3,-2,2.8]].map(([dx,dy,r])=>`<path d="M${f1(h.x+dx)} ${f1(h.y+dy+1)} v${f1(-r*.6)}" stroke="#5b3f28" stroke-width=".7"/><circle cx="${f1(h.x+dx)}" cy="${f1(h.y+dy-r)}" r="${f1(r)}" fill="#8aa15e" stroke="#28402a" stroke-width=".7"/><circle cx="${f1(h.x+dx+r*.3)}" cy="${f1(h.y+dy-r*.7)}" r="${f1(r*.6)}" fill="rgba(40,64,32,.35)"/>`).join('')+`<g transform="translate(${h.x+8} ${h.y+1})"><ellipse cx="0" cy="-2" rx="1.6" ry=".9" fill="#b8bcc2" stroke="#3b2a1c" stroke-width=".25"/><path d="M1.2 -2.4 q1 -1 .6 -2.4 l1.6 .3 M-.4 -1.2 v1.4 M.4 -1.2 v1.4" fill="none" stroke="#6b6b6b" stroke-width=".35"/></g>`;
+      const o=CW.ISLANDS[1];s+=`<path d="M${o.x-4} ${o.y+1} l2 -3 l3 -.6 l3 3.6z" fill="#a8a09a" stroke="#3b2a1c" stroke-width=".35"/>`;}
+    for(const isl of CW.ISLANDS)s+=`<text class="cl-lab small" x="${isl.x}" y="${f1(isl.y+isl.ry+6)}" text-anchor="middle">${isl.name}</text>`;
+    s+=`<text class="cl-lab small" x="${CW.RAPIDS.x+10}" y="${CW.RAPIDS.y+2}">${CW.RAPIDS.name}</text><text class="cl-lab small" x="${CW.WEIR.x+14}" y="${CW.WEIR.y-6}">${CW.WEIR.name}</text>`;
+    // Fish leaping in the lake, and geese passing over.
+    s+=[[470,1140,0],[540,1120,2.6],[420,1170,4.8]].map(([x,y,d])=>`<g transform="translate(${x} ${y})"><g class="cl-fish" style="animation-delay:${-d}s"><path d="M-1.6 0 q1.6 -1.4 3.2 0 q-1.6 1 -3.2 0z M1.6 0 l1 -.8 v1.6z" fill="#8ea6ae" stroke="#2c4e5c" stroke-width=".2"/></g></g><circle class="cl-splash" style="animation-delay:${-d}s" cx="${x}" cy="${y+1}" r="2" fill="none" stroke="#fffaf0" stroke-width=".4"/>`).join('');
+    s+=`<g class="cl-geese">${[0,1,2,3,4,5,6].map(k=>{const o=k===0?0:Math.ceil(k/2)*(k%2?1:-1);return`<path d="M${f1(-Math.abs(o)*5)} ${f1(o*3.4)} q1.2 -1.4 2.4 0 q1.2 -1.4 2.4 0" fill="none" stroke="#3b2a1c" stroke-width=".5"/>`;}).join('')}</g>`;
+    if(calm)return s;
+    // Travellers on the roads, a pony and cart, and a boat crossing to Heron Isle.
+    const legPath=(i,a=.12,b=.88)=>{const p=CW.routePaths()[i],n=p.length;return'M'+p.slice(Math.floor(n*a),Math.ceil(n*b)).map(q=>q.map(f1).join(' ')).join('L');};
+    const walker=`<ellipse cx=".6" cy=".3" rx="1.8" ry=".5" fill="rgba(58,46,26,.25)"/><path d="M-.6 0 v-2 M.6 0 v-2" stroke="#3b2f26" stroke-width=".55"/><path d="M-1.3 -1.9 l.3 -2.6 q1 -.7 2 0 l.3 2.6z" fill="#3f6fb0" stroke="#3b2a1c" stroke-width=".25"/><rect x=".9" y="-4.6" width="1.4" height="2" fill="#8b5a32" stroke="#3b2a1c" stroke-width=".2"/><circle cy="-5.6" r="1" fill="#f2cfa8" stroke="#3b2a1c" stroke-width=".25"/><path d="M-1.8 -.2 l.6 -6" stroke="#6b4527" stroke-width=".35"/>`;
+    const cart=`<ellipse cx="1" cy=".4" rx="5" ry=".8" fill="rgba(58,46,26,.25)"/><path d="M-5 -2.4 q0 -2.2 2 -2.2 h1 q.6 -1.2 1.6 -.6 l-.4 1.4 h.6 v1.4z" fill="#8b5a32" stroke="#3b2a1c" stroke-width=".25"/><path d="M-4.4 -1 v1 M-2 -1 v1" stroke="#5b3f28" stroke-width=".45"/><rect x="0" y="-4" width="5.6" height="2.6" fill="#b48a58" stroke="#3b2a1c" stroke-width=".3"/><path d="M.4 -4 l1.4 -1.6 h2.6 l1.2 1.6" fill="#e8dcc0" stroke="#3b2a1c" stroke-width=".25"/><circle cx="3" cy="-1" r="1.3" fill="none" stroke="#3b2a1c" stroke-width=".45"/>`;
+    const mover=(fig,d,dur,delay)=>`<g class="cl-traveller">${fig}<animateMotion dur="${dur}s" begin="${-delay}s" repeatCount="indefinite" keyPoints="0;1;0" keyTimes="0;.5;1" calcMode="linear" path="${d}"/></g>`;
+    s+=mover(walker,legPath(4),90,10)+mover(cart,legPath(1),120,40)+mover(walker,legPath(8),100,70)+mover(walker,legPath(10,.2,.8),110,25);
+    s+=mover(`<path d="M-4 0 q4 2.4 8 0 l-.8 -1.2 h-6.4z" fill="#8b5a32" stroke="#3b2a1c" stroke-width=".35"/><circle cx="0" cy="-2.2" r=".9" fill="#f2cfa8" stroke="#3b2a1c" stroke-width=".2"/><path d="M-2 -.6 l-3 2 M2 -.6 l3 2" stroke="#6b4527" stroke-width=".35"/>`,'M427 1142 Q460 1128 490 1116',60,5);
+    return s;}
+
+  /* ---------- the map as an object (0.38) ---------- */
+  const NOTES=[{x:452,y:414,t:'ford runs deep after spring rain',r:-4},{x:566,y:872,t:'see the Falls from here!',r:-6},{x:560,y:1718,t:'wolves? none seen',r:5},{x:446,y:246,t:'ask for lanterns at the mine',r:-3}];
+  // The margin above the land: notes on the view from the top, and the chart's title.
+  const TOP_NOTES=[{x:560,y:-96,t:'from the summit you can see every realm at once!',r:-2},{x:236,y:-112,t:'mountains beyond: not yet charted',r:-4},{x:640,y:-150,t:'storms roll in from the north-east',r:3},{x:664,y:-50,t:'ice caves glow blue at dusk',r:-3}];
+  function object(){let s='';const W=CW.W,H=CW.H,Y0=-CW.TOP,FH=H-Y0,b=5,t=10;
+    // A neatline border with a graduated band round the whole sheet, lettered every few leagues.
+    s+=`<g class="cl-border"><rect x="${b}" y="${Y0+b}" width="${W-2*b}" height="${FH-2*b}" fill="none" stroke="#3b2a1c" stroke-width=".9"/><rect x="${t}" y="${Y0+t}" width="${W-2*t}" height="${FH-2*t}" fill="none" stroke="#3b2a1c" stroke-width=".4"/>`;
+    let bars='';for(let y=Y0+t,i=0;y<H-t;y+=40,i++)if(i%2===0)bars+=`M${b} ${y}h${t-b}v${Math.min(40,H-t-y)}h${b-t}z M${W-t} ${y}h${t-b}v${Math.min(40,H-t-y)}h${b-t}z`;
+    for(let x=t,i=0;x<W-t;x+=40,i++)if(i%2===0)bars+=`M${x} ${Y0+b}v${t-b}h${Math.min(40,W-t-x)}v${b-t}z M${x} ${H-t}v${t-b}h${Math.min(40,W-t-x)}v${b-t}z`;
+    s+=`<path d="${bars}" fill="#3b2a1c" opacity=".75"/>`;
+    for(let y=H-240;y>Y0+40;y-=240)s+=`<text class="cl-grat" x="${t+3}" y="${y+2}">${Math.round((H-y)/40)}</text><text class="cl-grat" x="${W-t-3}" y="${y+2}" text-anchor="end">${Math.round((H-y)/40)}</text>`;
+    s+=[[t,Y0+t],[W-t,Y0+t],[t,H-t],[W-t,H-t]].map(([x,y])=>`<path d="M${x} ${y-4} l3 4 l-3 4 l-3 -4z" fill="#b8860b" stroke="#3b2a1c" stroke-width=".35"/>`).join('')+'</g>';
+    // The title, lettered in the open paper above the mountains, with a flourish either side.
+    const ty=-206;s+=`<g class="cl-titleblock"><text class="cl-title" x="${W/2}" y="${ty}" text-anchor="middle">The Twelve Realms</text><text class="cl-subtitle" x="${W/2}" y="${ty+20}" text-anchor="middle">and the Climb to Mount Twelve</text>`+
+      [-1,1].map(d=>`<path d="M${W/2+d*172} ${ty-8} q${d*30} -10 ${d*58} 0 q${d*16} 6 ${d*6} 12 q${-d*8} 5 ${-d*12} -3 q${-d*2} -6 ${d*6} -6" fill="none" stroke="#3b2a1c" stroke-width=".7"/><path d="M${W/2+d*120} ${ty+26} h${d*96}" stroke="#3b2a1c" stroke-width=".5"/><circle cx="${W/2+d*222}" cy="${ty+26}" r="1.4" fill="#b8860b" stroke="#3b2a1c" stroke-width=".3"/>`).join('')+`</g>`;
+    s+=TOP_NOTES.map(n=>`<text class="cl-note" x="${n.x}" y="${n.y}" text-anchor="middle" transform="rotate(${n.r} ${n.x} ${n.y})">${n.t}</text>`).join('');
+    // A pencilled arrow from the note down to the summit.
+    {const sm=CW.NODES[13],ax=sm.x+34,ay=-46;s+=`<path d="M${sm.x+56} -86 q-6 18 -22 40" fill="none" stroke="rgba(66,58,50,.7)" stroke-width=".6" stroke-linecap="round"/><path d="M${ax} ${ay} l.4 -5 M${ax} ${ay} l4.6 -2" stroke="rgba(66,58,50,.7)" stroke-width=".6" stroke-linecap="round"/>`;}
+    // Scale bar in leagues (a league is forty chart units).
+    const sx=664,sy=1806;s+=`<g class="cl-scale">${[0,1,2].map(i=>`<rect x="${sx+i*20}" y="${sy}" width="20" height="2.2" fill="${i%2?'#efe3c4':'#3b2a1c'}" stroke="#3b2a1c" stroke-width=".35"/>`).join('')}<rect x="${sx+60}" y="${sy}" width="20" height="2.2" fill="#3b2a1c" stroke="#3b2a1c" stroke-width=".35"/>${[0,1,2].map(i=>`<text class="cl-grat" x="${sx+i*40}" y="${sy-1.6}" text-anchor="middle">${i}</text>`).join('')}<text class="cl-grat" x="${sx+40}" y="${sy+8}" text-anchor="middle">leagues</text></g>`;
+    // Notes pencilled by the cartographer.
+    s+=NOTES.map(n=>`<text class="cl-note" x="${n.x}" y="${n.y}" text-anchor="middle" transform="rotate(${n.r} ${n.x} ${n.y})">${n.t}</text>`).join('');
+    // Willowbrook: the explorer's own camp, beside two willows.
+    const c=CW.CAMP;s+=`<g class="cl-camp" transform="translate(${c.x} ${c.y}) scale(1.7)">`+[[-16,-4],[14,-8]].map(([dx,dy])=>`<path d="M${dx} ${dy+6} v-8" stroke="#5b3f28" stroke-width=".8"/>`+[...Array(9)].map((_,k)=>{const a=Math.PI+k/8*Math.PI;return`<path d="M${f1(dx+Math.cos(a)*5)} ${f1(dy-2+Math.sin(a)*3)} q${f1(Math.cos(a)*1.6)} 3 ${f1(Math.cos(a)*1.2)} 7" fill="none" stroke="#7aa05a" stroke-width=".8"/>`;}).join('')).join('')+
+      `<ellipse cx="2" cy="6" rx="16" ry="4" fill="rgba(180,196,128,.45)"/><path d="M-10 4 L-4 -6 L2 4Z" fill="#e8dcc0" stroke="#3b2a1c" stroke-width=".45"/><path d="M-4 -6 L2 4 H-1Z" fill="#cbbd9c"/><path d="M-5.4 4 L-4 0 L-2.6 4" fill="#6b4527"/><path d="M4 5 L9 -3 L14 5Z" fill="#c0503a" stroke="#3b2a1c" stroke-width=".45"/><path d="M9 -3 L14 5 H11.6Z" fill="#8f3a26"/>`+
+      `<path d="M-1 8 l2 -2 l2 2 M-1.4 8.4 h4.8" stroke="#5b3f28" stroke-width=".5" fill="none"/><g class="cl-flame"><path d="M.2 7.4 q.8 -2.4 .8 -3.4 q.8 1.4 1 3.4z" fill="#f28a3a"/></g><path d="M9 -3 V-12" stroke="#3b2a1c" stroke-width=".5"/><path class="cl-pennant" d="M9 -12 h6 l-1.4 2 l1.4 2 h-6z" fill="#e0b24a" stroke="#3b2a1c" stroke-width=".3"/></g>`;
+    return s;}
+
   /* ---------- whole layer ---------- */
   function markup(world,stages,opts={}){
     const R=CW.rng(23),lm=CW.LANDMARKS[2],s2=stages[2]|0,fresh=opts.fresh||{};
@@ -73,9 +163,10 @@
     // Short separate pieces, so a phone repaints small areas rather than the whole river.
     for(const r of CW.RIVERS){if(r.w[1]<6)continue;const pts=r.path;for(let a=0;a<pts.length-8;a+=24){const chunk=pts.slice(a,a+26);const mid=chunk[chunk.length>>1];if(!inInk(mid[0],mid[1]))continue;let d='';for(const k of[-1,1]){const o=k*r.w[1]*.18;d+='M'+chunk.map(([x,y],i)=>{const q=chunk[Math.min(chunk.length-1,i+1)],p=chunk[Math.max(0,i-1)],an=Math.atan2(q[1]-p[1],q[0]-p[0])+Math.PI/2;return`${f1(x+Math.cos(an)*o)} ${f1(y+Math.sin(an)*o)}`;}).join('L');}s+=`<path class="cl-flow" d="${d}"/>`;}}
     // Labels in a cartographer's hand.
-    const upper=CW.RIVERS[0].path.slice(165,215);s+=`<path id="clRiverName" d="M${upper.map(([x,y])=>`${f1(x+14)} ${f1(y)}`).join('L')}" fill="none"/><text class="cl-lab river"><textPath href="#clRiverName" startOffset="6%">The Long River</textPath></text>`;
+    // Lettered along the quiet stretch beside Stone Valley, clear of bridges and roads.
+    const upper=CW.RIVERS[0].path.filter(([,y])=>y>548&&y<672);s+=`<path id="clRiverName" d="M${upper.map(([x,y])=>`${f1(x+16)} ${f1(y)}`).join('L')}" fill="none"/><text class="cl-lab river"><textPath href="#clRiverName" startOffset="4%">The Long River</textPath></text>`;
     s+=`<text class="cl-lab lake" x="${CW.LAKE.x+62}" y="${CW.LAKE.y+24}" text-anchor="middle">Sounding Lake</text>`;
-    s+=`<text class="cl-lab region" x="620" y="1800" text-anchor="middle">Reedwater Fen</text><text class="cl-lab region" x="760" y="1080" text-anchor="middle" transform="rotate(-8 760 1080)">The Green Deep</text><text class="cl-lab region" x="236" y="298" text-anchor="middle" transform="rotate(-6 236 298)">Sunscorch Waste</text>`;
+    s+=`<text class="cl-lab region" x="440" y="1708" text-anchor="middle">Reedwater Fen</text><text class="cl-lab region" x="760" y="1080" text-anchor="middle" transform="rotate(-8 760 1080)">The Green Deep</text><text class="cl-lab region" x="292" y="252" text-anchor="middle" transform="rotate(-4 292 252)">Sunscorch Waste</text>`;
     s+=`<text class="cl-lab edge" transform="translate(22 1000) rotate(-90)" text-anchor="middle">terra incognita</text><text class="cl-lab edge" transform="translate(846 700) rotate(90)" text-anchor="middle">terra incognita</text>`;
     // A compass rose in the west, over the meadows.
     s+=`<g class="cl-compass" transform="translate(96 1060)"><circle r="21" fill="rgba(239,227,196,.55)" stroke="#3b2a1c" stroke-width=".6"/><circle r="17" fill="none" stroke="#3b2a1c" stroke-width=".35" stroke-dasharray="1 2"/>${[0,1,2,3].map(i=>`<g transform="rotate(${i*90})"><path d="M0 -26 L4 -4 L0 0Z" fill="#3b2a1c"/><path d="M0 -26 L-4 -4 L0 0Z" fill="#efe3c4" stroke="#3b2a1c" stroke-width=".5"/></g>`).join('')}${[0,1,2,3].map(i=>`<g transform="rotate(${45+i*90})"><path d="M0 -15 L2.4 -3 L0 0Z" fill="#8b5a32"/><path d="M0 -15 L-2.4 -3 L0 0Z" fill="#e0b24a"/></g>`).join('')}<circle r="2" fill="#e0b24a" stroke="#3b2a1c" stroke-width=".4"/><text y="-29" text-anchor="middle" class="cl-lab n">N</text></g>`;
@@ -90,6 +181,8 @@
     s+='</g>';
     // Every other realm's landmark, at its own stage.
     if(CR)s+=CR.markup(stages,fresh);
+    // The places between the realms, and the water and wildlife around them.
+    s+=places()+wild(!!opts.calm)+object();
     // Life over the whole chart: cloud shadows and birds.
     s+=`<g class="cl-sky">${[0,1,2,3].map(i=>`<path class="cl-bird" style="animation-delay:${-i*1.3}s;--dy:${i*10}px" d="M-4 0 Q-2 -2.6 0 0 Q2 -2.6 4 0"/>`).join('')}</g>`;
     s+=`<circle class="cl-wet" cx="0" cy="0" r="0"/>`;
@@ -101,6 +194,8 @@
     if((stages[2]|0)>=3){for(const b of lm.bridges)for(const x of[-b.len/2,0,b.len/2])out.push(['c',b.x+x,b.y-27,10]);
       for(const o of lm.houses)for(const p of CP.houseFeatures(o,Math.round(o.x)).windows)out.push(['p',p]);out.push(['r',lm.mill.x-1.1,lm.mill.y-16,2.2,2.8]);}
     if(CR){CR.markup(stages,{});out.push(...CR.glows);}
+    // Every settlement's windows light at night, whatever the realms around them.
+    for(const q of CW.SETTLEMENTS)for(const b of CW.buildingsFor(q))if(b.type==='house')for(const p of CP.houseFeatures(b,Math.round(b.x)).windows)out.push(['p',p]);
     const halo=[],pane=[];
     for(const g of out){if(g[0]==='c')halo.push(`<circle cx="${f1(g[1])}" cy="${f1(g[2])}" r="${f1(g[3]*1.5)}" fill="url(#cgLamp)"/>`);
       else{const pts=g[0]==='p'?g[1]:[[g[1],g[2]],[g[1]+g[3],g[2]],[g[1]+g[3],g[2]+g[4]],[g[1],g[2]+g[4]]],cx=pts.reduce((a,p)=>a+p[0],0)/pts.length,cy=pts.reduce((a,p)=>a+p[1],0)/pts.length;

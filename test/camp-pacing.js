@@ -11,20 +11,21 @@ let s=atRiver(C.syncProgress(C.fresh(),2));
 check('river stones wait until three realms are restored',!C.command(s,{kind:'start-activity',activity:'stone',questions:two}).ok);
 s=atRiver(C.syncProgress(C.fresh(),3));const before=s.stone,trips=s.casts;
 s=complete(run(s,{kind:'start-activity',activity:'stone',questions:two}));
-check('a river stone trip is two review facts for four stone',s.stone===before+4&&s.casts===trips-1&&!s.challenge);
+check('a river stone trip is two review facts for six stone',s.stone===before+6&&s.casts===trips-1&&!s.challenge);
 check('a saved stone trip survives reload validation',C.validSave(JSON.parse(JSON.stringify({...s,challenge:{kind:'stone',target:null,questions:two,index:1,retry:false,feedback:false}}))));
 for(let i=s.casts;i>0;i--)s=complete(run(s,{kind:'start-activity',activity:'stone',questions:two}));
 check('river trips are shared and limited per learning adventure',!C.command(s,{kind:'start-activity',activity:'stone',questions:two}).ok);
 const rewarded=C.awardLearning(s,10);
-check('a learning adventure refreshes trips and adds stone from three realms',rewarded.casts===3&&rewarded.stone===s.stone+2);
+check('a learning adventure refreshes trips and adds stone from three realms',rewarded.casts===3&&rewarded.stone===s.stone+4);
 check('before three realms a learning adventure adds no stone',C.awardLearning(C.syncProgress(C.fresh(),2),10).stone===C.syncProgress(C.fresh(),2).stone);
 
-// Pacing from a fresh profile: stone for the cottage and keep through ordinary play, never purchases.
+// Pacing (0.40): the first cottage and keep arrive as milestone kits; a second of each is earned through ordinary play.
 const need=C.catalog.stonehome.stone+C.catalog.keep.stone;
-const perRoundNoFishing=2+3*4,perRoundLight=2+1*4;
+const perRoundNoFishing=4+3*6,perRoundLight=4+1*6;
 const fastest=Math.ceil(need/perRoundNoFishing),light=Math.ceil(need/perRoundLight);
-check(`stone homes take at least ${fastest} learning adventures, so they stay a long-term goal`,fastest>=5);
-check(`one river trip per adventure reaches the keep within ${light} adventures, not months`,light<=16);
+check(`extra stone homes take at least ${fastest} learning adventures, so they stay a goal`,fastest>=3);
+check(`one river trip per adventure builds both within ${light} adventures, about a week or two`,light<=10);
+check('the stone cottage and keep arrive as milestone kits',C.content.kits[9].stonehome===1&&C.content.kits[11].keep===1);
 
 {const f=C.fresh(),tent=f.objects.find(o=>o.type==='tent');const r=C.command(f,{kind:'paint',id:tent.id,color:3});check('a colour can be chosen directly, not only cycled',r.ok&&r.save.objects.find(o=>o.id===tent.id).color===3);check('an invalid colour falls back to the next colour',C.command(f,{kind:'paint',id:tent.id,color:9}).save.objects.find(o=>o.id===tent.id).color===1);}
 // Today's idea follows the pinned project.
@@ -32,6 +33,6 @@ const fresh=C.fresh();
 const ideas=['tent','lodge','keep','stonewall','palisade','well'].map(type=>Goals.todayIdea(Goals.view(C.catalog,fresh,type),{hasRod:false}));
 check('every project has a short, specific idea for today',ideas.every(t=>typeof t==='string'&&t.length>10&&t.length<90));
 check('a locked project points to the adventure',Goals.todayIdea(Goals.view(C.catalog,fresh,'keep')).includes('Restore'));
-const stoneShort={...C.syncProgress(C.fresh(),9),gems:999,wood:999,stone:0};
+const synced=C.syncProgress(C.fresh(),9),stoneShort={...synced,inventory:{...synced.inventory,stonehome:0},gems:999,wood:999,stone:0};
 check('a project short of stone suggests the river',Goals.todayIdea(Goals.view(C.catalog,stoneShort,'stonehome')).includes('river'));
 console.log(`${checks} camp pacing checks passed`);

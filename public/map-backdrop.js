@@ -229,6 +229,8 @@
   /* ---------- On the map: fog, fact arcs, laurels, pennants, lantern light ---------- */
   function decorate(world,data){
     world.querySelector('.map-lore')?.remove();
+    // The hand-drawn chart shows learning in its own style (chart-lore.js); only the sky is shared.
+    if(data.chart){const sky=skyNow(data);world.classList.toggle('map-dusk',sky==='dusk');world.classList.toggle('map-night',sky==='night');return;}
     const W=864,H=1821,sky=skyNow(data),svg=el('svg',{class:'map-lore'+(sky==='day'?'':' '+sky),viewBox:`0 0 ${W} ${H}`,preserveAspectRatio:'none','aria-hidden':'true'});
     const defs=el('defs',{},svg);const blur=el('filter',{id:'loreBlur',x:'-50%',y:'-50%',width:'200%',height:'200%'},defs);el('feGaussianBlur',{stdDeviation:'9'},blur);
     const lg=el('radialGradient',{id:'loreLantern'},defs);el('stop',{offset:'0','stop-color':'#ffd98a','stop-opacity':'.75'},lg);el('stop',{offset:'1','stop-color':'#ffb347','stop-opacity':'0'},lg);

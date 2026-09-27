@@ -4,7 +4,8 @@
    so it runs in a worker, on the main thread or in tests. */
 (function(root){
   'use strict';
-  const W=864,H=1821,G=3,GW=Math.ceil(W/G)+1,GH=Math.ceil(H/G)+1,TAU=Math.PI*2;
+  // TOP: blank paper above the land's top edge (y from -TOP to 0), for scrolling up past the summit.
+  const TOP=400,W=864,H=1821,G=3,GW=Math.ceil(W/G)+1,GH=Math.ceil(H/G)+1,TAU=Math.PI*2;
   // The same percentages as MAP_POSITIONS in index.html, in REALM_ORDER order, then the summit.
   const POSITIONS=[[31,91.5],[70,84.3],[28,77.2],[69,70.1],[34,63.1],[25,48.9],[74,41.8],[50,34.7],[22,29.8],[69,27.7],[34,21.0],[70,15.0],[38,9.3],[57,3.8]];
   const ORDER=[0,1,10,2,5,11,3,4,9,6,12,8,7];
@@ -38,6 +39,11 @@
     {id:'desert-wash',pts:[[120,250],[210,280],[300,300],[390,330],[478,452]],w:[2,4]},
   ].map(r=>({...r,path:spline(r.pts,3)}));
   const LAKE={x:452,y:1134,rx:120,ry:64,name:'Sounding Lake'};
+  // Water and wild (0.37): islands in the lake, springs where the streams rise, rapids, a weir, and where herds graze.
+  const ISLANDS=[{x:500,y:1106,rx:14,ry:8,name:'Heron Isle'},{x:438,y:1094,rx:8,ry:5,name:'Otter Rock'}];
+  const SPRINGS=[{x:124,y:782,name:'Beck Head'},{x:800,y:1472,name:'Fern Spring'},{x:122,y:252,name:'Dry Spring'},{x:826,y:642,name:''}];
+  const RAPIDS={x:476,y:468,name:'The Churn'},WEIR={x:560,y:1465,name:'Lower Weir'};
+  const HERDS=[{x:500,y:1050,kind:'sheep',n:6},{x:640,y:1010,kind:'cattle',n:4},{x:220,y:1240,kind:'sheep',n:5},{x:596,y:915,kind:'cattle',n:3},{x:700,y:1130,kind:'sheep',n:5}];
 
   /* ---- The road between realms ----
      One segment per step of the adventure, in REALM_ORDER, ending at Mount Twelve.
@@ -62,7 +68,12 @@
   // Side roads: the east bank at Double River, past the cottage to the mill.
   const SPURS=[[[640,1272],[680,1282],[744,1286],[800,1262],[866,1250]],[[744,1286],[748,1322],[748,1350]],
     // From Ten City's drawbridge and the temple stair down to their realms.
-    [[152,1389],[170,1398],[204,1404],[242,1406]],[[154,492],[160,508],[176,528],[190,543]]];
+    [[152,1389],[170,1398],[204,1404],[242,1406]],[[154,492],[160,508],[176,528],[190,543]],
+    // Off the edge of the map: the Coast Road west from the Harbor Road, and the Salt Road west from the temple.
+    [[266,1052],[210,1040],[150,1034],[80,1022],[0,1012]],[[176,530],[120,548],[60,556],[0,566]]];
+  // Trails that leave the map through the mountains.
+  const EDGE_TRAILS=[[[328,169],[260,150],[190,128],[110,112],[0,96]]];
+  const EDGE_SIGNS=[{x:14,y:1004,text:'to the Coast Kingdoms',dir:-1},{x:14,y:558,text:'to the Salt Road',dir:-1},{x:14,y:90,text:'to the High Passes',dir:-1},{x:850,y:1242,text:'to the Sunrise Road',dir:1}];
   // Low hills that lift Ten City and the temple above the plain: [x, y, height, radius].
   const BUMPS=[[152,1338,.16,46],[154,452,.2,44],[150,812,.08,40]];
   // Villages and waystations along the road (Double River's hamlet lives with its landmark).
@@ -128,6 +139,8 @@
     for(const r of RIVERS){const n=r.path.length;r.path.forEach(([x,y],i)=>{const t=i/(n-1),wd=r.w[0]+(r.w[1]-r.w[0])*t+(N[2](x/40,y/40)-.5)*4;stamp(x,y,Math.max(2,wd/2));});}
     for(let j=0;j<GH;j++)for(let i=0;i<GW;i++){const x=i*G,y=j*G,a=Math.atan2(y-LAKE.y,x-LAKE.x),rr=1+(N[0](Math.cos(a)*2+5,Math.sin(a)*2+5)-.5)*.36+(N[2](Math.cos(a)*6+9,Math.sin(a)*6)-.5)*.14;if(((x-LAKE.x)/(LAKE.rx*rr))**2+((y-LAKE.y)/(LAKE.ry*rr))**2<=1)water[j*GW+i]=1;
       for(const p of POOLS){if(Math.abs(x-p.x)>p.r*1.6||Math.abs(y-p.y)>p.r*1.6)continue;const a2=Math.atan2(y-p.y,x-p.x),r2=p.r*(1+(N[1](Math.cos(a2)*1.5+p.s,Math.sin(a2)*1.5)-.5)*.6);if((x-p.x)**2+((y-p.y)*1.5)**2<=r2*r2)water[j*GW+i]=1;}}
+    // Islands rise out of the lake.
+    for(const isl of ISLANDS)for(let j=0;j<GH;j++)for(let i=0;i<GW;i++){const x=i*G,y=j*G;if(Math.abs(x-isl.x)>isl.rx*1.4||Math.abs(y-isl.y)>isl.ry*1.4)continue;const a=Math.atan2(y-isl.y,x-isl.x),m=1+(N[3](Math.cos(a)*2+isl.x*.1,Math.sin(a)*2)-.5)*.5;if(((x-isl.x)/(isl.rx*m))**2+((y-isl.y)/(isl.ry*m))**2<=1)water[j*GW+i]=0;}
     const inside=chamfer(water),outside=chamfer(water.map(v=>v?0:1));
     const sdf=new Float32Array(GW*GH);for(let k=0;k<sdf.length;k++)sdf[k]=water[k]?inside[k]*G:-outside[k]*G;
     // Relief, the land edge and landscape colours.
@@ -153,7 +166,7 @@
     return {W,H,G,GW,GH,sdf,height,land,wash,kind,NODES,RIVERS,LAKE,POOLS,BIOME_KEYS,
       waterAt:(x,y)=>sample(sdf,x,y),heightAt:(x,y)=>sample(height,x,y),landAt:(x,y)=>sample(land,x,y),kindAt,
       washAt:(x,y)=>{x=Math.max(0,Math.min(W-.01,x))/G;y=Math.max(0,Math.min(H-.01,y))/G;const i=Math.min(GW-2,Math.floor(x)),j=Math.min(GH-2,Math.floor(y)),u=x-i,v=y-j,out=[0,0,0];for(let c=0;c<3;c++){const k=(j*GW+i)*3+c;out[c]=wash[k]*(1-u)*(1-v)+wash[k+3]*u*(1-v)+wash[k+GW*3]*(1-u)*v+wash[k+GW*3+3]*u*v;}return out;},
-      landmarks:LANDMARKS,SITES,ROUTE,ROUTE_PATHS,SPURS,VILLAGES,crossings};
+      landmarks:LANDMARKS,SITES,ROUTE,ROUTE_PATHS,SPURS,VILLAGES,SETTLEMENTS,SETTLE_R,LANES:findLanes((x,y)=>sample(sdf,x,y)),FIELD_PATCHES,EDGE_TRAILS,ISLANDS,SPRINGS,RAPIDS,WEIR,HERDS,crossings};
   }
 
   /* ---- Landmarks drawn into the chart (static parts) and over it (living parts) ---- */
@@ -175,9 +188,64 @@
     },
   };
 
+  /* ---- A lived-in land (0.36): the places between the realms ----
+     Settlements, working places and fields. Each is joined to the road by a lane. */
+  const SETTLEMENTS=[
+    {id:'ashford',kind:'town',x:310,y:1010,name:'Ashford'},
+    {id:'millbrook',kind:'village',x:345,y:885,name:'Millbrook'},
+    {id:'stonecross',kind:'village',x:300,y:660,name:'Stonecross'},
+    {id:'fernhollow',kind:'village',x:715,y:1640,name:'Fernhollow',labelDy:-40},
+    {id:'greenhollow',kind:'stilts',x:760,y:880,name:'Greenhollow'},
+    {id:'hollins',kind:'farm',x:560,y:975,name:'Hollins Farm'},
+    {id:'westfold',kind:'farm',x:112,y:1205,name:'Westfold'},
+    {id:'lakeside',kind:'farm',x:610,y:1075,name:'Lakeside Farm'},
+    {id:'eastmere',kind:'farm',x:760,y:1170,name:'Eastmere'},
+    {id:'bells',kind:'inn',x:236,y:1086,name:'The Twelve Bells'},
+    {id:'gear',kind:'inn',x:522,y:532,name:'The Crooked Gear'},
+    {id:'lantern',kind:'inn',x:392,y:1462,name:'The Fen Lantern'},
+    {id:'beckmill',kind:'mill',x:372,y:870,name:'Beck Mill'},
+    {id:'fernmill',kind:'mill',x:660,y:1582,name:'Fern Mill'},
+    {id:'glimmer',kind:'mine',x:395,y:262,name:'Glimmer Mine'},
+    {id:'quarry',kind:'quarry',x:330,y:705,name:'Old Quarry'},
+    {id:'orchard1',kind:'orchard',x:390,y:1000,name:'Ashford Orchard'},
+    {id:'twelveoaks',kind:'copse',x:486,y:992,name:'Twelve Oaks'},
+    {id:'orchard2',kind:'orchard',x:560,y:1030,name:''},
+    {id:'fold1',kind:'fold',x:150,y:965,name:'Sheepwash'},
+    {id:'fold2',kind:'fold',x:420,y:770,name:''},
+    {id:'woodcamp',kind:'woodcamp',x:760,y:1600,name:"Woodcutters' Camp"},
+    // Willowbrook: the child's own camp, lettered and linked by the living layer and the map.
+    {id:'camp',kind:'camp',x:170,y:1120,name:''},
+  ];
+  const SETTLE_R={town:44,village:28,stilts:30,farm:26,inn:18,mill:20,mine:22,quarry:26,orchard:22,fold:14,woodcamp:18,copse:18,camp:34};
+  const CAMP={x:170,y:1120,name:'Willowbrook'};
+  const hashId=s=>{let h=2166136261;for(const c of s)h=Math.imul(h^c.charCodeAt(0),16777619);return h>>>0;};
+  /* The buildings of a settlement, laid out the same way everywhere they are needed
+     (the painting draws them; the living layer lights their windows). */
+  function buildingsFor(s){const R=rng(hashId(s.id)),roofs=[['tile','#b35e40'],['tile','#a9543a'],['slate','#56707a'],['thatch','#c9a45a'],['thatch','#c29a52']],shut=['#4f7f86','#9c4a34','#6d8a4a','#2f8f8a'];
+    const H=(dx,dy,w,h,o={})=>{const[roof,rc]=roofs[Math.floor(R()*roofs.length)];return{type:'house',x:s.x+dx,y:s.y+dy,w,h,d:w*.5,wall:['timber','plaster','stone'][Math.floor(R()*3)],roof,rc,door:(R()-.5)*.5,shutter:shut[Math.floor(R()*shut.length)],...o};};
+    switch(s.kind){
+      case'town':return[H(-24,-8,14,10),H(-10,-14,13,9),H(22,-10,14,10),H(-26,10,13,9,{fence:true}),H(24,10,14,10),H(10,16,12,9),H(-10,18,13,9,{upper:true}),{type:'church',x:s.x+2,y:s.y-2},{type:'well',x:s.x-4,y:s.y+6}];
+      case'village':return[H(-12,-4,13,9),H(6,-8,12,9),H(14,6,13,9,{fence:true}),H(-6,9,12,8),{type:'well',x:s.x+2,y:s.y+1}];
+      case'stilts':return[[-14,-6],[4,-10],[16,4],[-4,8]].map(([dx,dy])=>({type:'hut',x:s.x+dx,y:s.y+dy}));
+      case'farm':return[H(-8,0,14,9,{fence:true}),{type:'barn',x:s.x+11,y:s.y-4},{type:'hay',x:s.x+20,y:s.y+6},{type:'hay',x:s.x+14,y:s.y+9}];
+      case'inn':return[H(0,0,17,13,{upper:true,wall:'timber',roof:'tile',rc:'#8b3a2a',sign:true}),H(15,5,10,7,{wall:'plaster',roof:'thatch',rc:'#c29a52'})];
+      case'mill':return[H(0,0,13,10,{wall:'stone',roof:'slate',rc:'#56707a',wheel:true})];
+      default:return[];}}
+  // Lanes: from each settlement to the nearest road it can reach without crossing water (found in build()).
+  const ROADS_FLAT=()=>[...ROUTE_PATHS.flat(),...SPURS.flatMap(s=>spline(s,3))];
+  function findLanes(waterAt){const pts=ROADS_FLAT();return SETTLEMENTS.filter(s=>!['fold','orchard','copse'].includes(s.kind)).map(s=>{
+    const near=pts.map(p=>[Math.hypot(p[0]-s.x,p[1]-s.y),p]).sort((a,b)=>a[0]-b[0]);if(near[0][0]<16)return null;
+    for(const[d,p]of near.slice(0,500)){if(d>260)break;const mx=(s.x+p[0])/2+(p[1]-s.y)*.12,my=(s.y+p[1])/2-(p[0]-s.x)*.12,path=[[s.x,s.y+6],[mx,my],p];
+      if(spline(path,3).every(([x,y])=>waterAt(x,y)<-1.5))return{id:s.id,path};}
+    // No dry way: cross a brook (never the river) on a plank footbridge.
+    for(const[d,p]of near.slice(0,300)){if(d>200)break;const mx=(s.x+p[0])/2,my=(s.y+p[1])/2,path=[[s.x,s.y+6],[mx,my],p],pts=spline(path,3);
+      if(pts.every(([x,y])=>waterAt(x,y)<4.5))return{id:s.id,path,footbridge:true};}return null;}).filter(Boolean);}
+  // Hedged fields beside farms and villages: [x, y, rotation, columns, rows].
+  const FIELD_PATCHES=[[578,1000,-.2,3,2],[92,1236,.15,2,3],[640,1098,-.3,3,2],[776,1196,.2,2,3],[372,912,-.25,3,2],[330,690,.2,2,2],[690,1618,-.15,2,2]];
+
   // Where each realm's landmark stands (chart-realms.js): beside its realm, clear of the
   // realm button, its label and the climber. Double River's is in LANDMARKS above.
   const SITES={0:{x:152,y:1642,r:58},1:{x:700,y:1486,r:48},10:{x:152,y:1340,r:58},5:{x:348,y:1140,r:40},11:{x:150,y:815,r:52},3:{x:712,y:690,r:58},4:{x:355,y:562,r:38},9:{x:154,y:455,r:46},6:{x:702,y:452,r:62},12:{x:185,y:338,r:48},8:{x:690,y:245,r:44},7:{x:232,y:138,r:44}};
-  const api={W,H,G,POSITIONS,ORDER,NODES,RIVERS,LAKE,POOLS,BIOMES,ANCHORS,LANDMARKS,SITES,ROUTE,SPURS,VILLAGES,routePaths,build,rng,noise,spline,node};
+  const api={TOP,W,H,G,POSITIONS,ORDER,NODES,RIVERS,LAKE,POOLS,BIOMES,ANCHORS,LANDMARKS,SITES,ROUTE,SPURS,VILLAGES,SETTLEMENTS,SETTLE_R,CAMP,FIELD_PATCHES,EDGE_TRAILS,EDGE_SIGNS,ISLANDS,SPRINGS,RAPIDS,WEIR,HERDS,buildingsFor,routePaths,build,rng,noise,spline,node};
   root.ChartWorld=api;if(typeof module!=='undefined'&&module.exports)module.exports=api;
 })(typeof window!=='undefined'?window:globalThis);

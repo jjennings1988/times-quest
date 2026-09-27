@@ -156,7 +156,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[role="button"]:
   background:linear-gradient(90deg,rgba(57,26,12,.14),transparent 8%,transparent 92%,rgba(57,26,12,.14));
   box-shadow:inset 0 0 42px rgba(63,31,14,.22);
 }
-.map-world{position:relative;left:50%;width:clamp(720px,184vw,1044px);aspect-ratio:864/1821;transform:translateX(-50%);isolation:isolate}
+.map-world{--mw:clamp(720px,184vw,1044px);position:relative;left:50%;width:var(--mw);aspect-ratio:864/1821;transform:translateX(-50%);isolation:isolate}
 .map-art{position:absolute;z-index:0;inset:0;background:url('art/map/bg-adventure-map.webp') center/100% 100% no-repeat}
 .map-route{position:absolute;z-index:1;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none;filter:drop-shadow(0 2px 0 rgba(255,244,205,.42))}
 .map-route-segment{fill:none;stroke:#6A482E;stroke-width:4;stroke-dasharray:2 10;stroke-linecap:round;vector-effect:non-scaling-stroke;opacity:.52}
@@ -214,7 +214,7 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,[role="button"]:
 @media(max-width:520px){
   /* Keep every landmark on its map coordinate, but show a wider slice of the
      world and use compact pins so the edge realms remain tappable on phones. */
-  .map-world{width:clamp(480px,132vw,600px)}
+  .map-world{--mw:clamp(480px,132vw,600px)}
   .realm-node{width:100px}
   .realm-bubble{width:64px;height:64px;min-width:64px;border-width:3px;font-size:27px}
   .realm-node .meta{min-width:100px;max-width:100px;padding:4px 5px 5px}
@@ -1073,6 +1073,9 @@ body.reduce-motion .camp-viewport{scroll-snap-type:none}
 <script src="chart-paint.js"></script>
 <script src="chart-realms.js"></script>
 <script src="chart-landmarks.js"></script>
+<script src="chart-lore.js"></script>
+<script src="chart-bake.js"></script>
+<script src="map-zoom.js"></script>
 <script src="map-chart.js"></script>
 <script src="device-check.js"></script>
 <script src="learning-journey.js"></script>
@@ -1240,17 +1243,17 @@ function hydrateIcons(root=document){ root.querySelectorAll('[data-icon]').forEa
 const REALM_LORE={
   0:{intro:"Poof watches over the misty ×0 paths. He can make whole groups disappear, because any number of groups with nothing in them still makes zero.",ability:"Vanishing Zero",example:"7 × 0 = 0"},
   1:{intro:"Echo is the quick-footed guardian of the ×1 woods. She sends every number back exactly as it arrived: one group of a number is simply that number.",ability:"Mirror Copy",example:"1 × 8 = 8"},
-  10:{intro:"Deca keeps Ten City running on tidy bundles of ten. He shifts every number one place to the left and clicks a zero onto the end.",ability:"Zero Shift",example:"10 × 7 = 70"},
+  10:{intro:"Deca keeps Ten City running on tidy bundles of ten. Ten groups of any number make that many tens: ten groups of 7 is seven tens, 70.",ability:"Zero Shift",example:"10 × 7 = 70"},
   2:{intro:"Twix darts along Double River in perfectly matched pairs. Whenever he sees a number, he makes an identical copy and adds the two together.",ability:"River Double",example:"2 × 8 = 8 + 8"},
   5:{intro:"Slap greets every ship with a high five at the harbor. His answers march by fives and always finish with a friendly 0 or 5.",ability:"High-Five Count",example:"5, 10, 15, 20…"},
   11:{intro:"Copy repeats what he sees from the Twin Towers. For one-digit numbers he writes the digit twice; for larger numbers he combines ten groups with one more.",ability:"Twin Echo",example:"11 × 4 = 44"},
   3:{intro:"Trio swings through the jungle with three matching vines. He doubles a number first, then adds one more group to complete the trio.",ability:"Triple Swing",example:"3 × 7 = 14 + 7"},
   4:{intro:"Boulder carved Squarestone Valley by doubling everything twice. One double makes two groups, and the second double makes four.",ability:"Double-Double",example:"4 × 6: 6 → 12 → 24"},
-  9:{intro:"Sensei studies the ×9 patterns in the temple. He begins with ten groups, silently removes one group, and subtracts the amount in that group.",ability:"Shadow Subtract",example:"9 × 6 = 60 − 6"},
+  9:{intro:"Sensei studies the ×9 patterns in the temple. He starts with ten groups, then takes one whole group away.",ability:"Shadow Subtract",example:"9 × 6 = 60 − 6"},
   6:{intro:"Buzz powers Six Circuit with five bright cells and one spare. He finds five groups first, then adds one more group to complete the circuit.",ability:"Five Plus One",example:"6 × 8 = 40 + 8"},
-  12:{intro:"Tock measures the desert in dozens. He combines ten groups with a quick double, building twelve without counting every group.",ability:"Dozen Time",example:"12 × 6 = 60 + 12"},
-  8:{intro:"Glacier explores the caves by doubling three times. Each icy echo grows the number from two groups, to four, and finally to eight.",ability:"Triple Double",example:"8 × 7: 7 → 14 → 28 → 56"},
-  7:{intro:"Tempest climbs where the arithmetic is wildest. He breaks seven groups into an easy five and an easy two, then brings the answers back together.",ability:"Storm Split",example:"7 × 8 = 40 + 16"},
+  12:{intro:"Tock measures the desert in dozens. He finds ten groups, then adds two more groups, so he never has to count all twelve.",ability:"Dozen Time",example:"12 × 6 = 60 + 12"},
+  8:{intro:"Glacier explores the caves by doubling three times. Each double grows the groups from one to two, then four, then eight.",ability:"Triple Double",example:"8 × 7: 7 → 14 → 28 → 56"},
+  7:{intro:"Tempest climbs where the arithmetic is wildest. He splits seven groups into five groups and two groups, finds both, then adds them.",ability:"Storm Split",example:"7 × 8 = 40 + 16"},
 };
 
 const REALMS = {
@@ -1258,25 +1261,25 @@ const REALMS = {
      strategy:"Anything times 0 disappears! 0 × anything = 0.",
      hint:(a,b)=>`${a} groups of ${b} make <b>0</b>. ${a===0?'There are no groups.':'Each group is empty.'}`},
   1:{name:"One Woods",pet:"🐰",petName:"Echo the Bunny",color:"#4C9A4C",
-     strategy:"The mirror world: 1 × any number is just that number.",
-     hint:(a,b)=>{const n=a===1?b:a;return `One copy of ${n} is just... <b>${n}</b>! The number stays the same.`}},
+     strategy:"Times 1 keeps a number the same: 1 × 8 = 8.",
+     hint:(a,b)=>{const n=a===1?b:a;return `One group of ${n} is just <b>${n}</b>. The number stays the same.`}},
   10:{name:"Ten City",pet:"🤖",petName:"Deca the Robot",color:"#4A7FBF",
-     strategy:"Ten equal groups. 10 × 7 = 70: seven tens.",
-     hint:(a,b)=>{const n=a===10?b:a;return `Ten groups of ${n} make <b>${n*10}</b>. Whole-number digits move one place to the left.`}},
+     strategy:"Ten groups make tens: 10 × 7 is seven tens, 70.",
+     hint:(a,b)=>{const n=a===10?b:a;return `Ten groups of ${n} make ${n} tens: <b>${n*10}</b>.`}},
   2:{name:"Double River",pet:"🦊",petName:"Twix the Fox",color:"#E07B39",
      strategy:"Just double it! 2 × 8 means 8 + 8.",
      hint:(a,b)=>{const n=a===2?b:a;return `Double it! ${n} + ${n} = <b>${n*2}</b>`}},
   5:{name:"High-Five Harbor",pet:"🐸",petName:"Slap the Frog",color:"#6BAF3C",
      strategy:"Count by 5s: 5, 10, 15, 20... Answers always end in 0 or 5!",
-     hint:(a,b)=>{const n=a===5?b:a;return `Count by fives ${n} times: ${Array.from({length:Math.min(n,12)},(_,i)=>5*(i+1)).join(", ")}. Or: half of ${n}×10 (${n*10}) = <b>${n*5}</b>`}},
+     hint:(a,b)=>{const n=a===5?b:a;return `Count by fives ${n} times: ${Array.from({length:Math.min(n,12)},(_,i)=>5*(i+1)).join(", ")}. Or find 10 × ${n} = ${n*10} and take half: <b>${n*5}</b>`}},
   11:{name:"Twin Towers",pet:"🦜",petName:"Copy the Parrot",color:"#B5559E",
-     strategy:"Copy-number magic! 11 × 4 = 44. For big ones: 11 × n = 10n + n.",
+     strategy:"For 1 to 9, copy the digit: 11 × 4 = 44. For bigger numbers, ten groups plus one more: 11 × 12 = 120 + 12.",
      hint:(a,b)=>{const n=a===11?b:a;return `${n} tens plus ${n} more: ${n*10} + ${n} = <b>${n*11}</b>`}},
   3:{name:"Triple Jungle",pet:"🐵",petName:"Trio the Monkey",color:"#2E8B57",
      strategy:"Double it, then add one more group. 3 × 7 = 14 + 7.",
      hint:(a,b)=>{const n=a===3?b:a;return `Double ${n} = ${n*2}. Add one more ${n}: ${n*2} + ${n} = <b>${n*3}</b>`}},
   4:{name:"Squarestone Valley",pet:"🐢",petName:"Boulder the Turtle",color:"#B8860B",
-     strategy:"Double-double! Double the number, then double again.",
+     strategy:"Double, then double again: 4 × 6 → 12 → 24.",
      hint:(a,b)=>{const n=a===4?b:a;return `Double ${n} = ${n*2}. Double again: ${n*2} + ${n*2} = <b>${n*4}</b>`}},
   9:{name:"Nine Ninja Temple",pet:"🦉",petName:"Sensei the Owl",color:"#C0392B",
      strategy:"Ten groups minus one group! 9 × 6 = 60 − 6.",
@@ -1285,11 +1288,11 @@ const REALMS = {
      strategy:"Use 5s plus one more group. 6 × 8 = 40 + 8.",
      hint:(a,b)=>{const n=a===6?b:a;return `Five ${n}s = ${n*5}. Add one more ${n}: ${n*5} + ${n} = <b>${n*6}</b>`}},
   12:{name:"Dozen Desert",pet:"🐉",petName:"Tock the Clock Dragon",color:"#C2703D",
-     strategy:"Ten groups plus double! 12 × 6 = 60 + 12.",
-     hint:(a,b)=>{const n=a===12?b:a;return `Ten ${n}s = ${n*10}. Plus double ${n} (${n*2}): ${n*10} + ${n*2} = <b>${n*12}</b>`}},
+     strategy:"Ten groups plus two more groups: 12 × 6 = 60 + 12.",
+     hint:(a,b)=>{const n=a===12?b:a;return `Ten ${n}s = ${n*10}. Two more ${n}s = ${n*2}. ${n*10} + ${n*2} = <b>${n*12}</b>`}},
   8:{name:"Eight Ice Caves",pet:"🐧",petName:"Glacier the Penguin",color:"#3D9BC2",
      strategy:"Double, double, double! 8 × 7: 7 → 14 → 28 → 56.",
-     hint:(a,b)=>{const n=a===8?b:a;return `Triple double! ${n} → ${n*2} → ${n*4} → <b>${n*8}</b>`}},
+     hint:(a,b)=>{const n=a===8?b:a;return `Double three times: ${n} → ${n*2} → ${n*4} → <b>${n*8}</b>`}},
   7:{name:"Seven Storm Peak",pet:"🐺",petName:"Tempest the Storm Wolf",color:"#6B5CA8",
      strategy:"Split into 5s and 2s! 7 × 8 = (5×8) + (2×8) = 40 + 16.",
      hint:(a,b)=>{const n=a===7?b:a;return `Split it! Five ${n}s = ${n*5}, two ${n}s = ${n*2}. ${n*5} + ${n*2} = <b>${n*7}</b>`}},
@@ -1475,7 +1478,7 @@ const RATING_LABEL = ["undiscovered","discovered","befriending","befriending","c
    Defaults below reproduce the game's original behaviour exactly, so an
    existing save that predates settings plays identically until something
    is changed on purpose. */
-const APP_VERSION = '0.34.3-beta.1';
+const APP_VERSION = '0.51.0-beta.1';
 const FAST_MS = 4000;          // default bonus window
 const WINDOW_CHOICES = [3000,4000,6000,8000];
 const ROUND_CHOICES  = [8,12,16];
@@ -1491,6 +1494,7 @@ const PREF_DEFAULTS = {
   clicks: true,     // keypad tap sounds
   ambience: false,  // optional, low-volume Base Camp soundscape
   chartMap: false,  // testing: the hand-drawn, code-painted adventure map
+  chartPencil: false, // the hand-drawn map in pencil only, as it looks before a realm is restored
 };
 const fastMs   = () => state.settings.window;
 const roundLen = () => state.settings.roundLen;
@@ -1903,12 +1907,17 @@ const sfx = {
   gem(){ beep(1200,.07,"triangle"); },
 };
 function prefersReducedMotion(){ return !!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches); }
-function stopCampAmbience(){
+/* Camp sounds: a thunk and sparkle when something is built, a chime for a new fact, coins for Mara's orders. */
+function campSound(kind){if(!state.settings.sound)return;if(kind==='build'){tone(150,.09,'triangle',.16);setTimeout(()=>tone(1320,.06,'sine',.05),70);}else if(kind==='fact')sfx.win();else if(kind==='coin'){beep(1200,.07,'triangle');setTimeout(()=>beep(1500,.08,'triangle'),90);}}
+let campBirds=0,campPlace='camp',ambientFilter=null;
+// Sound follows place: the river rushes, the green chatters, the grove is hushed with birdsong, and bees hum over the fields.
+function setCampPlace(place){campPlace=place;if(!ambientFilter||!ambientGain||!audioCtx)return;const f={river:1500,grove:520,fields:700,village:900}[place]||780,g={river:.03,grove:.011,fields:.016,village:.02}[place]||.018;try{ambientFilter.frequency.setTargetAtTime(f,audioCtx.currentTime,.6);ambientGain.gain.setTargetAtTime(g,audioCtx.currentTime,.6);}catch(e){}}
+function stopCampAmbience(){clearInterval(campBirds);campBirds=0;
   try{ if(ambientGain&&audioCtx) ambientGain.gain.setTargetAtTime(.0001,audioCtx.currentTime,.08); if(ambientSource) ambientSource.stop(audioCtx.currentTime+.25); }catch(e){}
-  ambientSource=null;ambientGain=null;
+  ambientSource=null;ambientGain=null;ambientFilter=null;
 }
 function syncCampAmbience(){
-  const inCamp=$('screen-camp')&&$('screen-camp').classList.contains('active');
+  const inCamp=['screen-camp','screen-camp-v2'].some(id=>$(id)&&$(id).classList.contains('active'));
   if(!state||!state.settings.ambience||state.settings.calm||prefersReducedMotion()||!inCamp||document.hidden){ stopCampAmbience();return; }
   if(ambientSource) return;
   try{
@@ -1917,7 +1926,13 @@ function syncCampAmbience(){
     let smooth=0; for(let i=0;i<length;i++){ smooth=smooth*.985+(Math.random()*2-1)*.015;data[i]=smooth; }
     const source=audioCtx.createBufferSource(),filter=audioCtx.createBiquadFilter(),gain=audioCtx.createGain();
     filter.type='lowpass';filter.frequency.value=780;gain.gain.value=.018;source.buffer=buffer;source.loop=true;
-    source.connect(filter);filter.connect(gain);gain.connect(audioCtx.destination);source.start();ambientSource=source;ambientGain=gain;
+    source.connect(filter);filter.connect(gain);gain.connect(audioCtx.destination);source.start();ambientSource=source;ambientGain=gain;ambientFilter=filter;setCampPlace(campPlace);
+    // Now and then a bird calls from the woods.
+    campBirds=setInterval(()=>{if(!ambientSource||document.hidden)return;const p=campPlace;
+      if(p==='village'&&Math.random()<.6)for(let i=0;i<3;i++)setTimeout(()=>tone(260+Math.random()*180,.06,'triangle',.012),i*140);
+      else if(p==='river'&&Math.random()<.5){const f=700+Math.random()*300;tone(f,.05,'sine',.02);setTimeout(()=>tone(f*.7,.07,'sine',.015),60);}
+      else if(p==='fields'&&!(window.ChartPaint&&ChartPaint.seasonFor(new Date())==='winter')&&Math.random()<.6)tone(190+Math.random()*30,.7,'sawtooth',.005);
+      if(Math.random()<(p==='grove'?.85:p==='village'?.3:.55)){const f=2200+Math.random()*900;tone(f,.07,'sine',.018);setTimeout(()=>tone(f*1.18,.09,'sine',.014),110);}},5200);
   }catch(e){ stopCampAmbience(); }
 }
 
@@ -1931,7 +1946,7 @@ function showScreen(id){
     state.journey.preferredCamp='v2';
     document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
     $('screen-camp-v2').classList.add('active');document.body.classList.add('camp-world-open');
-    $('nav').style.display='none';stopCampAmbience();enterCampV2();return;
+    $('nav').style.display='none';enterCampV2();syncCampAmbience();return;
   }
   if(id!=='screen-camp'){
     campUndo=null;
@@ -2134,7 +2149,7 @@ const MAP_POSITIONS=[
 /* Everything the map's surroundings reflect about the child's learning. */
 function mapLoreData(){
   const unlocked=unlockedFamilies(),profile=profileById();
-  return {night:!!state.campV2?.night,calm:!!(state.settings.calm||prefersReducedMotion()),explorer:profile?.name||'',
+  return {night:!!state.campV2?.night,calm:!!(state.settings.calm||prefersReducedMotion()),explorer:profile?.name||'',chart:useChartMap(),
     positions:MAP_POSITIONS,allRestored:allConquered(),summitDone:!!state.summitDone,
     realms:REALM_ORDER.map(f=>({family:f,name:REALMS[f].name,pet:REALMS[f].petName,color:REALMS[f].color,unlocked:unlocked.includes(f),restored:!!state.realms[f].conquered,stars:realmStars(f).stars,trail:factTrailProgress(f).count,strategyNote:LearningJourney.lesson(f).idea}))};
 }
@@ -2144,7 +2159,9 @@ function mapChartData(){
   const lore=mapLoreData();
     const stage=f=>ChartLandmarks.stageFor({trial:!!state.realms[f].trial,conquered:!!state.realms[f].conquered,stars:realmStars(f).stars});
   return {stages:Object.fromEntries(REALM_ORDER.map(f=>[f,stage(f)])),
-    all:!!state.summitDone,calm:lore.calm,sky:window.MapBackdrop?MapBackdrop.skyNow(lore):'day',profile:String(activeProfileId||'solo')};
+    all:!!state.summitDone,calm:lore.calm,pencil:!!state.settings.chartPencil,
+    // What the chart shows about learning: open realms, Fact Trail milestones, stars, the finished map.
+    lore:{realms:lore.realms.map(q=>({family:q.family,unlocked:q.unlocked,trail:q.trail,stars:q.stars})),explorer:lore.explorer,allRestored:lore.allRestored,summitDone:lore.summitDone},sky:window.MapBackdrop?MapBackdrop.skyNow(lore):'day',profile:String(activeProfileId||'solo')};
 }
 function mapRouteSvg(completedCount){
   const width=864,height=1821;
@@ -2168,9 +2185,11 @@ function renderMap(){
   const unlocked=unlockedFamilies();
   const completedCount=conquestCount();
   const chart=useChartMap();
-  trail.innerHTML=`<div class="map-world"><div class="map-art${chart?' map-chart':''}" aria-hidden="true"></div>${mapRouteSvg(completedCount)}</div>`;
+  trail.innerHTML=`<div class="map-world${chart?' charted':''}"><div class="map-art${chart?' map-chart':''}" aria-hidden="true"></div>${mapRouteSvg(completedCount)}</div>`;
+  if(window.MapZoom){MapZoom.setEnabled(chart);MapZoom.apply();}
   if(!chart&&window.MapChart)MapChart.release();
   const world=trail.querySelector('.map-world');
+  if(chart){const c=ChartWorld.CAMP,pin=document.createElement('button');pin.className='camp-pin';pin.type='button';pin.style.cssText=`left:${c.x/ChartWorld.W*100}%;top:${(c.y+4)/ChartWorld.H*100}%`;pin.setAttribute('aria-label','Willowbrook, your camp. Visit your camp');pin.innerHTML='<span class="pin"></span><b>Willowbrook</b><small>your camp</small>';pin.onclick=()=>visitCamp();world.append(pin);}
   // summit node at the final background landmark
   const summit=document.createElement('div');
   summit.className='summit-node';
@@ -2187,7 +2206,7 @@ function renderMap(){
     const progress=realmProgress(fam),stars=progress.stars;
     const node=document.createElement('div');
     const point=MAP_POSITIONS[i];
-    node.className=`realm-node ${isUnlocked?'':'locked'} ${isHere?'here':''} ${state.realms[fam].conquered?'conquered':''}`;
+    node.className=`realm-node ${isUnlocked?'':'locked'} ${isHere?'here':''} ${state.realms[fam].conquered?'conquered':''} ${chart&&stars===3?'gilded':''}`;
     node.style.cssText=`left:${point.x}%;top:${point.y}%`;
     node.innerHTML=`
       <div class="realm-bubble" style="background:${r.color}"><span class="realm-number">×${fam}</span>${isUnlocked?realmCharacter(fam):'🔒'}
@@ -3733,19 +3752,35 @@ function enterCampV2(){
   if(campV2Session)return;
   const host=$('screen-camp-v2');
   if(!window.CampV2){campRecoveryScreen('missing-module');return;}
-  if(!state.campV2)state.campV2=state.journey.openingEdition?CampV2.freshExpedition():CampV2.fresh();
+  if(!state.campV2)state.campV2=createCamp();
   deliverCampGrants();
-  if(!CampV2.validSave(state.campV2)){campRecoveryScreen('invalid-save');return;}
+  // A camp with things standing outside open land after an update opens anyway: they go back into the backpack.
+  // The camp as it was is kept (the most recent one) so nothing is lost.
+  let campNotice='';
+  if(!CampV2.validSave(state.campV2)){const fixed=CampV2.rehome(state.campV2);if(!fixed){campRecoveryScreen('invalid-save');return;}
+    state.campRehomed={at:new Date().toISOString(),items:fixed.returned,original:state.campV2};state.campV2=fixed.save;saveState();
+    const counts={};fixed.returned.forEach(t=>counts[t]=(counts[t]||0)+1);const names=Object.entries(counts).map(([t,n])=>n+' × '+(CampV2.catalog[t]?.name||t)).join(', ');
+    campNotice=names?'Willowbrook changed a little, so some things went back into your backpack: '+names+'.':'Your camp view was reset so you can find your way around again.';}
   state.campV2=CampV2.syncProgress(state.campV2,campMasteredCount(),isCampTester());
   migrateToWillowbrook();
   const owner=activeProfileId;
   try{
   campV2Session=CampV2.mount(host,{profileId:owner,currentProfileId:()=>activeProfileId,
-    getSave:()=>state.campV2,setSave:next=>{if(owner===activeProfileId){state.campV2=next;saveState();}},
+    getSave:()=>state.campV2,setSave:next=>{if(owner===activeProfileId){state.campV2=next;state.gems=next.gems;saveState();updateChips();}},
     guardians:REALM_ORDER.map(family=>({family,name:REALMS[family].petName,color:REALMS[family].color,defeated:!!state.realms[family].conquered})),
     companions:state.campMonsterFavorites.map(key=>{const [a,b]=key.split('*').map(Number);return {key,a,b,...monsterIdentity(a,b)};}),
+    // Guardians of restored realms can move into Creature Cottages, newest first.
+    friends:REALM_ORDER.filter(f=>state.realms[f].conquered).reverse().map(f=>({family:f,name:REALMS[f].petName})),
+    today:Math.floor(Date.parse(dateKey())/864e5),
+    postcards:()=>{try{return JSON.parse(localStorage.getItem('tq-postcards:'+owner)||'[]');}catch{return [];}},
+    savePostcard:url=>{try{const list=JSON.parse(localStorage.getItem('tq-postcards:'+owner)||'[]');localStorage.setItem('tq-postcards:'+owner,JSON.stringify([url,...list].slice(0,3)));}catch{}},
+    onSound:campSound,onPlace:setCampPlace,notice:campNotice,onToggleSound:()=>{state.settings.ambience=!state.settings.ambience;saveState();syncCampAmbience();},soundOn:()=>!!state.settings.ambience,
     onCompanion:(a,b)=>{showScreen('screen-monsters');openMonsterCard(a,b);},
     tester:isCampTester(),reviewQuestions:campReviewQuestions,onReview:recordCampReview,
+    // One guardian from the grove makes a request each day, shaped by its own family.
+    request:(()=>{const g=REALM_ORDER.filter(f=>state.realms[f].conquered);if(!g.length)return null;const f=g[(Math.floor(Date.now()/864e5)+5)%g.length];return {family:f,day:dateKey(),name:REALMS[f].petName};})(),
+    // The camp shares the adventure map's season.
+    season:window.ChartPaint?ChartPaint.seasonFor(new Date()):'summer',
     avatar:profileAvatar(),ownerName:(profileById()&&profileById().name)||'',explorerIndex:profileById()?.avatar??0,reducedMotion:()=>state.settings.calm||prefersReducedMotion(),
     goalMarkup:campGoalMarkup,
     // Guardians whose Fact Trail is complete take turns visiting the Story Stones, one per day; their keepsakes turn gold.
@@ -4214,6 +4249,7 @@ document.addEventListener('keydown',e=>{
   applyCalm();
   checkDaily();
   if(window.MapBackdrop)MapBackdrop.attach($('screen-map'),mapLoreData);
+  if(window.MapZoom)MapZoom.attach($('screen-map'),$('map-trail'),{onEnd:()=>{if(useChartMap()&&window.MapChart)MapChart.refresh();}});
   renderMap();
   updateChips();
   showTitle();
