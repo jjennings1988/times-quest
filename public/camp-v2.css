@@ -30,6 +30,7 @@
 .cv2-album{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr));gap:4px;margin:8px 0}.cv2-album span{font:700 11px/1 system-ui;text-align:center;padding:6px 0;border-radius:6px;background:#efe7d4;color:#a2957a}.cv2-album span.got{background:#8cb86a;color:#fff}
 .cv2-postcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px}.cv2-postcards img{width:100%;border-radius:4px;box-shadow:0 2px 6px rgba(40,30,20,.25);transform:rotate(-1deg)}.cv2-postcards img:nth-child(2n){transform:rotate(1.2deg)}
 .cv2-notices{margin:8px 0;padding-left:18px}.cv2-tray-buns i{background:#d9a55a}
+.cv2-today li{margin:5px 0}
 .cv2-arrival-list{list-style:none;margin:10px 0;padding:0;display:grid;gap:8px;max-height:38dvh;overflow:auto}.cv2-arrival-list li{display:flex;align-items:center;gap:10px}.cv2-arrival-list .cv2-thumb{width:52px;height:52px;flex:0 0 52px}.cv2-arrival-list small{display:block;opacity:.75}.cv2-camera button{background:#173a2fca;border-color:#b3c4a540;color:#fff6da;font-size:23px;padding:3px}
 .cv2-hint{position:absolute;top:145px;left:18px;right:78px;max-width:360px;font-size:11px;line-height:1.5;color:#fff9df;text-shadow:0 1px 4px #17382d;font-weight:800;pointer-events:none}
 .cv2-overlay{position:absolute;bottom:calc(98px + env(safe-area-inset-bottom));left:14px;right:14px;pointer-events:none;display:flex;justify-content:center}.cv2-overlay>*{pointer-events:auto}

@@ -84,6 +84,24 @@ The painted map stays the default; switching off returns it instantly.
   sit below the map buttons, and Mount Twelve's peak is whole. Zoom in and out:
   the top margin grows and shrinks with the map. Eight Ice Caves (once unlocked)
   sits in the foot of its mountain.
+- **Come back tomorrow (0.47):** the first camp visit of a day opens "Today at camp".
+  Count a new garden bed (it blooms), come back the next day: it shows pumpkins and the
+  card offers the harvest. Plant the given apple tree: pick apples by walking to it; a
+  second pick the same day says "come back tomorrow". Place the Creature Cottage: a
+  companion's name appears over it and they rest by it at night.
+- **The sanctuary (0.46):** hop to Guardian Grove: no railings, lanterns at the arch,
+  a path looping round the heart tree. Earned guardians have realm homes; unearned spots
+  are only small numbered stones. Watch a minute: guardians wander to the heart tree and
+  back. The Summit Tester profile (all 13) should see the heart tree's gold lights.
+- **A village in its place (0.45):** the inn is by the bridge and the watermill on the
+  river with its wheel turning in the water. Switch the sky to night: stalls empty, lamps
+  glow, villagers are gone; back to morning and they return. Hedges beside the plots
+  leave gaps to walk through.
+- **Roads with a shape (0.44):** from above, roads curve and branch at angles, with
+  grass verges instead of square edges; the high street is cobbled with a kerb. Walk from
+  camp over Willow Bridge along the high street to the green, then out along the grove
+  trail to the gate. Check a camp with buildings on the Town Green or East Village plots
+  opens normally, and that a climber who had cleared trees still opens their camp.
 - **Village with a heart (0.43):** tap the signpost by the camp's name sign: "Where
   to?" hops you to any place. Each building has a readable sign and a villager at the
   door; their line changes day to day. Bake at the bakery (trays of buns) and share

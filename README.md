@@ -133,6 +133,78 @@ See [the opening slice and verification guide](OPENING-EXPEDITION.md),
 [the prior learning upgrade checklist](LEARNING-UPGRADE-CHECKLIST.md).
 Tests now include test/opening.js for the complete first expedition.
 
+## Willowbrook, come back tomorrow — 0.47 beta (testing)
+
+Gentle reasons to return, with nothing lost for staying away: nothing withers or decays.
+- **Gardens that grow:** a garden bed blooms the day it is counted and is ready to
+  harvest from the next day (pumpkins and cabbages). Harvesting pays about a quarter of
+  the bed's size in gems (at least 2) and replants it. A bed left for weeks is simply
+  still ready.
+- **Apple trees and beehives:** pick apples (3 gems) or collect honey (4 gems) once a
+  day by walking to them; apples and buzzing bees show when they are ready. Every camp
+  is given one apple tree; beehives unlock at 4 families.
+- **"Today at camp":** the first visit each day opens a card with what is ready to
+  harvest (and a "Harvest everything" button), today's visitor, the guardian's request,
+  the village jobs left, and one idea.
+- **Creature Cottages:** every camp is given one. Each cottage becomes the home of a
+  companion from the expedition team (or a visiting guardian), with their name on a
+  sign; they visit it often and rest there at night.
+
+## Willowbrook, the sanctuary — 0.46 beta (testing)
+
+- **A threshold, not a fence:** the Guardian Grove's iron railings are gone. Its edge is
+  a ring of old trees and mossy boulders, and the way in is the flowered arch, lit by two
+  lanterns. (It still has one way in, so walking routes are unchanged.)
+- **Homes that suit each realm:** Poof's glowing lantern stone and mist, the bunny's
+  burrow, the fox's den of rocks and a fallen log, hollow trees for the monkey and owl, a
+  perch tree for the parrot, pools for the turtle and frog (with lily pads), a flower
+  meadow and hive for the bee, rock dens for the wolf and dragon (with embers), ice for
+  the penguin, and a gear shrine for the robot.
+- **No empty beds:** a guardian not yet earned is marked only by a quiet stone with its
+  number; its home appears when the realm is restored.
+- **A path through your adventure:** a footpath loops past every home in the order the
+  realms were travelled, with a spur to the heart of the grove: a great old tree beside a
+  little spring. When all thirteen guardians are home, the heart tree glows gold.
+- **Guardians with lives:** each now and then strolls to the heart tree and back (they
+  stay home in calm mode).
+
+## Willowbrook, a village in its place — 0.45 beta (testing)
+
+- **Buildings where they make sense:** the watermill now stands on the river bank with
+  its wheel turning in the water, reached by the riverside path; the Willow Inn greets
+  travellers at the bridge end of the high street. Their villagers moved with them.
+- **Boundaries and gardens:** hedges line Rose Lane beside the two build plots, with gaps
+  to walk in; the inn's old plot is a walled kitchen garden; the houses have back gardens
+  and a washing line.
+- **A woodland edge:** where the village meets the wood, the trees open into meadow with
+  wildflowers and fallen logs (never on a child's build plot; old saves stay valid).
+- **A landmark at the end of a view:** the Meeting Oak, with a ring bench, closes the view
+  up the cut lane.
+- **The time of day:** market goods are out in the morning and day and packed away at
+  dusk; lamps glow in the evening; villagers go indoors at night, and the strollers walk
+  round the green.
+
+## Willowbrook, roads with a shape — 0.44 beta (testing)
+
+- **Roads drawn as curves:** every road is now a smooth curve that follows the land,
+  filled into the grid underneath for walking. A 3-wide cobbled high street runs from
+  Willow Bridge along the shopfronts to a new village green; a crescent lane sweeps past
+  the library and workshop; a lane cuts between the store and bakery; a footpath follows
+  the river to the mill; Rose Lane runs between the two build plots to the houses and the
+  fountain garden; and a winding trail replaces the stepped path to the Guardian Grove.
+- **Drawn to belong:** roads are ribbons that follow the ground, with a soft, uneven
+  grass verge, a stone kerb on the high street, rounded ends, and worn stones on paths.
+  Lamps stand along the high street and grove road.
+- **A village green** on the high street: a draped lawn ringed with flowers, the well,
+  the market stalls (the old Market Square moved here) and shade trees.
+- **Buildings face their streets:** the Town Hall now faces the high street and the houses
+  turn to face Rose Lane, with a slight, lived-in angle. Every door has a step onto a road.
+- **Saves stay safe:** trees along the new roads step aside but stay in the forest list,
+  so a save that cleared one of them remains valid; build plots are never paved.
+- The unfinished "Come back tomorrow" items (apple tree, beehive, Creature Cottage) are
+  parked out of the catalogue until they have models and screens; a backpack that
+  already holds one stays valid.
+
 ## Willowbrook, a village with a heart — 0.43 beta (testing)
 
 - **Every building says what it is:** lettered signs (Mara's Supply, Honeycrust Bakery,
